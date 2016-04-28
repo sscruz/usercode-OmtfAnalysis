@@ -1,0 +1,4 @@
+<use   name="UserCode/OmtfAnalysis"/>
+<library   file="*.cc" name="UserCodeOmtfAnalysisPlugins">
+  <flags   EDM_PLUGIN="1"/>
+</library>
