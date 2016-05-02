@@ -8,6 +8,36 @@ print "Hello ROOT"
 board =  sys.argv[1]
 fileName = "histos_OMTF"+board+"_run_0_2016_4_27__7_26_13.root"
 
+def cEta(canvas):
+  c = TCanvas("cEta","cEta",800,800)
+  canvas.Add(c)
+  c.Divide(2,2)
+  c.cd(1)
+  hEtaMB2vsMB1 =  gROOT.FindObject("hEtaMB2vsMB1")
+  hEtaMB2vsMB1.SetStats(1)
+  hEtaMB2vsMB1.GetXaxis().SetNdivisions(111)
+  hEtaMB2vsMB1.GetYaxis().SetNdivisions(111)
+  hEtaMB2vsMB1.DrawCopy("box")
+  c.cd(2)
+  hEtaRB1 =  gROOT.FindObject("hEtaRB1")
+  hEtaRB1.SetStats(1)
+  hEtaRB1.GetXaxis().SetNdivisions(111)
+  hEtaRB1.GetYaxis().SetNdivisions(111)
+  hEtaRB1.DrawCopy("box")
+  c.cd(3)
+  hEtaME13vsME22 =  gROOT.FindObject("hEtaME13vsME22")
+  hEtaME13vsME22.GetXaxis().SetNdivisions(111)
+  hEtaME13vsME22.GetYaxis().SetNdivisions(111)
+  hEtaME13vsME22.SetStats(1)
+  hEtaME13vsME22.DrawCopy("box")
+  c.cd(4)
+  hEtaME32vsME22 =  gROOT.FindObject("hEtaME32vsME22")
+  hEtaME32vsME22.GetXaxis().SetNdivisions(111)
+  hEtaME32vsME22.GetYaxis().SetNdivisions(111)
+  hEtaME32vsME22.SetStats(1)
+  hEtaME32vsME22.DrawCopy("box")
+  return
+
 
 def cTimeInputDT(canvas):
   c = TCanvas("cTimeInputDT","cTimeInputDT",1000,600)
@@ -245,6 +275,7 @@ canvas = TObjArray()
 
 cEtaPhiVsLayer(canvas)
 cTimeInputDT(canvas)
+cEta(canvas)
 
 for canva in canvas :
   pictName  = canva.GetName()+'_'+board+".png"
