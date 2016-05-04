@@ -6,7 +6,8 @@ from ROOT import *
 
 print "Hello ROOT"
 board =  sys.argv[1]
-fileName = "histos_OMTF"+board+"_run_0_2016_4_27__7_26_13.root"
+run   =  sys.argv[2]
+fileName = "histos_OMTF"+board+"_"+run+".root"
 
 def cEta(canvas):
   c = TCanvas("cEta","cEta",800,800)
