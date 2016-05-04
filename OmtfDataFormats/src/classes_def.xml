@@ -1,0 +1,16 @@
+<lcgdict>
+ <selection>
+
+   <class name="EventData" ClassVersion="1">
+    <version ClassVersion="1" checksum="1317365679"/>
+   </class>
+   <class name="L1Obj" ClassVersion="2">
+    <version ClassVersion="2" checksum="3302072089"/>
+    <version ClassVersion="1" checksum="2131458997"/>
+   </class>
+   <class name="L1ObjColl" ClassVersion="1">
+    <version ClassVersion="1" checksum="30982113"/>
+   </class>
+
+ </selection>
+</lcgdict>
