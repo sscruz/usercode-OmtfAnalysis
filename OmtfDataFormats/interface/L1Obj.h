@@ -7,10 +7,10 @@ class L1Obj : public TObject {
 
  public:
   
-  enum TYPE { NONE, RPCb, RPCf, DT, CSC, GMT, RPCb_emu, RPCf_emu, GMT_emu, OTF };
+  enum TYPE { NONE, RPCb, RPCf, DT, CSC, GMT, RPCb_emu, RPCf_emu, GMT_emu, OMTF, OMTF_emu };
 
-  float pt, eta, phi;
-  float disc;
+  int pt, eta, phi;
+  int disc;
   int   bx, q, hits, charge, refLayer;
   int   iProcessor, mtfType;
   TYPE  type;
@@ -18,7 +18,7 @@ class L1Obj : public TObject {
   L1Obj();
   bool isValid() const { return q >= 0;}
 
-  ClassDef(L1Obj,2)
+  ClassDef(L1Obj,3)
 };
 
 

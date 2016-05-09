@@ -1,4 +1,4 @@
-#include "DataFormats/L1RpcTriggerAnalysis/interface/EventData.h"
+#include "UserCode/OmtfDataFormats/interface/EventData.h"
 
 ClassImp(EventData)
 

@@ -1,6 +1,7 @@
 <lcgdict>
  <selection>
 
+   <class name="EventObj" ClassVersion="1"/>
    <class name="EventData" ClassVersion="1"/>
    <class name="L1Obj" ClassVersion="1"/>
    <class name="L1ObjColl" ClassVersion="1"/>

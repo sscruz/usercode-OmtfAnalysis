@@ -3,7 +3,7 @@
 #include "TObject.h"
 #include <iostream>
 
-#include "DataFormats/L1RpcTriggerAnalysis/interface/L1Obj.h"
+#include "L1Obj.h"
 
 ///Small class to create a TTree
 ///holding trigger response.

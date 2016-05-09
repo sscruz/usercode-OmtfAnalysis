@@ -1,7 +1,7 @@
 #ifndef L1ObjColl_H
 #define L1ObjColl_H
 
-#include "DataFormats/L1RpcTriggerAnalysis/interface/L1Obj.h"
+#include "L1Obj.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include <vector>
 #include <cmath>

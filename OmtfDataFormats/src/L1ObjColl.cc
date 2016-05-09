@@ -1,5 +1,5 @@
-#include "DataFormats/L1RpcTriggerAnalysis/interface/L1Obj.h"
-#include "DataFormats/L1RpcTriggerAnalysis/interface/L1ObjColl.h"
+#include "UserCode/OmtfDataFormats/interface/L1Obj.h"
+#include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
 #include <iostream>
 
 

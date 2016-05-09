@@ -1,10 +1,15 @@
 <lcgdict>
  <selection>
 
+   <class name="EventObj" ClassVersion="1">
+    <version ClassVersion="1" checksum="1906556595"/>
+   </class>
+
    <class name="EventData" ClassVersion="1">
     <version ClassVersion="1" checksum="1317365679"/>
    </class>
-   <class name="L1Obj" ClassVersion="2">
+   <class name="L1Obj" ClassVersion="3">
+    <version ClassVersion="3" checksum="3211239651"/>
     <version ClassVersion="2" checksum="3302072089"/>
     <version ClassVersion="1" checksum="2131458997"/>
    </class>
