@@ -14,8 +14,8 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 # (there is 255 file limit though). Can be empty for crab.
 #
 process.source = cms.Source("PoolSource", 
-#  fileNames = cms.untracked.vstring('file:8A92BCD7-410C-E611-9244-02163E01369C.root'),
-  fileNames = cms.untracked.vstring('root://eoscms.cern.ch//eos/cms/store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/775/00000/3457F4E7-FB13-E611-9241-02163E013771.root'),
+  fileNames = cms.untracked.vstring('file:8A92BCD7-410C-E611-9244-02163E01369C.root'),
+#  fileNames = cms.untracked.vstring('root://eoscms.cern.ch//eos/cms/store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/775/00000/3457F4E7-FB13-E611-9241-02163E013771.root'),
 #  skipEvents = cms.untracked.uint32(14143)
 )
 
@@ -73,10 +73,10 @@ process.RawToDigi.remove(process.caloStage1FinalDigis)
 process.RawToDigi.remove(process.caloStage1LegacyFormatDigis)
 process.RawToDigi.remove(process.caloStage2Digis)
 process.RawToDigi.remove(process.gtStage2Digis)
-#process.RawToDigi.remove(process.gtDigis)
-#process.RawToDigi.remove(process.muonDTDigis)
-#process.RawToDigi.remove(process.scalersRawToDigi)
-#process.RawToDigi.remove(process.gctDigis)
+process.RawToDigi.remove(process.gtDigis)
+process.RawToDigi.remove(process.muonDTDigis)
+process.RawToDigi.remove(process.scalersRawToDigi)
+process.RawToDigi.remove(process.gctDigis)
 process.load('EventFilter.L1TRawToDigi.l1tRawtoDigiBMTF_cfi')
 process.RawToDigi.insert(0,process.BMTFStage2Digis)
 
@@ -130,12 +130,12 @@ process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, proces
 #
 # re-emulate L1T
 #
-from L1Trigger.Configuration.customiseReEmul import L1TReEmulFromRAW
-process = L1TReEmulFromRAW(process)
-process.L1TReEmul.remove(process.simCaloStage2Digis)
-process.L1TReEmul.remove(process.simCaloStage2Layer1Digis)
-process.L1TReEmul.remove(process.simGmtCaloSumDigis)
-process.L1TReEmul.remove(process.simGmtStage2Digis)
+#from L1Trigger.Configuration.customiseReEmul import L1TReEmulFromRAW
+#process = L1TReEmulFromRAW(process)
+#process.L1TReEmul.remove(process.simCaloStage2Digis)
+#process.L1TReEmul.remove(process.simCaloStage2Layer1Digis)
+#process.L1TReEmul.remove(process.simGmtCaloSumDigis)
+#process.L1TReEmul.remove(process.simGmtStage2Digis)
 
 #process.simOmtfDigis.srcDTPh = cms.InputTag('BMTFStage2Digis')
 #process.simOmtfDigis.srcDTTh = cms.InputTag('BMTFStage2Digis')

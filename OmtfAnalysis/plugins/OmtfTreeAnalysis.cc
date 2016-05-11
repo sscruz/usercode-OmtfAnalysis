@@ -19,12 +19,15 @@
 #include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
 
 #include "UserCode/OmtfAnalysis/interface/AnaEvent.h"
+#include "UserCode/OmtfAnalysis/interface/AnaDataEmul.h"
 
 OmtfTreeAnalysis::OmtfTreeAnalysis(const edm::ParameterSet & cfg)
   : theConfig(cfg),
-    theAnaEvent(0)
+    theAnaEvent(0), theAnaDataEmul(0)
 { 
   if (theConfig.exists("anaEvent")) theAnaEvent = new   AnaEvent(cfg.getParameter<edm::ParameterSet>("anaEvent") );
+                                    theAnaDataEmul = new AnaDataEmul(edm::ParameterSet());
+   
 }
 
 void OmtfTreeAnalysis::beginJob()
@@ -32,6 +35,7 @@ void OmtfTreeAnalysis::beginJob()
   theHistos.SetOwner();
 
   if (theAnaEvent)            theAnaEvent->init(theHistos);
+  if (theAnaDataEmul)         theAnaDataEmul->init(theHistos);
 }
 
 void OmtfTreeAnalysis::beginRun(const edm::Run& ru, const edm::EventSetup& es)
@@ -93,6 +97,8 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
 
     // EVENT NUMBER, BX structure etc.
     if ( theAnaEvent && !theAnaEvent->filter(event) && theConfig.getParameter<bool>("filterByAnaEvent") ) continue;
+
+    if (theAnaDataEmul) theAnaDataEmul->run(l1ObjColl); 
 
     if (*l1ObjColl) {
       std::cout << *event << std::endl;
