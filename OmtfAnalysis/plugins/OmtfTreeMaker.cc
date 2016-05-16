@@ -93,6 +93,11 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   }
     
   
+  if (omtfResult.size()) {
+    std::cout <<"#"<<theCounter<<" "<< *event << std::endl;
+    for (auto obj : omtfResult) std::cout << obj << std::endl; 
+  }
+/*
   for (auto obj : omtfResult) {
     OmtfGmtData::CandMuon c;
     c.pt = obj.pt;
@@ -105,6 +110,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
     c.track = obj.hits;
     std::cout << obj <<" "<< c << std::endl;
   }
+*/
 
   //
   // fill ntuple + cleanup
