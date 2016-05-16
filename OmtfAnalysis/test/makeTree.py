@@ -14,9 +14,12 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 # (there is 255 file limit though). Can be empty for crab.
 #
 process.source = cms.Source("PoolSource", 
-  fileNames = cms.untracked.vstring('file:8A92BCD7-410C-E611-9244-02163E01369C.root'),
-#  fileNames = cms.untracked.vstring('root://eoscms.cern.ch//eos/cms/store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/775/00000/3457F4E7-FB13-E611-9241-02163E013771.root'),
+# fileNames = cms.untracked.vstring('root://xrootd.unl.edu//store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/798/00000/88D5937D-AD14-E611-824E-02163E014591.root')
+ fileNames = cms.untracked.vstring('file:run272798_88D5937D-AD14-E611-824E-02163E014591.root'),
+# fileNames = cms.untracked.vstring('root://eoscms.cern.ch//eos/cms/store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/775/00000/3457F4E7-FB13-E611-9241-02163E013771.root'),
+#  fileNames = cms.untracked.vstring('file:run272775_3457F4E7-FB13-E611-9241-02163E013771.root'),
 #  skipEvents = cms.untracked.uint32(14143)
+#  skipEvents = cms.untracked.uint32(353)
 )
 
 #
@@ -77,8 +80,6 @@ process.RawToDigi.remove(process.gtDigis)
 process.RawToDigi.remove(process.muonDTDigis)
 process.RawToDigi.remove(process.scalersRawToDigi)
 process.RawToDigi.remove(process.gctDigis)
-process.load('EventFilter.L1TRawToDigi.l1tRawtoDigiBMTF_cfi')
-process.RawToDigi.insert(0,process.BMTFStage2Digis)
 
 
 #OMTF ESProducer. Fills CondFormats from XML files.
@@ -89,15 +90,15 @@ process.omtfParamsSource = cms.ESSource( "EmptyESSource",
 )
 
 process.omtfParams = cms.ESProducer( "L1TMuonOverlapParamsESProducer",
-    configFromXML = cms.bool(False),
-    patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x00020007.xml")),),
-    configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x00020005.xml"),
+#    configFromXML = cms.bool(False),
+     patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x00020007.xml")),),
+     configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x00020005.xml"),
 )
 
 ###OMTF emulator configuration
 process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
-  srcDTPh =  cms.InputTag('BMTFStage2Digis'),
-  srcDTTh =  cms.InputTag('BMTFStage2Digis'),
+  srcDTPh =  cms.InputTag('bmtfDigis'),
+  srcDTTh =  cms.InputTag('bmtfDigis'),
 #  srcDTPh = cms.InputTag('simDtTriggerPrimitiveDigis'),
 #  srcDTTh = cms.InputTag('simDtTriggerPrimitiveDigis'),
   srcCSC = cms.InputTag('csctfDigis'),
@@ -107,18 +108,18 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
 #  srcRPC = cms.InputTag('simMuonRPCDigis'),
   dumpResultToXML = cms.bool(False),
   dumpDetailedResultToXML = cms.bool(False),
-  XMLDumpFileName = cms.string("TestEvents2.xml"),
-  dumpGPToXML = cms.bool(False),
+  XMLDumpFileName = cms.string("TestEvents.xml"),
+  dumpGPToXML = cms.bool(True),
   readEventsFromXML = cms.bool(False),
   eventsXMLFiles = cms.vstring("TestEvents.xml"),
   dropRPCPrimitives = cms.bool(False),
   dropDTPrimitives = cms.bool(False),
   dropCSCPrimitives = cms.bool(False),
-  omtf = cms.PSet(
-    configFromXML = cms.bool(False),
-    patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x00020007.xml")),),
-    configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x00020005.xml"),
-  )
+#  omtf = cms.PSet(
+#    configFromXML = cms.bool(False),
+#    patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x00020007.xml")),),
+#    configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x00020005.xml"),
+#  )
 )
 
 
