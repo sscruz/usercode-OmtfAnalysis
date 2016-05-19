@@ -14,8 +14,8 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 # (there is 255 file limit though). Can be empty for crab.
 #
 process.source = cms.Source("PoolSource", 
-# fileNames = cms.untracked.vstring('root://xrootd.unl.edu//store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/798/00000/88D5937D-AD14-E611-824E-02163E014591.root')
- fileNames = cms.untracked.vstring('file:run272798_88D5937D-AD14-E611-824E-02163E014591.root'),
+fileNames = cms.untracked.vstring('root://xrootd.unl.edu//store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/798/00000/88D5937D-AD14-E611-824E-02163E014591.root')
+# fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run272798_88D5937D-AD14-E611-824E-02163E014591.root'),
 # fileNames = cms.untracked.vstring('root://eoscms.cern.ch//eos/cms/store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/775/00000/3457F4E7-FB13-E611-9241-02163E013771.root'),
 #  fileNames = cms.untracked.vstring('file:run272775_3457F4E7-FB13-E611-9241-02163E013771.root'),
 #  skipEvents = cms.untracked.uint32(14143)
