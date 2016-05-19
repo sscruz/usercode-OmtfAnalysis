@@ -8,6 +8,7 @@ print "Hello ROOT"
 board =  sys.argv[1]
 run   =  sys.argv[2]
 fileName = "histos_OMTF"+board+"_"+run+".root"
+print 'File name is: ',fileName
 
 def cEta(canvas):
   c = TCanvas("cEta","cEta",800,800)
