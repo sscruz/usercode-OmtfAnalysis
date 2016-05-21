@@ -23,6 +23,27 @@ namespace {
                    160};
 
   double code2pt(int pt) { return std::fmin( double(pt-1)/2., 159); } 
+
+  template <typename T> int sgn(T val) { return (T(0) < val) - (val < T(0)); }
+
+  int code2Bit (int code) { 
+    int sign = sgn(code);
+    switch (abs(code)) {
+      case  73 : return sign*8;
+      case  78 : return sign*7;
+      case  85 : return sign*6;
+      case  90 : return sign*5;
+      case  94 : return sign*4;
+      case  99 : return sign*3;
+      case 103 : return sign*2;
+      case 110 : return sign*1;
+      case 115 : return sign*0;
+      case  95 : return sign*10;
+      default:  return sign*9;
+    }
+  } 
+
+
 }
 
 AnaDataEmul::AnaDataEmul(const edm::ParameterSet& cfg)
@@ -59,7 +80,8 @@ void AnaDataEmul::init(TObjArray& histos)
 
   hDataEmulPt = new TH2D("hDataEmulPt","hDataEmulPt",32, ptBins, 32, ptBins); histos.Add(hDataEmulPt);
   hDataEmulPhi = new TH2D("hDataEmulPhi","hDataEmulPhi",150,-30.,120.,150.,-30.,120.); histos.Add(hDataEmulPhi);
-  hDataEmulEta = new TH2D("hDataEmulEta","hDataEmulEta",100,50.,150.,100.,50.,150.); histos.Add(hDataEmulEta);
+  //hDataEmulEta = new TH2D("hDataEmulEta","hDataEmulEta",100,50.,150.,100.,50.,150.); histos.Add(hDataEmulEta);
+  hDataEmulEta = new TH2D("hDataEmulEta","hDataEmulEta",11,-0.5,10.5, 11.,-0.5 ,10.5); histos.Add(hDataEmulEta);
 }
 
 void AnaDataEmul::run(L1ObjColl * coll)
@@ -102,7 +124,8 @@ void AnaDataEmul::run(L1ObjColl * coll)
  if (unique) {
    hDataEmulPt->Fill( code2pt(data->pt), code2pt(emul->pt) );
    hDataEmulPhi->Fill(data->phi, emul->phi);
-   hDataEmulEta->Fill(abs(data->eta), abs(emul->eta));
+   hDataEmulEta->Fill(code2Bit(abs(data->eta)), code2Bit(abs(emul->eta)));
+   std::cout <<"emul->eta: " << emul->eta<<" "<< code2Bit(abs(emul->eta)) << std::endl;
  }
     
 }
@@ -117,8 +140,8 @@ AnaDataEmul::DIFF AnaDataEmul::compare(const L1Obj * data, const L1Obj * emul)
   if (data && !emul) diff = dataOnly;
   else if (!data && emul) diff = emulOnly;
   else {
-    unsigned int hitsEmul = emul->hits >>1;
-    unsigned int hitsData = data->hits >>2;
+    unsigned int hitsEmul = emul->hits | 1<<17;
+    unsigned int hitsData = data->hits | 1<<17;
     if (    (hitsEmul == hitsData) 
             && (data->pt == emul->pt) 
             && (data->phi == emul->phi) 

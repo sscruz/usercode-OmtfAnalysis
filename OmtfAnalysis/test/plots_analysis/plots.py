@@ -60,7 +60,7 @@ def cDataEmulPtPhiEta(canvas):
   c.cd(3)
   h = gROOT.FindObject('hDataEmulEta')
   h.SetStats(0)
-  h.DrawCopy('lego')
+  h.DrawCopy('box')
   return
 
 
