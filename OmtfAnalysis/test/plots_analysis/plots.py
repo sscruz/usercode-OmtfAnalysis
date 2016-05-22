@@ -33,10 +33,10 @@ def cDataEmulCompare(canvas):
   h.DrawCopy('text')
   return
 
-def cDataEmulPtPhiEta(canvas):
-  c = TCanvas('cDataEmulPtPhiEta','cDataEmulPtPhiEta',1200,400)
+def cDataEmulPtPhi(canvas):
+  c = TCanvas('cDataEmulPtPhi','cDataEmulPtPhi',800,400)
   canvas.Add(c)
-  c.Divide(3)
+  c.Divide(2)
   pad1 = c.cd(1)
   h = gROOT.FindObject('hDataEmulPt')
   h.SetStats(0)
@@ -57,9 +57,18 @@ def cDataEmulPtPhiEta(canvas):
   h.SetXTitle("data phi [GMT code]");
   h.SetYTitle("emul phi [GMT code]");
   h.DrawCopy('colo')
-  c.cd(3)
+  return
+
+def cDataEmulEta(canvas):
+  c = TCanvas('cDataEmulEta','cDataEmulEta',800,800)
+  canvas.Add(c)
   h = gROOT.FindObject('hDataEmulEta')
   h.SetStats(0)
+  c.SetLeftMargin(0.15)
+  h.GetXaxis().SetTitleOffset(1.4)
+  h.GetYaxis().SetTitleOffset(2.3)
+  h.SetXTitle("data eta [GMT code]")
+  h.SetYTitle("emul eta [GMT code]")
   h.DrawCopy('box')
   return
 
@@ -72,9 +81,10 @@ f = TFile(fileName);
 f.ls();
 
 canvas = TObjArray()
-cEvent(canvas)
+#cEvent(canvas)
 cDataEmulCompare(canvas)
-cDataEmulPtPhiEta(canvas)
+cDataEmulPtPhi(canvas)
+cDataEmulEta(canvas)
 
 raw_input('press enter to exit')
 

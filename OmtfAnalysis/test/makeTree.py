@@ -14,10 +14,13 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 # (there is 255 file limit though). Can be empty for crab.
 #
 process.source = cms.Source("PoolSource", 
+#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-100_26E36C01-C51C-E611-AFD0-02163E0119D0.root'),
+#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-200_6021F50A-CA1C-E611-AF9B-02163E013917.root'),
+#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-300_DCE92A6A-CD1C-E611-9EF5-02163E01476D.root'),
+#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-400_14675B6A-D31C-E611-90A2-02163E01399E.root'),
+fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273555-100_144A957B-DC1C-E611-8CA1-02163E012B4D.root'),
 #fileNames = cms.untracked.vstring('root://xrootd.unl.edu//store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/798/00000/88D5937D-AD14-E611-824E-02163E014591.root')
-fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run272798_88D5937D-AD14-E611-824E-02163E014591.root'),
-# fileNames = cms.untracked.vstring('root://eoscms.cern.ch//eos/cms/store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/775/00000/3457F4E7-FB13-E611-9241-02163E013771.root'),
-#  fileNames = cms.untracked.vstring('file:run272775_3457F4E7-FB13-E611-9241-02163E013771.root'),
+#fileNames = cms.untracked.vstring('root://eoscms.cern.ch//eos/cms/store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/775/00000/3457F4E7-FB13-E611-9241-02163E013771.root'),
 #  skipEvents = cms.untracked.uint32(14143)
 #  skipEvents = cms.untracked.uint32(353)
 )

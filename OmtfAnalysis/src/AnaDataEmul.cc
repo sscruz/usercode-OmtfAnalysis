@@ -26,20 +26,21 @@ namespace {
 
   template <typename T> int sgn(T val) { return (T(0) < val) - (val < T(0)); }
 
-  int code2Bit (int code) { 
+  int code2HistoBin (int code) { 
     int sign = sgn(code);
     switch (abs(code)) {
-      case  73 : return sign*8;
-      case  78 : return sign*7;
-      case  85 : return sign*6;
-      case  90 : return sign*5;
-      case  94 : return sign*4;
-      case  99 : return sign*3;
-      case 103 : return sign*2;
-      case 110 : return sign*1;
-      case 115 : return sign*0;
-      case  95 : return sign*10;
-      default:  return sign*9;
+      case  73 : return sign*1;
+      case  78 : return sign*2;
+      case  85 : return sign*3;
+      case  90 : return sign*4;
+      case  94 : return sign*5;
+      case  95 : return sign*6;
+      case  99 : return sign*7;
+      case 103 : return sign*8;
+      case 110 : return sign*9;
+      case 115 : return sign*10;
+      case 121 : return sign*11;
+      default:  return sign*0;
     }
   } 
 
@@ -81,7 +82,53 @@ void AnaDataEmul::init(TObjArray& histos)
   hDataEmulPt = new TH2D("hDataEmulPt","hDataEmulPt",32, ptBins, 32, ptBins); histos.Add(hDataEmulPt);
   hDataEmulPhi = new TH2D("hDataEmulPhi","hDataEmulPhi",150,-30.,120.,150.,-30.,120.); histos.Add(hDataEmulPhi);
   //hDataEmulEta = new TH2D("hDataEmulEta","hDataEmulEta",100,50.,150.,100.,50.,150.); histos.Add(hDataEmulEta);
-  hDataEmulEta = new TH2D("hDataEmulEta","hDataEmulEta",11,-0.5,10.5, 11.,-0.5 ,10.5); histos.Add(hDataEmulEta);
+  hDataEmulEta = new TH2D("hDataEmulEta","hDataEmulEta",23,-11.5,11.5, 23.,-11.5 ,11.5); histos.Add(hDataEmulEta);
+  hDataEmulEta->GetXaxis()->SetBinLabel( 11," -73 (uflv)");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 10," -78");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 9," -85");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 8," -90");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 7," -94");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 6," -95 (mid)");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 5," -98");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 4,"-103");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 3,"-110");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 2,"-115 (covfl)");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 1,"-121 (fovfl)");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 12,"          ");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 13," 73 (uflv)");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 14," 78");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 15," 85");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 16," 90");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 17," 94");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 18," 95 (mid)");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 19," 98");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 20,"103");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 21,"110");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 22,"115 (covfl)");
+  hDataEmulEta->GetXaxis()->SetBinLabel( 23,"121 (fovfl)");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 11," -73 (uflv)");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 10," -78");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 9," -85");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 8," -90");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 7," -94");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 6," -95 (mid)");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 5," -98");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 4,"-103");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 3,"-110");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 2,"-115 (covfl)");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 1,"-121 (fovfl)");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 12,"          ");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 13," 73 (uflv)");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 14," 78");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 15," 85");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 16," 90");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 17," 94");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 18," 95 (mid)");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 19," 98");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 20,"103");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 21,"110");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 22,"115 (covfl)");
+  hDataEmulEta->GetYaxis()->SetBinLabel( 23,"121 (fovfl)");
 }
 
 void AnaDataEmul::run(L1ObjColl * coll)
@@ -124,8 +171,7 @@ void AnaDataEmul::run(L1ObjColl * coll)
  if (unique) {
    hDataEmulPt->Fill( code2pt(data->pt), code2pt(emul->pt) );
    hDataEmulPhi->Fill(data->phi, emul->phi);
-   hDataEmulEta->Fill(code2Bit(abs(data->eta)), code2Bit(abs(emul->eta)));
-   std::cout <<"emul->eta: " << emul->eta<<" "<< code2Bit(abs(emul->eta)) << std::endl;
+   hDataEmulEta->Fill(code2HistoBin(data->eta), code2HistoBin(emul->eta));
  }
     
 }
