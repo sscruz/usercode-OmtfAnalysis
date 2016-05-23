@@ -146,11 +146,13 @@ void AnaDataEmul::run(L1ObjColl * coll)
   bool unique = data && emul && (dataColl.getL1Objs().size() == emulColl.getL1Objs().size());
 
   unsigned int hits = 0;
-  if (data || emul) {
-    unsigned int hitsEmul = emul ? emul->hits >>1 : 0;
-    unsigned int hitsData = data ? data->hits >>2 : 0;
-    hits = (hitsEmul | hitsData) << 1; 
-  }
+  if (emul) hits |= emul->hits;
+  if (data) hits |= data->hits;
+//  if (data || emul) {
+//    unsigned int hitsEmul = emul ? emul->hits >>1 : 0;
+//    unsigned int hitsData = data ? data->hits >>2 : 0;
+//    hits = (hitsEmul | hitsData) << 1; 
+//  }
   
   DIFF diff = compare(data, emul);   
   if (data && emul && (dataColl.getL1Objs().size() != emulColl.getL1Objs().size()) ) diff = sizeDiff;
@@ -167,6 +169,8 @@ void AnaDataEmul::run(L1ObjColl * coll)
   if ( dt && !csc && !rpc) hDataEmulCompareComb-> Fill(diff,5);
   if (!dt &&  csc && !rpc) hDataEmulCompareComb-> Fill(diff,6);
   if (!dt && !csc &&  rpc) hDataEmulCompareComb-> Fill(diff,7);
+
+  if (!dt && !csc && rpc && unique && diff!=agree) std::cout <<" ***** RPC only, !agree  "<< std::endl;
 
  if (unique) {
    hDataEmulPt->Fill( code2pt(data->pt), code2pt(emul->pt) );
