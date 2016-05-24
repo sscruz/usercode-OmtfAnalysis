@@ -14,11 +14,12 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 # (there is 255 file limit though). Can be empty for crab.
 #
 process.source = cms.Source("PoolSource", 
-fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-100_26E36C01-C51C-E611-AFD0-02163E0119D0.root',
-                                  'file:/afs/cern.ch/work/k/konec/data/runs/run273554-200_6021F50A-CA1C-E611-AF9B-02163E013917.root', 
-                                  'file:/afs/cern.ch/work/k/konec/data/runs/run273554-300_DCE92A6A-CD1C-E611-9EF5-02163E01476D.root',
-                                  'file:/afs/cern.ch/work/k/konec/data/runs/run273554-400_14675B6A-D31C-E611-90A2-02163E01399E.root',
-                                  'file:/afs/cern.ch/work/k/konec/data/runs/run273555-100_144A957B-DC1C-E611-8CA1-02163E012B4D.root'),
+#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-100_26E36C01-C51C-E611-AFD0-02163E0119D0.root',
+#                                  'file:/afs/cern.ch/work/k/konec/data/runs/run273554-200_6021F50A-CA1C-E611-AF9B-02163E013917.root', 
+#                                  'file:/afs/cern.ch/work/k/konec/data/runs/run273554-300_DCE92A6A-CD1C-E611-9EF5-02163E01476D.root',
+#                                  'file:/afs/cern.ch/work/k/konec/data/runs/run273554-400_14675B6A-D31C-E611-90A2-02163E01399E.root',
+#                                  'file:/afs/cern.ch/work/k/konec/data/runs/run273555-100_144A957B-DC1C-E611-8CA1-02163E012B4D.root'),
+fileNames =  cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273730_D8D6B6CF-361F-E611-8142-02163E014272.root'),
 #fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-100_26E36C01-C51C-E611-AFD0-02163E0119D0.root'),
 #fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-200_6021F50A-CA1C-E611-AF9B-02163E013917.root'),
 #fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-300_DCE92A6A-CD1C-E611-9EF5-02163E01476D.root'),
@@ -28,6 +29,7 @@ fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run2
 #fileNames = cms.untracked.vstring('root://eoscms.cern.ch//eos/cms/store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/775/00000/3457F4E7-FB13-E611-9241-02163E013771.root'),
 #  skipEvents = cms.untracked.uint32(14143)
 #  skipEvents = cms.untracked.uint32(353)
+#  skipEvents = cms.untracked.uint32(1151)
 )
 
 #
@@ -105,8 +107,10 @@ process.omtfParams = cms.ESProducer( "L1TMuonOverlapParamsESProducer",
 
 ###OMTF emulator configuration
 process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
-  srcDTPh =  cms.InputTag('bmtfDigis:PhiDigis'),
-  srcDTTh =  cms.InputTag('bmtfDigis:TheDigis'),
+  srcDTPh =  cms.InputTag('bmtfDigis'),
+  srcDTTh =  cms.InputTag('bmtfDigis'),
+#  srcDTPh =  cms.InputTag('bmtfDigis:PhiDigis'),
+#  srcDTTh =  cms.InputTag('bmtfDigis:TheDigis'),
 #  srcDTPh = cms.InputTag('simDtTriggerPrimitiveDigis'),
 #  srcDTTh = cms.InputTag('simDtTriggerPrimitiveDigis'),
   srcCSC = cms.InputTag('csctfDigis'),

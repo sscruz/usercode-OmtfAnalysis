@@ -119,6 +119,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   theTree->Fill();
   delete event; event = 0;
   delete l1ObjColl; l1ObjColl = 0;
+  std::cout <<"-----"<< std::endl;
 }
 bool OmtfTreeMaker::getOmtfCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, std::vector<L1Obj> &result)
 {
