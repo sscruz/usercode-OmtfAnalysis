@@ -12,12 +12,17 @@ public:
   void init(TObjArray& histos);
   void run(L1ObjColl* coll);
 private:
-  enum DIFF { agree=1, almostAgree=2, ratherAgree = 3, 
-              notAgree=4, dataOnly=5, emulOnly=6, sizeDiff=7, unknown };
+
+  enum DIFF { agree=1, almostAgree=2, ratherAgree = 3, notAgree=4, dataOnly=5, emulOnly=6, sizeDiff=7, unknown };
   DIFF compare( const L1Obj * data, const L1Obj * emul);
-  bool hasDtHits(unsigned int hitPattern);
-  bool hasCscHits(unsigned int hitPattern);
-  bool hasRpcHits(unsigned int hitPattern);
+  const L1Obj * bestMatch( const L1Obj * data, const L1ObjColl & emuColl);
+
+  unsigned int hasDtHits(unsigned int hitPattern);
+  unsigned int hasCscHits(unsigned int hitPattern);
+  unsigned int hasRpcHits(unsigned int hitPattern);
+  unsigned int hasRpcHitsB(unsigned int hitPattern);
+  unsigned int hasRpcHitsE(unsigned int hitPattern);
+
 };
 
 

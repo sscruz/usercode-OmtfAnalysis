@@ -12,13 +12,13 @@ class L1Obj : public TObject {
   int pt, eta, phi;
   int disc;
   int   bx, q, hits, charge, refLayer;
-  int   iProcessor, mtfType;
   TYPE  type;
+  int   iProcessor, position;
 
   L1Obj();
   bool isValid() const { return q >= 0;}
 
-  ClassDef(L1Obj,3)
+  ClassDef(L1Obj,4)
 };
 
 

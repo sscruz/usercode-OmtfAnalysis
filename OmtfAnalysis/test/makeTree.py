@@ -14,22 +14,11 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 # (there is 255 file limit though). Can be empty for crab.
 #
 process.source = cms.Source("PoolSource", 
-#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-100_26E36C01-C51C-E611-AFD0-02163E0119D0.root',
-#                                  'file:/afs/cern.ch/work/k/konec/data/runs/run273554-200_6021F50A-CA1C-E611-AF9B-02163E013917.root', 
-#                                  'file:/afs/cern.ch/work/k/konec/data/runs/run273554-300_DCE92A6A-CD1C-E611-9EF5-02163E01476D.root',
-#                                  'file:/afs/cern.ch/work/k/konec/data/runs/run273554-400_14675B6A-D31C-E611-90A2-02163E01399E.root',
-#                                  'file:/afs/cern.ch/work/k/konec/data/runs/run273555-100_144A957B-DC1C-E611-8CA1-02163E012B4D.root'),
-fileNames =  cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273730_D8D6B6CF-361F-E611-8142-02163E014272.root'),
-#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-100_26E36C01-C51C-E611-AFD0-02163E0119D0.root'),
-#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-200_6021F50A-CA1C-E611-AF9B-02163E013917.root'),
-#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-300_DCE92A6A-CD1C-E611-9EF5-02163E01476D.root'),
-#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273554-400_14675B6A-D31C-E611-90A2-02163E01399E.root'),
-#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run273555-100_144A957B-DC1C-E611-8CA1-02163E012B4D.root'),
-#fileNames = cms.untracked.vstring('root://xrootd.unl.edu//store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/798/00000/88D5937D-AD14-E611-824E-02163E014591.root')
-#fileNames = cms.untracked.vstring('root://eoscms.cern.ch//eos/cms/store/express/Run2016B/ExpressPhysics/FEVT/Express-v1/000/272/775/00000/3457F4E7-FB13-E611-9241-02163E013771.root'),
-#  skipEvents = cms.untracked.uint32(14143)
-#  skipEvents = cms.untracked.uint32(353)
-#  skipEvents = cms.untracked.uint32(1151)
+#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run274002-Cosmic_12D87234-1823-E611-9A10-02163E014572.root'),
+fileNames = cms.untracked.vstring( 'file:/afs/cern.ch/work/k/konec/data/runs/run274094_32779D03-C323-E611-BE75-02163E011821.root',
+                                   '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/274/094/00000/0070F70B-BD23-E611-A5C3-02163E011A28.root',
+                                   '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/274/094/00000/06E08AB1-C723-E611-AD43-02163E011C18.root'),
+#skipEvents =  cms.untracked.uint32(171)
 )
 
 #
@@ -40,9 +29,11 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.Geometry.GeometryExtended2016Reco_cff')
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
-process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+
+process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
+process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
 
 #
 # set proper GlobalTag
@@ -74,22 +65,22 @@ process.options = cms.untracked.PSet( wantSummary=cms.untracked.bool(False))
 #
 # fixes to R2D and emulation
 #
-process.RawToDigi.remove(process.siPixelDigis)
-process.RawToDigi.remove(process.siStripDigis)
-process.RawToDigi.remove(process.ecalDigis)
-process.RawToDigi.remove(process.ecalPreshowerDigis)
-process.RawToDigi.remove(process.hcalDigis)
-process.RawToDigi.remove(process.castorDigis)
-process.RawToDigi.remove(process.tcdsDigis)
-process.RawToDigi.remove(process.caloStage1Digis)
-process.RawToDigi.remove(process.caloStage1FinalDigis)
-process.RawToDigi.remove(process.caloStage1LegacyFormatDigis)
-process.RawToDigi.remove(process.caloStage2Digis)
-process.RawToDigi.remove(process.gtStage2Digis)
-process.RawToDigi.remove(process.gtDigis)
-process.RawToDigi.remove(process.muonDTDigis)
-process.RawToDigi.remove(process.scalersRawToDigi)
-process.RawToDigi.remove(process.gctDigis)
+#process.RawToDigi.remove(process.siPixelDigis)
+#process.RawToDigi.remove(process.siStripDigis)
+#process.RawToDigi.remove(process.ecalDigis)
+#process.RawToDigi.remove(process.ecalPreshowerDigis)
+#process.RawToDigi.remove(process.hcalDigis)
+#process.RawToDigi.remove(process.castorDigis)
+#process.RawToDigi.remove(process.tcdsDigis)
+#process.RawToDigi.remove(process.caloStage1Digis)
+#process.RawToDigi.remove(process.caloStage1FinalDigis)
+#process.RawToDigi.remove(process.caloStage1LegacyFormatDigis)
+#process.RawToDigi.remove(process.caloStage2Digis)
+#process.RawToDigi.remove(process.gtStage2Digis)
+#process.RawToDigi.remove(process.gtDigis)
+#process.RawToDigi.remove(process.muonDTDigis)
+#process.RawToDigi.remove(process.scalersRawToDigi)
+#process.RawToDigi.remove(process.gctDigis)
 
 
 #OMTF ESProducer. Fills CondFormats from XML files.
@@ -100,13 +91,14 @@ process.omtfParamsSource = cms.ESSource( "EmptyESSource",
 )
 
 process.omtfParams = cms.ESProducer( "L1TMuonOverlapParamsESProducer",
-#    configFromXML = cms.bool(False),
-     patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x00020007.xml")),),
-     configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x00020005.xml"),
+     patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x0003.xml")),),
+     configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x0003.xml"),
 )
 
 ###OMTF emulator configuration
 process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
+#  srcDTPh =  cms.InputTag('simTwinMuxDigis'),
+#  srcDTTh =  cms.InputTag('simTwinMuxDigis'),
   srcDTPh =  cms.InputTag('bmtfDigis'),
   srcDTTh =  cms.InputTag('bmtfDigis'),
 #  srcDTPh =  cms.InputTag('bmtfDigis:PhiDigis'),
@@ -114,6 +106,7 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
 #  srcDTPh = cms.InputTag('simDtTriggerPrimitiveDigis'),
 #  srcDTTh = cms.InputTag('simDtTriggerPrimitiveDigis'),
   srcCSC = cms.InputTag('csctfDigis'),
+#  srcCSC = cms.InputTag('emtfStage2Digis'),
 #  srcCSC = cms.InputTag('muonCSCDigis','MuonCSCCorrelatedLCTDigi'),
 #  srcCSC = cms.InputTag('simCscTriggerPrimitiveDigis','MPCSORTED'),
   srcRPC = cms.InputTag('muonRPCDigis'),
@@ -127,15 +120,10 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
   dropRPCPrimitives = cms.bool(False),
   dropDTPrimitives = cms.bool(False),
   dropCSCPrimitives = cms.bool(False),
-#  omtf = cms.PSet(
-#    configFromXML = cms.bool(False),
-#    patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x00020007.xml")),),
-#    configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x00020005.xml"),
-#  )
 )
 
-
-process.raw2digi_step = cms.Path(process.RawToDigi)
+process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.gmtStage2Digis)
+#process.raw2digi_step = cms.Path(process.RawToDigi+process.emtfStage2Digis)
 process.omtf_step = cms.Path(process.omtfEmulator)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, process.endjob_step)
@@ -149,6 +137,7 @@ process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, proces
 #process.L1TReEmul.remove(process.simCaloStage2Layer1Digis)
 #process.L1TReEmul.remove(process.simGmtCaloSumDigis)
 #process.L1TReEmul.remove(process.simGmtStage2Digis)
+#process.L1TReEmul.remove(process.simEcalTriggerPrimitiveDigis)
 
 #process.simOmtfDigis.srcDTPh = cms.InputTag('BMTFStage2Digis')
 #process.simOmtfDigis.srcDTTh = cms.InputTag('BMTFStage2Digis')

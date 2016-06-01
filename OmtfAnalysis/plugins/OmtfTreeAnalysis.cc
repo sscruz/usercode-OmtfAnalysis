@@ -98,12 +98,12 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
     // EVENT NUMBER, BX structure etc.
     if ( theAnaEvent && !theAnaEvent->filter(event) && theConfig.getParameter<bool>("filterByAnaEvent") ) continue;
 
-    if (theAnaDataEmul) theAnaDataEmul->run(l1ObjColl); 
-
     if (*l1ObjColl) {
       std::cout << *event << std::endl;
       std::cout << *l1ObjColl << std::endl; 
     }
+    if (theAnaDataEmul) theAnaDataEmul->run(l1ObjColl); 
+
      
   }
 }

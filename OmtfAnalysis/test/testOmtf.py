@@ -9,7 +9,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1)
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(False))
 
 process.source = cms.Source( 'PoolSource',
-  skipEvents = cms.untracked.uint32(55),
+#  skipEvents = cms.untracked.uint32(900),
   fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/omtf/JPsi_21kEvents.root')
 )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000))
@@ -30,9 +30,8 @@ process.omtfParamsSource = cms.ESSource( "EmptyESSource",
 )
 
 process.omtfParams = cms.ESProducer( "L1TMuonOverlapParamsESProducer",
-    configFromXML = cms.bool(False),
-    patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x00020007.xml")),),
-    configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x00020005.xml"),
+    patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x0003.xml")),),
+    configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x0003.xml"),
 )
 
 ###OMTF emulator configuration
@@ -50,11 +49,6 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
   dropRPCPrimitives = cms.bool(False),
   dropDTPrimitives = cms.bool(False),
   dropCSCPrimitives = cms.bool(False),
-  omtf = cms.PSet(
-    configFromXML = cms.bool(False),
-    patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x00020007.xml")),),
-    configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x00020005.xml"),
-  )
 )
 
 

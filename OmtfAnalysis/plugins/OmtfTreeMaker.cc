@@ -14,6 +14,7 @@
 #include "DataFormats/L1TMuon/interface/RegionalMuonCand.h"
 #include "DataFormats/L1TMuon/interface/RegionalMuonCandFwd.h"
 #include "UserCode/OmtfAnalysis/interface/OmtfGmtData.h"
+#include "L1Trigger/L1TMuonOverlap/interface/OmtfName.h"
 
 
 template <class T> T sqr( T t) {return t*t;}
@@ -95,7 +96,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   
   if (omtfResult.size()) {
     std::cout <<"#"<<theCounter<<" "<< *event << std::endl;
-    for (auto obj : omtfResult) std::cout << obj << std::endl; 
+    for (auto obj : omtfResult) std::cout <<OmtfName(obj.iProcessor,obj.position)<<" "<< obj << std::endl; 
   }
 /*
   for (auto obj : omtfResult) {
@@ -119,7 +120,6 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   theTree->Fill();
   delete event; event = 0;
   delete l1ObjColl; l1ObjColl = 0;
-  std::cout <<"-----"<< std::endl;
 }
 bool OmtfTreeMaker::getOmtfCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, std::vector<L1Obj> &result)
 {
@@ -157,8 +157,9 @@ bool OmtfTreeMaker::getOmtfCandidates(const edm::Event &iEvent,  L1Obj::TYPE typ
     obj.disc   = hwAddrMap[2];
     //obj.bx  = it->hwSignValid();
     obj.bx = 0;
-    obj.type =  type;  //(int)it->trackFinderType();
+    obj.type =  type;  
     obj.iProcessor = it->processor();
+    obj.position = (it->trackFinderType() == l1t::omtf_neg) ? -1 : ( (it->trackFinderType() == l1t::omtf_pos) ? +1 : 0 ); 
     result.push_back(obj);
   }
   return true;

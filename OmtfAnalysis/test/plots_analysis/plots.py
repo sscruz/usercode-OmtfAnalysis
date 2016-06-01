@@ -14,6 +14,13 @@ def cEvent(canvas):
   hEvent_BX.DrawCopy()
   return
 
+def cDataEmulNotAgree(canvas):
+  c = TCanvas("cDataEmulNotAgree","cDataEmulNotAgree",800,800)
+  canvas.Add(c)
+  h= gROOT.FindObject("hDataEmulNotAgree")
+  h.DrawCopy('box' )
+  return
+
 def cDataEmulCompare(canvas):
   c = TCanvas('cDataEmulCompare','cDataEmulCompare',1200,600)
   canvas.Add(c)
@@ -69,7 +76,7 @@ def cDataEmulEta(canvas):
   h.GetYaxis().SetTitleOffset(2.3)
   h.SetXTitle("data eta [GMT code]")
   h.SetYTitle("emul eta [GMT code]")
-  h.DrawCopy('box')
+  h.DrawCopy('text')
   return
 
 
@@ -85,6 +92,7 @@ canvas = TObjArray()
 cDataEmulCompare(canvas)
 cDataEmulPtPhi(canvas)
 cDataEmulEta(canvas)
+cDataEmulNotAgree(canvas)
 
 raw_input('press enter to exit')
 

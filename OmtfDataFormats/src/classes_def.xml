@@ -8,7 +8,8 @@
    <class name="EventData" ClassVersion="1">
     <version ClassVersion="1" checksum="1317365679"/>
    </class>
-   <class name="L1Obj" ClassVersion="3">
+   <class name="L1Obj" ClassVersion="4">
+    <version ClassVersion="4" checksum="1845249499"/>
     <version ClassVersion="3" checksum="3211239651"/>
     <version ClassVersion="2" checksum="3302072089"/>
     <version ClassVersion="1" checksum="2131458997"/>
