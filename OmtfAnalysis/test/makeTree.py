@@ -15,10 +15,13 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 #
 process.source = cms.Source("PoolSource", 
 #fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run274002-Cosmic_12D87234-1823-E611-9A10-02163E014572.root'),
-fileNames = cms.untracked.vstring( 'file:/afs/cern.ch/work/k/konec/data/runs/run274094_32779D03-C323-E611-BE75-02163E011821.root',
+fileNames = cms.untracked.vstring( 
+                                   'file:/afs/cern.ch/work/k/konec/data/runs/run274094_32779D03-C323-E611-BE75-02163E011821.root',
                                    '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/274/094/00000/0070F70B-BD23-E611-A5C3-02163E011A28.root',
-                                   '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/274/094/00000/06E08AB1-C723-E611-AD43-02163E011C18.root'),
-#skipEvents =  cms.untracked.uint32(171)
+                                   '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/274/094/00000/06E08AB1-C723-E611-AD43-02163E011C18.root',
+                                   'file:/afs/cern.ch/work/k/konec/data/runs/run274157-384_12A67A1E-E324-E611-831F-02163E012658.root',
+                                  ),
+#skipEvents =  cms.untracked.uint32(220)
 )
 
 #
@@ -49,8 +52,11 @@ process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
 #process.GlobalTag.globaltag  = '74X_dataRun2_Express_v0'
 #process.GlobalTag.globaltag  = 'auto:run2_data'
 #process.GlobalTag.globaltag  = '80X_dataRun2_Prompt_v8'
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
+#from Configuration.AlCa.GlobalTag import GlobalTag
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
+from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+
 
 
 #

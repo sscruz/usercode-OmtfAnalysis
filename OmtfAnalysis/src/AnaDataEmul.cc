@@ -15,6 +15,7 @@
 
 namespace {
   TH1D *hDataEmulCompare; 
+  TH1D *hDataEmulIssue;
   TH2D *hDataEmulCompareComb;
   TH2D *hDataEmulPt, *hDataEmulPhi, *hDataEmulEta;
   TH2D *hDataEmulNotAgree;
@@ -95,6 +96,15 @@ void AnaDataEmul::init(TObjArray& histos)
   hDataEmulPt = new TH2D("hDataEmulPt","hDataEmulPt",32, ptBins, 32, ptBins); histos.Add(hDataEmulPt);
   hDataEmulPhi = new TH2D("hDataEmulPhi","hDataEmulPhi",150,-30.,120.,150.,-30.,120.); histos.Add(hDataEmulPhi);
 
+  hDataEmulIssue = new TH1D("hDataEmulIssue","hDataEmulIssue",7,  0.5, 7.5); histos.Add(hDataEmulIssue);
+  hDataEmulIssue->GetXaxis()->SetBinLabel(1," ");
+  hDataEmulIssue->GetXaxis()->SetBinLabel(2,"hits");
+  hDataEmulIssue->GetXaxis()->SetBinLabel(3,"p_{T}");
+  hDataEmulIssue->GetXaxis()->SetBinLabel(4,"phi (> #pm 1)");
+  hDataEmulIssue->GetXaxis()->SetBinLabel(5,"eta");
+  hDataEmulIssue->GetXaxis()->SetBinLabel(6,"charge");
+  hDataEmulIssue->GetXaxis()->SetBinLabel(7,"quality");
+
 //  double etaBins[nEtaBins+1]; 
 //  for (unsigned int idx=0; idx<nEtaBins; idx++) etaBins[idx]=etaBinVal[idx]-0.1; 
 //  etaBins[0]=etaBinVal[0]-1.; etaBins[nEtaBins]=etaBinVal[nEtaBins-1]+1.;
@@ -143,18 +153,18 @@ void AnaDataEmul::run(L1ObjColl * coll)
   const L1Obj * emul = 0;
   L1ObjColl emulColl =  coll->selectByType(L1Obj::OMTF_emu);
   emul = bestMatch(data, emulColl);
-  if (emul && emul->q==0) return;
+  if (emul && ((emul->q & 3) !=0) ) return;
 
   bool unique = data && emul && (dataColl.getL1Objs().size() == 1) && (emulColl.getL1Objs().size() == 1);
 
-  bool lowQuality = false;
-  if (data && data->q == 4 ) lowQuality = true; 
-  if (emul && emul->q == 4 ) lowQuality = true; 
+//  bool lowQuality = false;
+//  if (data && (data->q == 4) ) lowQuality = true; 
+//  if (emul && (emul->q == 4) ) lowQuality = true; 
 
   DIFF diff = compare(data, emul);   
   if (data && emul && (dataColl.getL1Objs().size() != emulColl.getL1Objs().size()) ) diff = sizeDiff;
 
-  if (!lowQuality) hDataEmulCompare->Fill(diff);
+  hDataEmulCompare->Fill(diff);
 
   unsigned int hits = 0;
   if (emul) hits |= emul->hits;
@@ -171,15 +181,22 @@ void AnaDataEmul::run(L1ObjColl * coll)
   if ( dt && !csc && !rpc) layerComb = 5;
   if (!dt &&  csc && !rpc) layerComb = 6;
   if (!dt && !csc &&  rpc) layerComb = 7;
-  if(!lowQuality) hDataEmulCompareComb->Fill(diff, layerComb); 
+  hDataEmulCompareComb->Fill(diff, layerComb); 
   if(unique && diff==notAgree) hDataEmulNotAgree->Fill( OmtfName(emul->iProcessor, emul->position), code2HistoBin(abs(emul->eta)) ); 
 
 //  if (!dt && !csc && rpc && diff!=agree) std::cout <<" ***** RPC only, not agree  "<< std::endl;
-  if (rpc && diff!=agree ) std::cout << "NOT agree, dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl; 
+//  if (rpc && diff!=agree ) std::cout << "NOT agree, dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl; 
 
  if (unique) {
    hDataEmulPt->Fill( code2pt(data->pt), code2pt(emul->pt) );
    hDataEmulPhi->Fill(data->phi, emul->phi);
+   hDataEmulIssue->Fill(1);
+   if (data->hits != emul->hits)          hDataEmulIssue->Fill(2);
+   if (data->pt != emul->pt)              hDataEmulIssue->Fill(3); 
+   if ( abs(data->phi - emul->phi) > 1)   hDataEmulIssue->Fill(4); 
+   if (data->eta != emul->eta)            hDataEmulIssue->Fill(5);
+   if ( data->charge !=  emul->charge)   hDataEmulIssue->Fill(6);
+   if ( (data->q >>2) != (emul->q >>2) )  hDataEmulIssue->Fill(7);
  }
  if(diff==agree) { hDataEmulEta->Fill(code2HistoBin(abs(data->eta)), code2HistoBin(abs(emul->eta)) ); }
     

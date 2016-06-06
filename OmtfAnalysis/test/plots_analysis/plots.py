@@ -32,6 +32,7 @@ def cDataEmulCompare(canvas):
   h.Scale(1/nEvnts)
   h.SetStats(1)
   gStyle.SetOptStat(10) 
+  h.Print("all") 
   h.DrawCopy()
   pad2 = c.cd(2)
   pad2.SetLeftMargin(0.14)
@@ -39,6 +40,7 @@ def cDataEmulCompare(canvas):
   h.SetStats(0)
   h.DrawCopy('text')
   return
+
 
 def cDataEmulPtPhi(canvas):
   c = TCanvas('cDataEmulPtPhi','cDataEmulPtPhi',800,400)
@@ -67,18 +69,37 @@ def cDataEmulPtPhi(canvas):
   return
 
 def cDataEmulEta(canvas):
-  c = TCanvas('cDataEmulEta','cDataEmulEta',800,800)
+  c = TCanvas('cDataEmulEta','cDataEmulEta',850,800)
   canvas.Add(c)
   h = gROOT.FindObject('hDataEmulEta')
   h.SetStats(0)
-  c.SetLeftMargin(0.15)
-  h.GetXaxis().SetTitleOffset(1.4)
-  h.GetYaxis().SetTitleOffset(2.3)
+  c.SetTopMargin(0.07)
+  c.SetLeftMargin(0.17)
+  h.GetXaxis().SetTitleOffset(1.5)
+  h.GetYaxis().SetTitleOffset(2.5)
   h.SetXTitle("data eta [GMT code]")
   h.SetYTitle("emul eta [GMT code]")
-  h.DrawCopy('text')
+  h.DrawCopy('box')
   return
 
+def cDataEmulIssue(canvas):
+  c = TCanvas('cDataEmulIssue','cDataEmulIssue',600,600)
+  canvas.Add(c)
+  c.SetRightMargin(0.01)
+  c.SetLogy()
+  c.SetGridy()
+  c.SetTicky()
+  h = gROOT.FindObject('hDataEmulIssue')
+  nEvnts = h.GetBinContent(1)
+  h.Scale(1/nEvnts)
+  h.SetMaximum(1.5)
+  h.SetMinimum(1.5e-4)
+  h.SetStats(0)
+  h.GetXaxis().SetRange(2,7)
+  h.SetYTitle("event fraction");
+  h.Print("all") 
+  h.DrawCopy()
+  return
 
 
 
@@ -93,6 +114,7 @@ cDataEmulCompare(canvas)
 cDataEmulPtPhi(canvas)
 cDataEmulEta(canvas)
 cDataEmulNotAgree(canvas)
+cDataEmulIssue(canvas)
 
 raw_input('press enter to exit')
 
