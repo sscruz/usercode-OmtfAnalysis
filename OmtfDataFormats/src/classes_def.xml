@@ -1,6 +1,10 @@
 <lcgdict>
  <selection>
 
+   <class name="EventData" ClassVersion="1">
+    <version ClassVersion="1" checksum="1317365679"/>
+   </class>
+
    <class name="EventObj" ClassVersion="1">
     <version ClassVersion="1" checksum="1906556595"/>
    </class>

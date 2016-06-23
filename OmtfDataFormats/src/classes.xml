@@ -1,6 +1,7 @@
 <lcgdict>
  <selection>
 
+   <class name="EventData" ClassVersion="1"/>
    <class name="EventObj" ClassVersion="1"/>
    <class name="TrackObj" ClassVersion="1"/>
    <class name="MuonObj" ClassVersion="2"/>

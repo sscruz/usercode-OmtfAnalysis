@@ -1,4 +1,5 @@
 #include "DataFormats/Common/interface/Wrapper.h"
+#include "UserCode/OmtfDataFormats/interface/EventData.h"
 #include "UserCode/OmtfDataFormats/interface/EventObj.h"
 #include "UserCode/OmtfDataFormats/interface/TrackObj.h"
 #include "UserCode/OmtfDataFormats/interface/MuonObj.h"
@@ -8,6 +9,7 @@
 
 namespace {
   struct dictionary {
+    EventData aEvData;
     EventObj aEvt;
     TrackObj aTrack; 
     MuonObj  aMuon;
