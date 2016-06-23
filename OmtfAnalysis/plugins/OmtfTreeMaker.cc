@@ -16,12 +16,18 @@
 #include "UserCode/OmtfAnalysis/interface/OmtfGmtData.h"
 #include "L1Trigger/L1TMuonOverlap/interface/OmtfName.h"
 
+#include "DataFormats/MuonReco/interface/MuonSelectors.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "SimDataFormats/Track/interface/SimTrack.h"
+#include "DataFormats/Math/interface/deltaR.h"
 
 template <class T> T sqr( T t) {return t*t;}
 
 OmtfTreeMaker::OmtfTreeMaker(const edm::ParameterSet& cfg)
   : theConfig(cfg), theCounter(0), theFile(0), theTree(0), 
-    event(0), l1ObjColl(0), 
+    event(0), muon(0), l1ObjColl(0), 
+    theBestMuonFinder(cfg.getParameter<edm::ParameterSet>("bestMuonFinder")),
     theL1ObjMaker(cfg) 
 {  
   theOmtfEmulSrc = cfg.getParameter<edm::InputTag>("omtfEmulSrc");
@@ -29,6 +35,10 @@ OmtfTreeMaker::OmtfTreeMaker(const edm::ParameterSet& cfg)
 
   theOmtfEmulToken= consumes<l1t::RegionalMuonCandBxCollection>(theOmtfEmulSrc);
   theOmtfDataToken= consumes<l1t::RegionalMuonCandBxCollection>(theOmtfDataSrc);
+
+  theBestMuon_Tag = consumes<reco::MuonCollection> (theConfig
+                             .getParameter<edm::ParameterSet>("bestMuonFinder")
+                             .getParameter<std::string>("muonColl") );
 
 }
   
@@ -44,8 +54,11 @@ void OmtfTreeMaker::beginJob()
   theTree = new TTree("tOmtf","OmtfTree");
 
   theTree->Branch("event","EventObj",&event,32000,99);
+  theTree->Branch("muon","MuonObj",&muon,32000,99);
   theTree->Branch("l1ObjColl","L1ObjColl",&l1ObjColl,32000,99);
+
   theHelper.SetOwner();
+  theBestMuonFinder.initHistos(theHelper);
 }
 
 void OmtfTreeMaker::endJob()
@@ -67,6 +80,11 @@ OmtfTreeMaker::~OmtfTreeMaker()
 void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
 {
 
+  //
+  // initial filter. Do no use events without muon
+  //
+  const reco::Muon * theMuon = theBestMuonFinder.result(ev,es);
+  if (theConfig.getParameter<bool>("onlyBestMuEvents") && (!theMuon) ) return;
   theCounter++;
 
   //
@@ -79,8 +97,30 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   event->id = ev.id().event();
   event->run = ev.run();
   event->lumi = ev.luminosityBlock();
-//  std::cout <<"-----------------------"<< *event << std::endl;
+
+  //
+  // create other objects structure
+  //
+
+  muon = new MuonObj();
   l1ObjColl = new L1ObjColl;
+
+  //
+  // fill muon info
+  //
+  muon->isUnique = theBestMuonFinder.isUnique(ev,es);
+  muon->nAllMuons = theBestMuonFinder.numberOfAllMuons(ev,es);
+  muon->nRPCHits = theBestMuonFinder.numberOfValidMuonRPCHits();
+  muon->nDTHits  = theBestMuonFinder.numberOfValidMuonDTHits();
+  muon->nCSCHits = theBestMuonFinder.numberOfValidMuonCSCHits();
+  muon->nTrackerHits = theBestMuonFinder.numberOfValidTrackerHits();
+  if (theMuon) {
+    muon->setKine(theMuon->bestTrack()->pt(), theMuon->bestTrack()->eta(), theMuon->bestTrack()->phi(), theMuon->bestTrack()->charge());
+    muon->setBits(theMuon->isGlobalMuon(), theMuon->isTrackerMuon(), theMuon->isStandAloneMuon(), theMuon->isCaloMuon(), theMuon->isMatchesValid());
+    muon->nMatchedStations = theMuon->numberOfMatchedStations();
+    std::cout <<"MUON "<<*muon << std::endl;
+  }
+
 
   // get OMTF candidates
   std::vector<L1Obj> omtfResult;
@@ -98,20 +138,6 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
     std::cout <<"#"<<theCounter<<" "<< *event << std::endl;
     for (auto obj : omtfResult) std::cout <<OmtfName(obj.iProcessor,obj.position)<<" "<< obj << std::endl; 
   }
-/*
-  for (auto obj : omtfResult) {
-    OmtfGmtData::CandMuon c;
-    c.pt = obj.pt;
-    c.quality = obj.q;
-    c.eta = obj.eta;
-    c.halo = 0;
-    c.phi = obj.phi;
-    c.charge = obj.charge; 
-    c.valCh = 1;
-    c.track = obj.hits;
-    std::cout << obj <<" "<< c << std::endl;
-  }
-*/
 
   //
   // fill ntuple + cleanup
@@ -119,8 +145,12 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   //if (omtfResult,size()) 
   theTree->Fill();
   delete event; event = 0;
+  delete muon;  muon = 0;
   delete l1ObjColl; l1ObjColl = 0;
 }
+
+
+// FIXME GET RID OF THIS FROM HERE!
 bool OmtfTreeMaker::getOmtfCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, std::vector<L1Obj> &result)
 {
   int bxNumber = 0;

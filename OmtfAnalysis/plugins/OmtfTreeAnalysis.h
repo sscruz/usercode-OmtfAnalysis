@@ -7,6 +7,8 @@
 #include "TObjArray.h"
 
 class AnaEvent;
+class AnaEff;
+class AnaMuonDistribution;
 class AnaDataEmul;
 
 namespace edm { class Event; class EventSetup; }
@@ -25,7 +27,10 @@ private:
   edm::ParameterSet theConfig;
 
   AnaEvent            *theAnaEvent;
+  AnaMuonDistribution *theAnaMuonDistribution;
   AnaDataEmul         *theAnaDataEmul;
+  AnaEff              *theAnaEff;
+
 
 }; 
 

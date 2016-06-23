@@ -21,7 +21,9 @@ std::ostream & operator<< (std::ostream &out, const L1Obj &o)
     case L1Obj::NONE   :  { out <<"NONE    "; break; }
     default: out <<"Unknown";
   };
-  out << "  pt: "<<o.pt<<", eta: "<<o.eta<<", phi: "<<o.phi<<", q: "<<o.q<<", bx: "<<o.bx
+  out << "  pt: ";
+  if (o.charge==1) out <<"-"; else if (o.charge==0) out <<"+";
+  out <<o.pt<<", eta: "<<o.eta<<", phi: "<<o.phi<<", q: "<<o.q<<", bx: "<<o.bx
       <<" track: "<< std::bitset<29>(o.hits);
   return out;
 }

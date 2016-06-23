@@ -261,7 +261,8 @@ void OmtfAngleAnalyzer::rpc2omtf(const edm::EventSetup& es)
 
 
   unsigned int processor =  6;
-  int overlap = -1;  
+  int overlap = 1;  
+
   double phi15deg =  M_PI/3.*(processor-1)+M_PI/12.; 
   if (processor==6) phi15deg -= 2*M_PI;
   std::vector<const RPCRoll*> sector1Rolls;
@@ -332,13 +333,14 @@ void OmtfAngleAnalyzer::rpc2omtf(const edm::EventSetup& es)
     RawDataFrames rawDataFrames = cabling->rawDataFrame(duFrame);
     LinkBoardElectronicIndex eleIndex = rawDataFrames.front().first;
     const LinkBoardSpec *linkBoard = cabling->location(eleIndex);
-    for (unsigned int lbChannel = 0; lbChannel <= 95; lbChannel++) {
 
+    for (unsigned int lbChannel = 0; lbChannel <= 95; lbChannel++) {
       RPCReadOutMapping::StripInDetUnit duFrame = cabling->detUnitFrame(*linkBoard, LinkBoardPackedStrip(lbChannel) );
       uint32_t rawDetId = duFrame.first;
       int strip = duFrame.second;
+
       if (rawDetId && strip) {
-        const RPCRoll* roll = rpcGeometry->roll(rawDetId);
+        const RPCRoll * roll = rpcGeometry->roll(rawDetId);
         GlobalPoint stripPosition = roll->toGlobal(roll->centreOfStrip(strip));
         double angle = stripPosition.phi(); 
         double eta_value = stripPosition.eta();
@@ -355,30 +357,58 @@ void OmtfAngleAnalyzer::rpc2omtf(const edm::EventSetup& es)
                   <<" phi: "<<std::setw(5) << iPhiHalfChannel 
                   <<" eta: "<<std::setw(4) <<eta_scale
                   << std::endl;
+
         for (unsigned int lbChannelN = lbChannel+1; lbChannelN <= 95; lbChannelN++) {
           RPCReadOutMapping::StripInDetUnit duFrameN = cabling->detUnitFrame(*linkBoard, LinkBoardPackedStrip(lbChannelN) );
           uint32_t rawDetIdN = duFrameN.first;
           int stripN = duFrameN.second;
           if (rawDetIdN && stripN) {
-            const RPCRoll* rollN = rpcGeometry->roll(rawDetIdN);
-            GlobalPoint stripPositionN = rollN->toGlobal(rollN->centreOfStrip(stripN));
-            double angleN = stripPositionN.phi(); 
+
+            double angleN = 0;
+            if (roll->id().region()==0) { 
+              //
+              // barrel
+              //
+              const RPCRoll* rollN = rpcGeometry->roll(rawDetIdN);
+              GlobalPoint stripPositionN = rollN->toGlobal(rollN->centreOfStrip(stripN));
+              angleN = stripPositionN.phi(); 
+            } else {      
+              //
+              // endcap
+              //
+              int order = (stripN > strip) ? 1 : -1;
+              if (lbChannel%16==0 && (strip==16 || strip==32)) order = -1; //in endcap sometimes special/reverse order  
+              if (lbChannel%16==15 && (strip==1 || strip==17)) order = -1; //in endcap sometimes special/reverse order  
+              if (lbChannel%32==31 && strip==32)               order =  1;
+              int stripNext = strip + order;
+              if (stripNext > roll->nstrips()) stripNext = roll->nstrips();
+              if (stripNext < 1) stripNext = 1;
+              angleN =  roll->toGlobal(roll->centreOfStrip(stripNext)).phi();
+            }
+
             switch (processor) { case 1:  case 6: break; default : {if (angleN < 0) angleN += 2*M_PI; break; } }
-            int iPhiHalfChannelN = std::lround( ((angle+angleN)/2.-phi15deg)/hsPhiPitch);
-            for (unsigned int halfChannelN = 2*lbChannel+1; halfChannelN <2*lbChannelN; halfChannelN++) {
+            int iPhiHalfChannelMid = std::lround( ((angle+angleN)/2.-phi15deg)/hsPhiPitch);
+            int iPhiHalfChannelNext = std::lround( (angleN-phi15deg)/hsPhiPitch);
+            unsigned int halfChannelMid = lbChannel+lbChannelN;
+
+            for (unsigned int halfChannelHole = 2*lbChannel+1; halfChannelHole <2*lbChannelN; halfChannelHole++) {
+              int iPhiHC =   (halfChannelHole < halfChannelMid ) ? iPhiHalfChannel 
+                           : (halfChannelHole > halfChannelMid ) ? iPhiHalfChannelNext : iPhiHalfChannelMid ; 
               std::cout << std::setfill(' ') 
                       << lbName 
                       <<" " <<std::setw(10)<< 0
                       <<" strip: "<< std::setw(3) <<     0 
                       << " lbChannel: "<< std::setw(3) <<        0
-                      <<" halfChannel: "<<std::setw(4) << halfChannelN
-                      <<" phi: "<<std::setw(5) << iPhiHalfChannelN 
+                      <<" halfChannel: "<<std::setw(4) << halfChannelHole
+                      <<" phi: "<<std::setw(5) << iPhiHC  
                       <<" eta: "<<std::setw(4) <<eta_scale
                       << std::endl;
             }
             break;
           }
         }
+
+
       }
     }
   }

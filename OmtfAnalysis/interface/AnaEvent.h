@@ -19,6 +19,7 @@ public:
   bool debug;
 private:
   std::vector<unsigned int> theSkipRuns;
+  std::vector<unsigned int> theOnlyRuns;
   std::bitset<3564> theValidBX;
   std::map< std::pair<unsigned int, unsigned int>, uint64_t> theRunEvent;
 };

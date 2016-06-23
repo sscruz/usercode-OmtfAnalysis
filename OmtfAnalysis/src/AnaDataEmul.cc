@@ -18,7 +18,7 @@ namespace {
   TH1D *hDataEmulIssue;
   TH2D *hDataEmulCompareComb;
   TH2D *hDataEmulPt, *hDataEmulPhi, *hDataEmulEta;
-  TH2D *hDataEmulNotAgree;
+  TH2D *hDataEmulNotAgreeEta, *hDataEmulNotAgreePhi;
 
   double ptBins[]={ 0., 0.1, 
                    1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 6., 7., 8., 
@@ -65,13 +65,27 @@ AnaDataEmul::AnaDataEmul(const edm::ParameterSet& cfg)
 {
 }
 
+std::string AnaDataEmul::diffName(const DIFF & diff) const
+{
+  switch (diff) {
+    case (agree) :       return "Agree"; break;
+    case (almostAgree) : return "Almost Agree"; break;
+    case (ratherAgree) : return "Rather Agree"; break;
+    case (disagree) :    return "Disagree"; break;
+    case (dataOnly) :    return "Data Only"; break;
+    case (emulOnly) :    return "Emul Only"; break;
+    case (sizeDiff) :    return "Size Diff"; break;
+    default:             return "unknown";
+  }
+}
+
 void AnaDataEmul::init(TObjArray& histos)
 {
   hDataEmulCompare = new TH1D("hDataEmulCompare","hDataEmulCompare",7, 0.5,7.5); histos.Add(hDataEmulCompare);
   hDataEmulCompare->GetXaxis()->SetBinLabel(1,"Agree");
   hDataEmulCompare->GetXaxis()->SetBinLabel(2,"Almost Agree");
   hDataEmulCompare->GetXaxis()->SetBinLabel(3,"Rather Agree");
-  hDataEmulCompare->GetXaxis()->SetBinLabel(4,"Not Agree");
+  hDataEmulCompare->GetXaxis()->SetBinLabel(4,"Disagree");
   hDataEmulCompare->GetXaxis()->SetBinLabel(5,"Data Only");
   hDataEmulCompare->GetXaxis()->SetBinLabel(6,"Emul Only");
   hDataEmulCompare->GetXaxis()->SetBinLabel(7,"Size Diff");
@@ -125,17 +139,19 @@ void AnaDataEmul::init(TObjArray& histos)
     hDataEmulEta->GetYaxis()->SetBinLabel( ibin, slabel.c_str());
   }
 
-  hDataEmulNotAgree = new TH2D("hDataEmulNotAgree","hDataEmulNotAgree",13,-6.5, 6.5, nEtaBins, 0.5, nEtaBins+0.5); histos.Add(hDataEmulNotAgree);
+  hDataEmulNotAgreeEta = new TH2D("hDataEmulNotAgreeEta","hDataEmulNotAgreeEta",13,-6.5, 6.5, nEtaBins, 0.5, nEtaBins+0.5); histos.Add(hDataEmulNotAgreeEta);
+  hDataEmulNotAgreePhi = new TH2D("hDataEmulNotAgreePhi","hDataEmulNotAgreePhi",13,-6.5, 6.5, 24, -15, 105.); histos.Add(hDataEmulNotAgreePhi);
   for (unsigned int iProc = 0; iProc  <=5; iProc++) {
     for (int endcap = -1; endcap <=1; endcap+=2) {
       OmtfName board(iProc,endcap);  
-      hDataEmulNotAgree->GetXaxis()->SetBinLabel( board+7, board.name().c_str());
+      hDataEmulNotAgreeEta->GetXaxis()->SetBinLabel( board+7, board.name().c_str());
+      hDataEmulNotAgreePhi->GetXaxis()->SetBinLabel( board+7, board.name().c_str());
     }
   }
   for (unsigned int ibin=1; ibin <= nEtaBins; ibin++) {
     int etaCode = etaBinVal[ibin-1];
     std::string slabel = std::to_string( etaCode );
-    hDataEmulNotAgree->GetYaxis()->SetBinLabel( ibin, slabel.c_str());
+    hDataEmulNotAgreeEta->GetYaxis()->SetBinLabel( ibin, slabel.c_str());
   }
   
   
@@ -153,7 +169,10 @@ void AnaDataEmul::run(L1ObjColl * coll)
   const L1Obj * emul = 0;
   L1ObjColl emulColl =  coll->selectByType(L1Obj::OMTF_emu);
   emul = bestMatch(data, emulColl);
-  if (emul && ((emul->q & 3) !=0) ) return;
+  if (emul && ((emul->q & 0b01) !=0) ) return;
+
+//  if (emul && makeName(*emul).name()=="OMTFn4") return;  
+//  if (data && makeName(*data).name()=="OMTFn4") return;  
 
   bool unique = data && emul && (dataColl.getL1Objs().size() == 1) && (emulColl.getL1Objs().size() == 1);
 
@@ -182,10 +201,13 @@ void AnaDataEmul::run(L1ObjColl * coll)
   if (!dt &&  csc && !rpc) layerComb = 6;
   if (!dt && !csc &&  rpc) layerComb = 7;
   hDataEmulCompareComb->Fill(diff, layerComb); 
-  if(unique && diff==notAgree) hDataEmulNotAgree->Fill( OmtfName(emul->iProcessor, emul->position), code2HistoBin(abs(emul->eta)) ); 
+  if(unique && !(diff==agree) ) {
+     hDataEmulNotAgreeEta->Fill( OmtfName(emul->iProcessor, emul->position), code2HistoBin(abs(emul->eta)) ); 
+     hDataEmulNotAgreePhi->Fill( OmtfName(emul->iProcessor, emul->position), emul->phi ); 
+  }
 
 //  if (!dt && !csc && rpc && diff!=agree) std::cout <<" ***** RPC only, not agree  "<< std::endl;
-//  if (rpc && diff!=agree ) std::cout << "NOT agree, dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl; 
+//  if (diff!=agree ) std::cout << "NOT agree("<<diffName(diff)<<"), dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl; 
 
  if (unique) {
    hDataEmulPt->Fill( code2pt(data->pt), code2pt(emul->pt) );
@@ -217,13 +239,14 @@ AnaDataEmul::DIFF AnaDataEmul::compare(const L1Obj * data, const L1Obj * emul)
     if (    (hitsEmul == hitsData) 
             && (data->pt == emul->pt) 
             && (data->phi == emul->phi) 
-            && data->charge == emul->charge) diff = agree; 
+            && data->charge == emul->charge
+           ) diff = agree; 
     else if (    abs(data->pt-emul->pt) <= 2 
-              && abs(data->phi == emul->phi) <= 2 
+              && abs(data->phi - emul->phi) <= 1 
               && data->charge == emul->charge) diff = almostAgree; 
     else if (     static_cast<double>(abs(data->pt - emul->pt))/static_cast<double>(data->pt+emul->pt) <= 0.15   // difference by 15%
-              && abs(data->phi == emul->phi) <= 5) diff = ratherAgree; 
-    else diff = notAgree;
+              && abs(data->phi - emul->phi) <= 5) diff = ratherAgree; 
+    else diff = disagree;
   }
   return diff;
 }
@@ -258,7 +281,7 @@ unsigned int AnaDataEmul::hasRpcHitsE(unsigned int hitPattern) {
 const L1Obj * AnaDataEmul::bestMatch( const L1Obj * data, const L1ObjColl & emuColl)
 {
   const L1Obj * emul = 0;
-  DIFF best = notAgree;
+  DIFF best = disagree;
   if (!data) {
     if (emuColl.getL1Objs().size()!=0) emul = &(emuColl.getL1Objs().front());
   } else {

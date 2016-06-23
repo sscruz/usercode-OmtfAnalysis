@@ -18,8 +18,15 @@ AnaEvent::AnaEvent(const edm::ParameterSet& cfg)
   : debug(false) 
 {
 
-  theSkipRuns = cfg.getParameter<std::vector<unsigned int> >("skipRuns");
-  std::sort(theSkipRuns.begin(), theSkipRuns.end());
+  if (cfg.exists("onlyRuns")) {
+    theSkipRuns = cfg.getParameter<std::vector<unsigned int> >("skipRuns");
+    std::sort(theSkipRuns.begin(), theSkipRuns.end());
+  }
+  
+  if (cfg.exists("onlyRuns")) {
+    theOnlyRuns =  cfg.getParameter<std::vector<unsigned int> >("onlyRuns");
+    std::sort(theOnlyRuns.begin(), theOnlyRuns.end());
+  }
 
 //  std::ifstream infile( cfg.getParameter<std::string>("validBXes") );
 //  while (infile.good() && infile.peek() != EOF) {
@@ -37,14 +44,9 @@ bool AnaEvent::filter(EventObj* ev)
 {
   // skip if wrong run
   if ( binary_search(theSkipRuns.begin(), theSkipRuns.end(), ev->run ) ) return  false;
-/*
-  if (ev->run == 200466) {
-   std::cout <<"RUN IS: "<< ev->run <<std::endl;
-   std::cout <<" result of search: "<<  binary_search(theSkipRuns.begin(), theSkipRuns.end(), ev->run ) << std:endl;
-   std::cout <<"runs are: "; for 
-   exit(7);
-  }
-*/
+
+  // if onlyRuns given and run not in list skip it. 
+  if (theOnlyRuns.size() && !binary_search(theOnlyRuns.begin(), theOnlyRuns.end(), ev->run ) ) return  false;
 
   // skip if event duplication
   if ( theRunEvent.find(std::make_pair(ev->run, ev->id) ) == theRunEvent.end()) theRunEvent[std::make_pair(ev->run, ev->id)] = ev->time;

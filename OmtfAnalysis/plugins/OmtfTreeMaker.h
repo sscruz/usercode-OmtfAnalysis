@@ -8,11 +8,15 @@
 #include "DataFormats/L1TMuon/interface/RegionalMuonCandFwd.h"
 
 #include "UserCode/OmtfDataFormats/interface/EventObj.h"
+#include "UserCode/OmtfDataFormats/interface/MuonObj.h"
 #include "UserCode/OmtfDataFormats/interface/L1Obj.h"
 #include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
 
 #include "UserCode/OmtfAnalysis/interface/L1ObjMaker.h"
+#include "UserCode/OmtfAnalysis/interface/BestMuonFinder.h"
 
+#include "DataFormats/MuonReco/interface/Muon.h"
+#include "DataFormats/MuonReco/interface/MuonFwd.h"
 
 
 #include <vector>
@@ -49,16 +53,21 @@ private:
   TTree *theTree;
 
   EventObj* event;
+  MuonObj* muon;
   L1ObjColl * l1ObjColl;
   
 								    
   TObjArray      theHelper;
 
+  BestMuonFinder theBestMuonFinder;
   L1ObjMaker theL1ObjMaker;
- 
+
 private:
   edm::InputTag theOmtfEmulSrc, theOmtfDataSrc;
   edm::EDGetTokenT<l1t::RegionalMuonCandBxCollection> theOmtfEmulToken;
   edm::EDGetTokenT<l1t::RegionalMuonCandBxCollection> theOmtfDataToken;
+
+  edm::EDGetTokenT<reco::MuonCollection> theBestMuon_Tag;
+
 };
 #endif

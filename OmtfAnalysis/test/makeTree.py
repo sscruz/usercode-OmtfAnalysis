@@ -14,14 +14,22 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 # (there is 255 file limit though). Can be empty for crab.
 #
 process.source = cms.Source("PoolSource", 
-#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run274002-Cosmic_12D87234-1823-E611-9A10-02163E014572.root'),
-fileNames = cms.untracked.vstring( 
-                                   'file:/afs/cern.ch/work/k/konec/data/runs/run274094_32779D03-C323-E611-BE75-02163E011821.root',
-                                   '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/274/094/00000/0070F70B-BD23-E611-A5C3-02163E011A28.root',
-                                   '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/274/094/00000/06E08AB1-C723-E611-AD43-02163E011C18.root',
-                                   'file:/afs/cern.ch/work/k/konec/data/runs/run274157-384_12A67A1E-E324-E611-831F-02163E012658.root',
-                                  ),
-#skipEvents =  cms.untracked.uint32(220)
+#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run274777-Cosmic_0CB8BC0E-D82D-E611-BBF2-02163E0128EA.root'),
+fileNames = cms.untracked.vstring(
+ 'file:/afs/cern.ch/work/k/konec/data/runs/run275375-Express-1000_F4B901E0-CE36-E611-BD7E-02163E0139BF.root',
+#'file:/afs/cern.ch/work/k/konec/data/runs/run275370-SingleMuon-150_3E506452-7436-E611-B1D1-02163E014372.root',
+# 'file:/afs/cern.ch/work/k/konec/data/runs/run275291-SingleMuon-050_788C99A6-4934-E611-AED2-02163E01275B.root',
+# 'file:/afs/cern.ch/work/k/konec/data/runs/run275291-SingleMuon-150_F0FF7781-4F34-E611-A177-02163E01191D.root',
+#                                  '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/275/291/00000/06D05EF0-5434-E611-B92B-02163E0145B0.root',
+#                                  '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/275/291/00000/06A162C3-6634-E611-8C29-02163E0141A3.root',
+                                   ),
+#fileNames = cms.untracked.vstring( 
+#                                   'file:/afs/cern.ch/work/k/konec/data/runs/run274094_32779D03-C323-E611-BE75-02163E011821.root',
+#                                   '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/274/094/00000/0070F70B-BD23-E611-A5C3-02163E011A28.root',
+#                                   '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/274/094/00000/06E08AB1-C723-E611-AD43-02163E011C18.root',
+#                                   'file:/afs/cern.ch/work/k/konec/data/runs/run274157-384_12A67A1E-E324-E611-831F-02163E012658.root',
+#                                  ),
+#skipEvents =  cms.untracked.uint32(470)
 )
 
 #
@@ -117,6 +125,7 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
 #  srcCSC = cms.InputTag('simCscTriggerPrimitiveDigis','MPCSORTED'),
   srcRPC = cms.InputTag('muonRPCDigis'),
 #  srcRPC = cms.InputTag('simMuonRPCDigis'),
+#  dumpResultToXML = cms.bool(True),
   dumpResultToXML = cms.bool(False),
   dumpDetailedResultToXML = cms.bool(False),
   XMLDumpFileName = cms.string("TestEvents.xml"),
@@ -152,9 +161,29 @@ process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, proces
 process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
   histoFileName = cms.string("omtfHelper.root"),
   treeFileName = cms.string("omtfTree.root"),
-#   omtfEmulSrc = cms.InputTag('simOmtfDigis','OMTF'),
   omtfEmulSrc = cms.InputTag('omtfEmulator','OMTF'),
   omtfDataSrc = cms.InputTag('gmtStage2Digis','OMTF'),
+  onlyBestMuEvents = cms.bool(False),
+
+  bestMuonFinder = cms.PSet(
+    muonColl = cms.string("muons"),
+    beamSpot = cms.InputTag("offlineBeamSpot"),
+    requireInnerTrack = cms.bool(True),
+    requireOuterTrack = cms.bool(True),
+    requireGlobalTrack = cms.bool(True),
+    minPt = cms.double(5.),
+    maxTIP = cms.double(0.2),
+    maxAbsEta = cms.double(1.6),
+    maxChi2Mu = cms.double(2.),
+    maxChi2Sa = cms.double(2.),
+    maxChi2Tk = cms.double(2.),
+    minNumberTrackerHits = cms.int32(0),
+    minNumberRpcHits = cms.int32(0),
+    minNumberDtCscHits = cms.int32(0),
+    minNumberOfMatchedStations = cms.int32(0),
+    deltaPhiUnique = cms.double(1.0),
+    deltaEtaUnique = cms.double(0.5)
+  ),
 )
 
 process.OmtfTree = cms.Path(process.omtfTree)

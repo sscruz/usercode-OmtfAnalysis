@@ -15,10 +15,15 @@ def cEvent(canvas):
   return
 
 def cDataEmulNotAgree(canvas):
-  c = TCanvas("cDataEmulNotAgree","cDataEmulNotAgree",800,800)
+  c = TCanvas("cDataEmulNotAgree","cDataEmulNotAgree",1200,600)
   canvas.Add(c)
-  h= gROOT.FindObject("hDataEmulNotAgree")
-  h.DrawCopy('box' )
+  c.Divide(2)
+  c.cd(1)
+  hE= gROOT.FindObject("hDataEmulNotAgreeEta")
+  hE.DrawCopy('box text' )
+  c.cd(2)
+  hP= gROOT.FindObject("hDataEmulNotAgreePhi")
+  hP.DrawCopy('box text' )
   return
 
 def cDataEmulCompare(canvas):
@@ -97,8 +102,31 @@ def cDataEmulIssue(canvas):
   h.SetStats(0)
   h.GetXaxis().SetRange(2,7)
   h.SetYTitle("event fraction");
-  h.Print("all") 
   h.DrawCopy()
+  return
+
+def cEffEta(canvas):
+  c = TCanvas('cEffEta','cEffEta',1200,600)
+  canvas.Add(c)
+  c.Divide(2)
+  pad1 = c.cd(1)
+  hn  = gROOT.FindObject('hEff_EtaOmtfn')
+  hn_D = gROOT.FindObject('hEff_EtaOmtfn_D')
+  hn.Divide(hn,hn_D,1.,1.,'B')
+  hn.SetMinimum(0.)
+  hn.SetMaximum(1.1)
+  hn.SetXTitle("eta")
+  hn.SetYTitle("efficiency");
+  hn.DrawCopy()
+  pad2 = c.cd(2)
+  hp  = gROOT.FindObject('hEff_EtaOmtfp')
+  hp_D = gROOT.FindObject('hEff_EtaOmtfp_D')
+  hp.Divide(hp,hp_D,1.,1.,'B')
+  hp.SetMinimum(0.)
+  hp.SetMaximum(1.1)
+  hp.SetXTitle("eta")
+  hp.SetYTitle("efficiency");
+  hp.DrawCopy()
   return
 
 
@@ -115,6 +143,8 @@ cDataEmulPtPhi(canvas)
 cDataEmulEta(canvas)
 cDataEmulNotAgree(canvas)
 cDataEmulIssue(canvas)
+
+cEffEta(canvas)
 
 raw_input('press enter to exit')
 

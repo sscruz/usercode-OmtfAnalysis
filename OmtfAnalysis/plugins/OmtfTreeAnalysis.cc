@@ -15,19 +15,27 @@
 #include "TF1.h"
 
 #include "UserCode/OmtfDataFormats/interface/EventObj.h"
+#include "UserCode/OmtfDataFormats/interface/TrackObj.h"
+#include "UserCode/OmtfDataFormats/interface/MuonObj.h"
 #include "UserCode/OmtfDataFormats/interface/L1Obj.h"
 #include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
 
 #include "UserCode/OmtfAnalysis/interface/AnaEvent.h"
+#include "UserCode/OmtfAnalysis/interface/AnaMuonDistribution.h"
+#include "UserCode/OmtfAnalysis/interface/AnaEff.h"
 #include "UserCode/OmtfAnalysis/interface/AnaDataEmul.h"
 
 OmtfTreeAnalysis::OmtfTreeAnalysis(const edm::ParameterSet & cfg)
   : theConfig(cfg),
-    theAnaEvent(0), theAnaDataEmul(0)
+    theAnaEvent(0), 
+    theAnaMuonDistribution(0),
+    theAnaDataEmul(0), 
+    theAnaEff(0) 
 { 
   if (theConfig.exists("anaEvent")) theAnaEvent = new   AnaEvent(cfg.getParameter<edm::ParameterSet>("anaEvent") );
-                                    theAnaDataEmul = new AnaDataEmul(edm::ParameterSet());
-   
+  if (theConfig.exists("anaMuonDistribution")) theAnaMuonDistribution = new AnaMuonDistribution( cfg.getParameter<edm::ParameterSet>("anaMuonDistribution"));
+  if (theConfig.exists("anaEff")) theAnaEff = new   AnaEff(cfg.getParameter<edm::ParameterSet>("anaEff") );
+  if (theConfig.exists("anaDataEmul")) theAnaDataEmul = new AnaDataEmul(cfg.getParameter<edm::ParameterSet>("anaDataEmul"));
 }
 
 void OmtfTreeAnalysis::beginJob()
@@ -36,6 +44,9 @@ void OmtfTreeAnalysis::beginJob()
 
   if (theAnaEvent)            theAnaEvent->init(theHistos);
   if (theAnaDataEmul)         theAnaDataEmul->init(theHistos);
+  if (theAnaMuonDistribution) theAnaMuonDistribution->init(theHistos);
+  if (theAnaEff)              theAnaEff->init(theHistos);
+
 }
 
 void OmtfTreeAnalysis::beginRun(const edm::Run& ru, const edm::EventSetup& es)
@@ -67,10 +78,13 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
   // prepare datastructures and branches
   //
   EventObj * event = 0;
+  MuonObj * muon = 0;
   L1ObjColl* l1ObjColl = 0;
+
   
 
   chain.SetBranchAddress("event",&event);
+  chain.SetBranchAddress("muon",&muon);
   chain.SetBranchAddress("l1ObjColl",&l1ObjColl);
   
   //
@@ -97,6 +111,9 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
 
     // EVENT NUMBER, BX structure etc.
     if ( theAnaEvent && !theAnaEvent->filter(event) && theConfig.getParameter<bool>("filterByAnaEvent") ) continue;
+    // ANALYSE AND FILTER KINEMCTICS
+    if ( theAnaMuonDistribution && !theAnaMuonDistribution->filter(muon) && theConfig.getParameter<bool>("filterByAnaMuonDistribution") ) continue;
+
 
 /*
     if (*l1ObjColl) {
@@ -104,8 +121,9 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
       std::cout << *l1ObjColl << std::endl; 
     }
 */
-    if (theAnaDataEmul) theAnaDataEmul->run(l1ObjColl); 
 
+    if (theAnaEff) { theAnaEff->run ( event, muon, l1ObjColl); }
+    if (theAnaDataEmul) theAnaDataEmul->run(l1ObjColl); 
      
   }
 }
@@ -121,4 +139,7 @@ void OmtfTreeAnalysis::endJob()
   std::cout <<"END"<<std::endl;
 
   delete theAnaEvent;
+  delete theAnaMuonDistribution;
+  delete theAnaEff;
+
 }

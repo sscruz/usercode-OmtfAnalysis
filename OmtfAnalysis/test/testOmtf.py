@@ -9,10 +9,11 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1)
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(False))
 
 process.source = cms.Source( 'PoolSource',
-#  skipEvents = cms.untracked.uint32(900),
+# skipEvents = cms.untracked.uint32(2667),
   fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/omtf/JPsi_21kEvents.root')
 )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000))
+#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1))
 
 ###PostLS1 geometry used
 process.load('Configuration.Geometry.GeometryExtended2015_cff')
@@ -42,6 +43,7 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
   srcRPC = cms.InputTag('simMuonRPCDigis'),
   dumpResultToXML = cms.bool(True),
   dumpDetailedResultToXML = cms.bool(False),
+#  dumpDetailedResultToXML = cms.bool(True),
   XMLDumpFileName = cms.string("TestEvents.xml"),
   dumpGPToXML = cms.bool(False),
   readEventsFromXML = cms.bool(False),
