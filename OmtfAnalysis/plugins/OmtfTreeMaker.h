@@ -11,9 +11,11 @@
 #include "UserCode/OmtfDataFormats/interface/MuonObj.h"
 #include "UserCode/OmtfDataFormats/interface/L1Obj.h"
 #include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
+#include "UserCode/OmtfDataFormats/interface/TriggerMenuResultObj.h"
 
-#include "UserCode/OmtfAnalysis/interface/L1ObjMaker.h"
+#include "UserCode/OmtfAnalysis/interface/MenuInspector.h"
 #include "UserCode/OmtfAnalysis/interface/BestMuonFinder.h"
+#include "UserCode/OmtfAnalysis/interface/L1ObjMaker.h"
 
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
@@ -22,7 +24,6 @@
 
 #include <vector>
 #include "TObjArray.h"
-
 
 namespace edm { class Event; class EventSetup; }
 namespace reco { class Muon; }
@@ -39,15 +40,9 @@ public:
   virtual void beginRun(const edm::Run &ru, const edm::EventSetup &es);
   virtual void analyze(const edm::Event &ev, const edm::EventSetup &es);
   virtual void endJob();
-  template<typename T> void initConsumes(const edm::InputTag & t) { consumes<T>(t); }
-  //template<typename T> void initConsumes( ) { consumes<T>( edm::InputTag("offlineBeamSpot") ); }
 
-  friend class BestMuonFinder;
-private:
-  bool  getOmtfCandidates(const edm::Event &iEvent, 
-                          L1Obj::TYPE type,
-                          std::vector<L1Obj> &result);
-
+  //call back to register consumes. Alternatively possible to declare friend class and call it therein
+  template<typename T> edm::EDGetTokenT<T> initConsumes(const edm::InputTag & t) { return consumes<T>(t); }
 
 private:
   edm::ParameterSet theConfig;
@@ -56,24 +51,18 @@ private:
   TFile *theFile;
   TTree *theTree;
 
+  TriggerMenuResultObj *bitsL1;
+  TriggerMenuResultObj *bitsHLT;
+
   EventObj* event;
   MuonObj* muon;
   L1ObjColl * l1ObjColl;
-  
 								    
   TObjArray      theHelper;
 
+  MenuInspector theMenuInspector;
   BestMuonFinder theBestMuonFinder;
   L1ObjMaker theL1ObjMaker;
-
-private:
-  edm::InputTag theOmtfEmulSrc, theOmtfDataSrc,  theBmtfDataSrc, theEmtfDataSrc;
-  edm::EDGetTokenT<l1t::RegionalMuonCandBxCollection> theOmtfEmulToken;
-  edm::EDGetTokenT<l1t::RegionalMuonCandBxCollection> theOmtfDataToken;
-  edm::EDGetTokenT<l1t::RegionalMuonCandBxCollection> theEmtfDataToken;
-  edm::EDGetTokenT<l1t::RegionalMuonCandBxCollection> theBmtfDataToken;
-  edm::EDGetTokenT<reco::MuonCollection> theBestMuon_Tag;
-  edm::EDGetTokenT<reco::BeamSpot> theBeamSpotToken;
 
 };
 #endif

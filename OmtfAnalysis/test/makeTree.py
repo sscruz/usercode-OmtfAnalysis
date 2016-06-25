@@ -161,12 +161,17 @@ process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, proces
 process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
   histoFileName = cms.string("omtfHelper.root"),
   treeFileName = cms.string("omtfTree.root"),
-  omtfEmulSrc = cms.InputTag('omtfEmulator','OMTF'),
-  omtfDataSrc = cms.InputTag('gmtStage2Digis','OMTF'),
-  emtfDataSrc = cms.InputTag('gmtStage2Digis','EMTF'),
-  bmtfDataSrc = cms.InputTag('gmtStage2Digis','BMTF'),
-  onlyBestMuEvents = cms.bool(False),
 
+  menuInspector = cms.PSet(),
+  
+  l1ObjMaker = cms.PSet(
+    omtfEmulSrc = cms.InputTag('omtfEmulator','OMTF'),
+    omtfDataSrc = cms.InputTag('gmtStage2Digis','OMTF'),
+    emtfDataSrc = cms.InputTag('gmtStage2Digis','EMTF'),
+    bmtfDataSrc = cms.InputTag('gmtStage2Digis','BMTF'),
+  ),
+
+  onlyBestMuEvents = cms.bool(False),
   bestMuonFinder = cms.PSet(
     muonColl = cms.InputTag("muons"),
     beamSpot = cms.InputTag("offlineBeamSpot"),

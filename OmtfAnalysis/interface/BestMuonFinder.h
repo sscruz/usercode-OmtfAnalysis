@@ -4,11 +4,11 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/Provenance/interface/RunID.h"
 #include "DataFormats/Provenance/interface/EventID.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 
 namespace edm { class Event; class EventSetup; }
 namespace reco { class Muon; }
 namespace edm { class EDAnalyzer; }
-class OmtfTreeMaker;
 
 class TH1D;
 class TH2D;
@@ -17,8 +17,7 @@ class TObjArray;
 class BestMuonFinder {
 
 public:
-  BestMuonFinder( const edm::ParameterSet& cfg);
-  void initConsumes(OmtfTreeMaker *module);
+  BestMuonFinder( const edm::ParameterSet& cfg, edm::ConsumesCollector&& cColl);
  
   const reco::Muon* result( const edm::Event &ev, const edm::EventSetup &es) { run(ev,es); return theMuon; }
   bool isUnique( const edm::Event &ev, const edm::EventSetup &es) { run(ev,es); return theUnique;}

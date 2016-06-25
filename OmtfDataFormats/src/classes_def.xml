@@ -27,5 +27,9 @@
     <version ClassVersion="1" checksum="30982113"/>
    </class>
 
+   <class name="TriggerMenuResultObj" ClassVersion="1">
+    <version ClassVersion="1" checksum="2779745102"/>
+   </class>
+
  </selection>
 </lcgdict>

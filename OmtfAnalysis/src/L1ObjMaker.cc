@@ -1,5 +1,8 @@
 #include "UserCode/OmtfAnalysis/interface/L1ObjMaker.h"
 
+#include <iostream>
+#include <sstream>
+
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -13,15 +16,20 @@
 #include "DataFormats/L1TMuon/interface/RegionalMuonCand.h"
 #include "DataFormats/L1TMuon/interface/RegionalMuonCandFwd.h"
 
-#include <iostream>
-#include <fstream>
-
 using namespace std;
+namespace {
+  edm::EDGetTokenT<l1t::RegionalMuonCandBxCollection> theOmtfEmulToken, theOmtfDataToken, theEmtfDataToken, theBmtfDataToken;
+}
 
-L1ObjMaker::L1ObjMaker(const  edm::ParameterSet & cfg)
+L1ObjMaker::L1ObjMaker(const  edm::ParameterSet & cfg, edm::ConsumesCollector&& cColl)
   :  theConfig(cfg),
      lastEvent(0),lastRun(0)
-{}
+{
+ if (theConfig.exists("omtfEmulSrc")) theOmtfEmulToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("omtfEmulSrc") );
+ if (theConfig.exists("omtfDataSrc")) theOmtfDataToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("omtfDataSrc") );
+ if (theConfig.exists("bmtfDataSrc")) theBmtfDataToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("bmtfDataSrc") );
+ if (theConfig.exists("emtfDataSrc")) theEmtfDataToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("emtfDataSrc") );
+}
 
 void L1ObjMaker::run(const edm::Event &ev)
 {
@@ -29,6 +37,11 @@ void L1ObjMaker::run(const edm::Event &ev)
   lastEvent = ev.id().event() ;
   lastRun = ev.run();
   theL1Objs.clear();
+
+  if (!theOmtfEmulToken.isUninitialized())  makeCandidates(ev, L1Obj::OMTF_emu, theL1Objs);
+  if (!theOmtfDataToken.isUninitialized())  makeCandidates(ev, L1Obj::OMTF    , theL1Objs);
+  if (!theBmtfDataToken.isUninitialized())  makeCandidates(ev, L1Obj::BMTF    , theL1Objs);
+  if (!theEmtfDataToken.isUninitialized())  makeCandidates(ev, L1Obj::EMTF    , theL1Objs);
 
 /*
   if (theConfig.exists("l1RpcSource"))     getGMTReadout( ev, theL1Objs, theConfig.getParameter<edm::InputTag>("l1RpcSource"),    L1Obj::RPCb);
@@ -40,41 +53,42 @@ void L1ObjMaker::run(const edm::Event &ev)
   if (theConfig.exists("l1GmtEmuSource"))  getGMTReadout( ev, theL1Objs, theConfig.getParameter<edm::InputTag>("l1GmtEmuSource"), L1Obj::GMT_emu);
 */
 
-
 }
-bool L1ObjMaker::getOmtfCandidates(const edm::Event &ev, std::vector<L1Obj> &result, const edm::InputTag &readout, L1Obj::TYPE t)
+
+bool L1ObjMaker::makeCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, std::vector<L1Obj> &result)
 {
-/*
   int bxNumber = 0;
-  edm::Handle<l1t::RegionalMuonCandBxCollection> omtfCandidates; 
-  iEvent.getByToken(inputOMTFToken, omtfCandidates);
-  for (l1t::RegionalMuonCandBxCollection::const_iterator it = omtfCandidates.product()->begin(bxNumber);
-       it != omtfCandidates.product()->end(bxNumber);
+  edm::Handle<l1t::RegionalMuonCandBxCollection> candidates;
+  switch (type) {
+    case  L1Obj::OMTF_emu: { iEvent.getByToken(theOmtfEmulToken, candidates); break; }
+    case  L1Obj::OMTF    : { iEvent.getByToken(theOmtfDataToken, candidates); break; }
+    case  L1Obj::BMTF    : { iEvent.getByToken(theBmtfDataToken, candidates); break; }
+    case  L1Obj::EMTF    : { iEvent.getByToken(theEmtfDataToken, candidates); break; }
+    default: { std::cout <<"Invalid type : " << type << std::endl; abort(); }
+  }
+  for (l1t::RegionalMuonCandBxCollection::const_iterator it = candidates.product()->begin(bxNumber);
+       it != candidates.product()->end(bxNumber);
        ++it) {
+
     L1Obj obj;
-    obj.eta = it->hwEta()/240.0*2.61;
-    ///Add processor offset to phi value
-    float procOffset = (15+it->processor()*60)/180.0*M_PI;
-    ///Convert to radians. uGMt has 576 bins for 2Pi  
-    obj.phi = (float)(it->hwPhi())/576.0*2*M_PI+procOffset;    
-    if(obj.phi>M_PI) obj.phi-=2*M_PI;
-    
-    obj.pt  = ((float)it->hwPt()-1)/2.0;
-    obj.charge = pow(-1,it->hwSign());
+    obj.type =  type;
+    obj.iProcessor = it->processor(); // [0..5]
+
+    obj.position =   (it->trackFinderType() == l1t::omtf_neg || it->trackFinderType() == l1t::emtf_neg) ? -1 :
+                   ( (it->trackFinderType() == l1t::omtf_pos || it->trackFinderType() == l1t::emtf_pos) ? +1 : 0 );
+
+    obj.phi = it->hwPhi();  // phi_Rad = [ (15.+processor*60.)/360. + hwPhi/576. ] *2*M_PI
+    obj.eta = it->hwEta();  // eta = hwEta/240.*2.61
+    obj.pt = it->hwPt();         // pt = (hwPt-1.)/2.
+    obj.charge = it->hwSign();   // charge=  pow(-1,hwSign)
 
     std::map<int, int> hwAddrMap = it->trackAddress();
     obj.q   = it->hwQual();
     obj.hits   = hwAddrMap[0];
-    obj.refLayer   = hwAddrMap[1];
-    obj.disc   = hwAddrMap[2];
-    obj.bx  = it->hwSignValid();
-    obj.type =  L1Obj::OMTF;//(int)it->trackFinderType();
-    obj.iProcessor = it->processor();
+    obj.bx = bxNumber;
     result.push_back(obj);
   }
-*/
   return true;
-
 }
 
 
@@ -119,5 +133,3 @@ bool L1ObjMaker::getGMTReadout(const edm::Event &ev, vector<L1Obj> &result, cons
   return true;
 }
 */
-
-

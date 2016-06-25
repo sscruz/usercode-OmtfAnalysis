@@ -7,6 +7,7 @@
    <class name="MuonObj" ClassVersion="2"/>
    <class name="L1Obj" ClassVersion="4"/>
    <class name="L1ObjColl" ClassVersion="1"/>
+   <class name="TriggerMenuResultObj" ClassVersion="1"/>
 
  </selection>
 </lcgdict>

@@ -6,20 +6,21 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/Provenance/interface/RunID.h"
 #include "DataFormats/Provenance/interface/EventID.h"
-
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 
 namespace edm {class Event; }
 
 class L1ObjMaker {
 public:
-  L1ObjMaker(const  edm::ParameterSet & cfg);
+  L1ObjMaker(const  edm::ParameterSet & cfg, edm::ConsumesCollector&& cColl);
   const std::vector<L1Obj> & operator()(const edm::Event &ev) { run(ev); return theL1Objs; }
 
 private:
   void run(const edm::Event &ev);
-  bool getOmtfCandidates(const edm::Event &ev, std::vector<L1Obj> &result, const edm::InputTag &readout, L1Obj::TYPE t);
+  bool makeCandidates(const edm::Event &ev, L1Obj::TYPE t, std::vector<L1Obj> &result);
 
 private:
+/*
   template <class T> L1Obj makeL1Obj( T& t, L1Obj::TYPE type) {
     L1Obj obj;
     obj.bx = t.bx();
@@ -31,6 +32,7 @@ private:
     obj.type = type;
     return obj;
   }
+*/
 private:
   edm::ParameterSet   theConfig;
   std::vector<L1Obj>  theL1Objs;

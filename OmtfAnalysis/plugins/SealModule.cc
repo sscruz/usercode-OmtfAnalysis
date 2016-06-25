@@ -9,7 +9,7 @@ DEFINE_FWK_MODULE(OmtfLocalDaqAnalyzer);
 #include "OmtfAngleAnalyzer.h"
 DEFINE_FWK_MODULE(OmtfAngleAnalyzer);
 
-#include "UserCode/OmtfAnalysis/interface/OmtfTreeMaker.h"
+#include "OmtfTreeMaker.h"
 DEFINE_FWK_MODULE(OmtfTreeMaker);
 
 #include "OmtfTreeAnalysis.h"

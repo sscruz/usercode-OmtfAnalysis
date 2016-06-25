@@ -1,5 +1,4 @@
-//#include "OmtfTreeMaker.h"
-#include "UserCode/OmtfAnalysis/interface/OmtfTreeMaker.h"
+#include "OmtfTreeMaker.h"
 
 #include <vector>
 
@@ -28,36 +27,18 @@ template <class T> T sqr( T t) {return t*t;}
 
 OmtfTreeMaker::OmtfTreeMaker(const edm::ParameterSet& cfg)
   : theConfig(cfg), theCounter(0), theFile(0), theTree(0), 
+    bitsL1(0), bitsHLT(0),
     event(0), muon(0), l1ObjColl(0), 
-    theBestMuonFinder(cfg.getParameter<edm::ParameterSet>("bestMuonFinder")),
-    theL1ObjMaker(cfg) 
-{  
-  theOmtfEmulSrc = cfg.getParameter<edm::InputTag>("omtfEmulSrc");
-  theOmtfDataSrc = cfg.getParameter<edm::InputTag>("omtfDataSrc");
-  theBmtfDataSrc = cfg.getParameter<edm::InputTag>("bmtfDataSrc");
-  theEmtfDataSrc = cfg.getParameter<edm::InputTag>("emtfDataSrc");
-
-  theOmtfEmulToken= consumes<l1t::RegionalMuonCandBxCollection>(theOmtfEmulSrc);
-  theOmtfDataToken= consumes<l1t::RegionalMuonCandBxCollection>(theOmtfDataSrc);
-  theBmtfDataToken= consumes<l1t::RegionalMuonCandBxCollection>(theBmtfDataSrc);
-  theEmtfDataToken= consumes<l1t::RegionalMuonCandBxCollection>(theEmtfDataSrc);
-
-/*
-  theBestMuon_Tag = consumes<reco::MuonCollection> (theConfig
-                             .getParameter<edm::ParameterSet>("bestMuonFinder")
-                             .getParameter<std::string>("muonColl") );
-*/
-
-  //theBeamSpotToken =  consumes<reco::BeamSpot>(edm::InputTag("offlineBeamSpot"));
-
-  theBestMuonFinder.initConsumes(this);
-
-}
+    theMenuInspector(cfg.getParameter<edm::ParameterSet>("menuInspector"), consumesCollector()),
+    theBestMuonFinder(cfg.getParameter<edm::ParameterSet>("bestMuonFinder"), consumesCollector()),
+    theL1ObjMaker(cfg.getParameter<edm::ParameterSet>("l1ObjMaker"), consumesCollector()) 
+{  }
   
 
 void OmtfTreeMaker::beginRun(const edm::Run &ru, const edm::EventSetup &es)
 {
   std::cout <<" OmtfTreeMaker::beginRun CALLED" << std::endl; 
+  theMenuInspector.checkRun(ru,es);
 }
 
 void OmtfTreeMaker::beginJob()
@@ -68,6 +49,9 @@ void OmtfTreeMaker::beginJob()
   theTree->Branch("event","EventObj",&event,32000,99);
   theTree->Branch("muon","MuonObj",&muon,32000,99);
   theTree->Branch("l1ObjColl","L1ObjColl",&l1ObjColl,32000,99);
+
+  theTree->Branch("bitsL1" ,"TriggerMenuResultObj",&bitsL1 ,32000,99);
+  theTree->Branch("bitsHLT","TriggerMenuResultObj",&bitsHLT,32000,99);
 
   theHelper.SetOwner();
   theBestMuonFinder.initHistos(theHelper);
@@ -93,7 +77,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
 {
 
   //
-  // initial filter. Do no use events without muon
+  // initial filter. Optionally do not further use events without muon
   //
   const reco::Muon * theMuon = theBestMuonFinder.result(ev,es);
   if (theConfig.getParameter<bool>("onlyBestMuEvents") && (!theMuon) ) return;
@@ -117,6 +101,23 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   muon = new MuonObj();
   l1ObjColl = new L1ObjColl;
 
+
+  bitsL1 = new TriggerMenuResultObj();
+  bitsHLT = new TriggerMenuResultObj();
+
+
+  //
+  // fill algoBits info
+  //
+  static edm::RunNumber_t lastRun = 0;
+  if (ev.run() != lastRun) {
+    lastRun = ev.run();
+    bitsL1->names  = theMenuInspector.namesAlgoL1();
+    bitsHLT->names = theMenuInspector.namesAlgoHLT();
+  }
+  bitsL1->firedAlgos = theMenuInspector.firedAlgosL1(ev,es);
+  bitsHLT->firedAlgos = theMenuInspector.firedAlgosHLT(ev,es);
+
   //
   // fill muon info
   //
@@ -134,12 +135,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
 
 
   // get L1 candidates
-  std::vector<L1Obj> l1Objs;
-  getOmtfCandidates(ev, L1Obj::OMTF,  l1Objs);
-  getOmtfCandidates(ev, L1Obj::OMTF_emu,  l1Objs);
-  getOmtfCandidates(ev, L1Obj::EMTF,  l1Objs);
-  getOmtfCandidates(ev, L1Obj::BMTF,  l1Objs);
-//  if (l1Objs.size()) std::cout << "Size of l1Objs: " << l1Objs.size() << std::endl; 
+  std::vector<L1Obj> l1Objs = theL1ObjMaker(ev);
   if (l1Objs.size()) {
     l1ObjColl->set(l1Objs);
     l1ObjColl->set( std::vector<bool>(l1Objs.size(),false));
@@ -164,44 +160,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   theTree->Fill();
   delete event; event = 0;
   delete muon;  muon = 0;
+  delete bitsL1;  bitsL1= 0;
+  delete bitsHLT;  bitsHLT= 0;
   delete l1ObjColl; l1ObjColl = 0;
 }
-
-
-// FIXME GET RID OF THIS FROM HERE!
-bool OmtfTreeMaker::getOmtfCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, std::vector<L1Obj> &result)
-{
-  int bxNumber = 0;
-  edm::Handle<l1t::RegionalMuonCandBxCollection> candidates; 
-  switch (type) {
-    case  L1Obj::OMTF_emu: { iEvent.getByToken(theOmtfEmulToken, candidates); break; }
-    case  L1Obj::OMTF    : { iEvent.getByToken(theOmtfDataToken, candidates); break; }
-    case  L1Obj::BMTF    : { iEvent.getByToken(theBmtfDataToken, candidates); break; }
-    case  L1Obj::EMTF    : { iEvent.getByToken(theEmtfDataToken, candidates); break; }
-    default: { std::cout <<"Invalid type : " << type << std::endl; abort(); }
-  }
-  for (l1t::RegionalMuonCandBxCollection::const_iterator it = candidates.product()->begin(bxNumber);
-       it != candidates.product()->end(bxNumber);
-       ++it) {
-
-    L1Obj obj;
-    obj.type =  type;  
-    obj.iProcessor = it->processor(); // [0..5]
-
-    obj.position =   (it->trackFinderType() == l1t::omtf_neg || it->trackFinderType() == l1t::emtf_neg) ? -1 : 
-                   ( (it->trackFinderType() == l1t::omtf_pos || it->trackFinderType() == l1t::emtf_pos) ? +1 : 0 ); 
-
-    obj.phi = it->hwPhi();  // phi_Rad = [ (15.+processor*60.)/360. + hwPhi/576. ] *2*M_PI 
-    obj.eta = it->hwEta();  // eta = hwEta/240.*2.61
-    obj.pt = it->hwPt();         // pt = (hwPt-1.)/2.
-    obj.charge = it->hwSign();   // charge=  pow(-1,hwSign)
-
-    std::map<int, int> hwAddrMap = it->trackAddress();
-    obj.q   = it->hwQual();
-    obj.hits   = hwAddrMap[0];
-    obj.bx = bxNumber;
-    result.push_back(obj);
-  }
-  return true;
-}
-				

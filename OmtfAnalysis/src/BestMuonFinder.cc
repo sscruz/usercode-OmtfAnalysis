@@ -19,28 +19,22 @@
 #include "TH1D.h"
 #include "TH2D.h"
 
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "UserCode/OmtfAnalysis/interface/OmtfTreeMaker.h"
-
 //TH2D* hMuHitsCSCvsEta;
 
-BestMuonFinder::BestMuonFinder(const edm::ParameterSet& cfg)
+BestMuonFinder::BestMuonFinder(const edm::ParameterSet& cfg, edm::ConsumesCollector&& cColl)
   : lastEvent(0), lastRun(0), theConfig(cfg), theUnique(true), theAllMuons(0), theMuon(0),
     theTrackerHits(0), theRPCHits(0), theDTHits(0), theCSCHits(0),
     hMuChi2Tk(0), hMuChi2Gl(0), hMuNHitsTk(0), 
     hMuPtVsEta(0), hMuHitsRPCvsCSC(0), hMuHitsRPCvsDT(0),
     hMuonPt_BMF(0),hMuonEta_BMF (0),hMuonPhi_BMF(0)
-{ }
-
-void BestMuonFinder::initConsumes(OmtfTreeMaker *module) {
+{ 
 
   edm::InputTag beamSpotTag =  theConfig.getParameter<edm::InputTag>("beamSpot");
-  module->initConsumes<reco::BeamSpot>(beamSpotTag);
+  cColl.consumes<reco::BeamSpot>(beamSpotTag);
 
   edm::InputTag muonCollTag =  theConfig.getParameter<edm::InputTag>("muonColl");
-  module->initConsumes<reco::MuonCollection>(muonCollTag);
+  cColl.consumes<reco::MuonCollection>(muonCollTag);
 
-//  module->consumes<reco::BeamSpot>(edm::InputTag("offlineBeamSpot"));
 }
 
 bool BestMuonFinder::run(const edm::Event &ev, const edm::EventSetup &es)
