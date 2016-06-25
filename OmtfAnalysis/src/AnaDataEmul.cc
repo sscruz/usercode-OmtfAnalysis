@@ -169,6 +169,8 @@ void AnaDataEmul::run(L1ObjColl * coll)
   const L1Obj * emul = 0;
   L1ObjColl emulColl =  coll->selectByType(L1Obj::OMTF_emu);
   emul = bestMatch(data, emulColl);
+
+  if (!data && !emul) return;
   if (emul && ((emul->q & 0b01) !=0) ) return;
 
 //  if (emul && makeName(*emul).name()=="OMTFn4") return;  

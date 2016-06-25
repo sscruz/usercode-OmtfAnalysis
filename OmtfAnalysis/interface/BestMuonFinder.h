@@ -7,6 +7,8 @@
 
 namespace edm { class Event; class EventSetup; }
 namespace reco { class Muon; }
+namespace edm { class EDAnalyzer; }
+class OmtfTreeMaker;
 
 class TH1D;
 class TH2D;
@@ -16,6 +18,8 @@ class BestMuonFinder {
 
 public:
   BestMuonFinder( const edm::ParameterSet& cfg);
+  void initConsumes(OmtfTreeMaker *module);
+ 
   const reco::Muon* result( const edm::Event &ev, const edm::EventSetup &es) { run(ev,es); return theMuon; }
   bool isUnique( const edm::Event &ev, const edm::EventSetup &es) { run(ev,es); return theUnique;}
   unsigned int numberOfAllMuons( const edm::Event &ev, const edm::EventSetup &es) { run(ev,es); return theAllMuons; }
@@ -43,7 +47,6 @@ private:
   TH1D *hMuChi2Tk, *hMuChi2Gl, *hMuNHitsTk ;
   TH2D *hMuPtVsEta, *hMuHitsRPCvsCSC, *hMuHitsRPCvsDT; 
   TH1D *hMuonPt_BMF, *hMuonEta_BMF, *hMuonPhi_BMF;
-
 
 };
 #endif

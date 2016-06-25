@@ -125,7 +125,7 @@ def cEffEta(canvas):
   hp.SetMinimum(0.)
   hp.SetMaximum(1.1)
   hp.SetXTitle("eta")
-  hp.SetYTitle("efficiency");
+  hp.SetYTitle("efficiency")
   hp.DrawCopy()
   return
 

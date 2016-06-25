@@ -1,4 +1,6 @@
-#include "OmtfTreeMaker.h"
+//#include "OmtfTreeMaker.h"
+#include "UserCode/OmtfAnalysis/interface/OmtfTreeMaker.h"
+
 #include <vector>
 
 #include "FWCore/Framework/interface/Event.h"
@@ -32,13 +34,23 @@ OmtfTreeMaker::OmtfTreeMaker(const edm::ParameterSet& cfg)
 {  
   theOmtfEmulSrc = cfg.getParameter<edm::InputTag>("omtfEmulSrc");
   theOmtfDataSrc = cfg.getParameter<edm::InputTag>("omtfDataSrc");
+  theBmtfDataSrc = cfg.getParameter<edm::InputTag>("bmtfDataSrc");
+  theEmtfDataSrc = cfg.getParameter<edm::InputTag>("emtfDataSrc");
 
   theOmtfEmulToken= consumes<l1t::RegionalMuonCandBxCollection>(theOmtfEmulSrc);
   theOmtfDataToken= consumes<l1t::RegionalMuonCandBxCollection>(theOmtfDataSrc);
+  theBmtfDataToken= consumes<l1t::RegionalMuonCandBxCollection>(theBmtfDataSrc);
+  theEmtfDataToken= consumes<l1t::RegionalMuonCandBxCollection>(theEmtfDataSrc);
 
+/*
   theBestMuon_Tag = consumes<reco::MuonCollection> (theConfig
                              .getParameter<edm::ParameterSet>("bestMuonFinder")
                              .getParameter<std::string>("muonColl") );
+*/
+
+  //theBeamSpotToken =  consumes<reco::BeamSpot>(edm::InputTag("offlineBeamSpot"));
+
+  theBestMuonFinder.initConsumes(this);
 
 }
   
@@ -118,25 +130,31 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
     muon->setKine(theMuon->bestTrack()->pt(), theMuon->bestTrack()->eta(), theMuon->bestTrack()->phi(), theMuon->bestTrack()->charge());
     muon->setBits(theMuon->isGlobalMuon(), theMuon->isTrackerMuon(), theMuon->isStandAloneMuon(), theMuon->isCaloMuon(), theMuon->isMatchesValid());
     muon->nMatchedStations = theMuon->numberOfMatchedStations();
-    std::cout <<"MUON "<<*muon << std::endl;
   }
 
 
-  // get OMTF candidates
-  std::vector<L1Obj> omtfResult;
-  getOmtfCandidates(ev, L1Obj::OMTF,  omtfResult);
-  getOmtfCandidates(ev, L1Obj::OMTF_emu,  omtfResult);
-  if (omtfResult.size()) std::cout << "Size of omtfResult: " << omtfResult.size() << std::endl; 
-  if (omtfResult.size()) {
-    l1ObjColl->set(omtfResult);
-    l1ObjColl->set( std::vector<bool>(omtfResult.size(),false));
-    l1ObjColl->set( std::vector<double>(omtfResult.size(),0.));
+  // get L1 candidates
+  std::vector<L1Obj> l1Objs;
+  getOmtfCandidates(ev, L1Obj::OMTF,  l1Objs);
+  getOmtfCandidates(ev, L1Obj::OMTF_emu,  l1Objs);
+  getOmtfCandidates(ev, L1Obj::EMTF,  l1Objs);
+  getOmtfCandidates(ev, L1Obj::BMTF,  l1Objs);
+//  if (l1Objs.size()) std::cout << "Size of l1Objs: " << l1Objs.size() << std::endl; 
+  if (l1Objs.size()) {
+    l1ObjColl->set(l1Objs);
+    l1ObjColl->set( std::vector<bool>(l1Objs.size(),false));
+    l1ObjColl->set( std::vector<double>(l1Objs.size(),0.));
   }
     
   
-  if (omtfResult.size()) {
+  if (l1Objs.size() || theMuon) {
     std::cout <<"#"<<theCounter<<" "<< *event << std::endl;
-    for (auto obj : omtfResult) std::cout <<OmtfName(obj.iProcessor,obj.position)<<" "<< obj << std::endl; 
+    if (theMuon) std::cout <<"MUON "<<*muon << std::endl;
+    for (auto obj : l1Objs) {
+     std::cout << obj;
+     if (obj.type==L1Obj::OMTF || obj.type==L1Obj::OMTF_emu) std::cout <<" "<<OmtfName(obj.iProcessor,obj.position);
+     std::cout << std::endl; 
+    }
   }
 
   //
@@ -154,42 +172,34 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
 bool OmtfTreeMaker::getOmtfCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, std::vector<L1Obj> &result)
 {
   int bxNumber = 0;
-  edm::Handle<l1t::RegionalMuonCandBxCollection> omtfCandidates; 
+  edm::Handle<l1t::RegionalMuonCandBxCollection> candidates; 
   switch (type) {
-    case  L1Obj::OMTF_emu: { iEvent.getByToken(theOmtfEmulToken, omtfCandidates); break; }
-    case  L1Obj::OMTF    : { iEvent.getByToken(theOmtfDataToken, omtfCandidates); break; }
+    case  L1Obj::OMTF_emu: { iEvent.getByToken(theOmtfEmulToken, candidates); break; }
+    case  L1Obj::OMTF    : { iEvent.getByToken(theOmtfDataToken, candidates); break; }
+    case  L1Obj::BMTF    : { iEvent.getByToken(theBmtfDataToken, candidates); break; }
+    case  L1Obj::EMTF    : { iEvent.getByToken(theEmtfDataToken, candidates); break; }
     default: { std::cout <<"Invalid type : " << type << std::endl; abort(); }
   }
-  for (l1t::RegionalMuonCandBxCollection::const_iterator it = omtfCandidates.product()->begin(bxNumber);
-       it != omtfCandidates.product()->end(bxNumber);
+  for (l1t::RegionalMuonCandBxCollection::const_iterator it = candidates.product()->begin(bxNumber);
+       it != candidates.product()->end(bxNumber);
        ++it) {
-    L1Obj obj;
-    //obj.eta = it->hwEta()/240.0*2.61;
-    obj.eta = it->hwEta();
 
-    ///Add processor offset to phi value
-    //float procOffset = (15+it->processor()*60)/180.0*M_PI;
-    ///Convert to radians. uGMt has 576 bins for 2Pi  
-    //obj.phi = (float)(it->hwPhi())/576.0*2*M_PI+procOffset;    
-    //if(obj.phi>M_PI) obj.phi-=2*M_PI;
-    obj.phi = it->hwPhi();
-    
-    
-    //obj.pt  = ((float)it->hwPt()-1)/2.0;
-    obj.pt = it->hwPt();
-    //obj.charge = pow(-1,it->hwSign());
-    obj.charge = it->hwSign();
+    L1Obj obj;
+    obj.type =  type;  
+    obj.iProcessor = it->processor(); // [0..5]
+
+    obj.position =   (it->trackFinderType() == l1t::omtf_neg || it->trackFinderType() == l1t::emtf_neg) ? -1 : 
+                   ( (it->trackFinderType() == l1t::omtf_pos || it->trackFinderType() == l1t::emtf_pos) ? +1 : 0 ); 
+
+    obj.phi = it->hwPhi();  // phi_Rad = [ (15.+processor*60.)/360. + hwPhi/576. ] *2*M_PI 
+    obj.eta = it->hwEta();  // eta = hwEta/240.*2.61
+    obj.pt = it->hwPt();         // pt = (hwPt-1.)/2.
+    obj.charge = it->hwSign();   // charge=  pow(-1,hwSign)
 
     std::map<int, int> hwAddrMap = it->trackAddress();
     obj.q   = it->hwQual();
     obj.hits   = hwAddrMap[0];
-    obj.refLayer   = hwAddrMap[1];
-    obj.disc   = hwAddrMap[2];
-    //obj.bx  = it->hwSignValid();
-    obj.bx = 0;
-    obj.type =  type;  
-    obj.iProcessor = it->processor();
-    obj.position = (it->trackFinderType() == l1t::omtf_neg) ? -1 : ( (it->trackFinderType() == l1t::omtf_pos) ? +1 : 0 ); 
+    obj.bx = bxNumber;
     result.push_back(obj);
   }
   return true;

@@ -18,6 +18,8 @@ std::ostream & operator<< (std::ostream &out, const L1Obj &o)
     case L1Obj::GMT_emu:  { out <<"GMT_emu "; break; }
     case L1Obj::OMTF   :  { out <<"OMTF    "; break; }
     case L1Obj::OMTF_emu: { out <<"OMTF_emu"; break; }
+    case L1Obj::BMTF   :  { out <<"BMTF    "; break; }
+    case L1Obj::EMTF   :  { out <<"EMTF    "; break; }
     case L1Obj::NONE   :  { out <<"NONE    "; break; }
     default: out <<"Unknown";
   };

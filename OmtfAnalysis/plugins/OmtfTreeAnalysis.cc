@@ -115,6 +115,7 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
     if ( theAnaMuonDistribution && !theAnaMuonDistribution->filter(muon) && theConfig.getParameter<bool>("filterByAnaMuonDistribution") ) continue;
 
 
+   if ( muon && muon->pt()>0  && !(*l1ObjColl) ) std::cout <<" muon : " << *muon << std::endl << " L1Obj: " <<  *l1ObjColl << std::endl;
 /*
     if (*l1ObjColl) {
       std::cout << *event << std::endl;

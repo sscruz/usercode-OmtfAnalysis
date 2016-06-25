@@ -17,6 +17,7 @@
 
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
 
 
 #include <vector>
@@ -38,7 +39,10 @@ public:
   virtual void beginRun(const edm::Run &ru, const edm::EventSetup &es);
   virtual void analyze(const edm::Event &ev, const edm::EventSetup &es);
   virtual void endJob();
+  template<typename T> void initConsumes(const edm::InputTag & t) { consumes<T>(t); }
+  //template<typename T> void initConsumes( ) { consumes<T>( edm::InputTag("offlineBeamSpot") ); }
 
+  friend class BestMuonFinder;
 private:
   bool  getOmtfCandidates(const edm::Event &iEvent, 
                           L1Obj::TYPE type,
@@ -63,11 +67,13 @@ private:
   L1ObjMaker theL1ObjMaker;
 
 private:
-  edm::InputTag theOmtfEmulSrc, theOmtfDataSrc;
+  edm::InputTag theOmtfEmulSrc, theOmtfDataSrc,  theBmtfDataSrc, theEmtfDataSrc;
   edm::EDGetTokenT<l1t::RegionalMuonCandBxCollection> theOmtfEmulToken;
   edm::EDGetTokenT<l1t::RegionalMuonCandBxCollection> theOmtfDataToken;
-
+  edm::EDGetTokenT<l1t::RegionalMuonCandBxCollection> theEmtfDataToken;
+  edm::EDGetTokenT<l1t::RegionalMuonCandBxCollection> theBmtfDataToken;
   edm::EDGetTokenT<reco::MuonCollection> theBestMuon_Tag;
+  edm::EDGetTokenT<reco::BeamSpot> theBeamSpotToken;
 
 };
 #endif

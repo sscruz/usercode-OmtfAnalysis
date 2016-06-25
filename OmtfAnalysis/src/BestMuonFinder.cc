@@ -19,6 +19,9 @@
 #include "TH1D.h"
 #include "TH2D.h"
 
+#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "UserCode/OmtfAnalysis/interface/OmtfTreeMaker.h"
+
 //TH2D* hMuHitsCSCvsEta;
 
 BestMuonFinder::BestMuonFinder(const edm::ParameterSet& cfg)
@@ -27,7 +30,18 @@ BestMuonFinder::BestMuonFinder(const edm::ParameterSet& cfg)
     hMuChi2Tk(0), hMuChi2Gl(0), hMuNHitsTk(0), 
     hMuPtVsEta(0), hMuHitsRPCvsCSC(0), hMuHitsRPCvsDT(0),
     hMuonPt_BMF(0),hMuonEta_BMF (0),hMuonPhi_BMF(0)
-{}
+{ }
+
+void BestMuonFinder::initConsumes(OmtfTreeMaker *module) {
+
+  edm::InputTag beamSpotTag =  theConfig.getParameter<edm::InputTag>("beamSpot");
+  module->initConsumes<reco::BeamSpot>(beamSpotTag);
+
+  edm::InputTag muonCollTag =  theConfig.getParameter<edm::InputTag>("muonColl");
+  module->initConsumes<reco::MuonCollection>(muonCollTag);
+
+//  module->consumes<reco::BeamSpot>(edm::InputTag("offlineBeamSpot"));
+}
 
 bool BestMuonFinder::run(const edm::Event &ev, const edm::EventSetup &es)
 {
@@ -39,22 +53,20 @@ bool BestMuonFinder::run(const edm::Event &ev, const edm::EventSetup &es)
   theUnique = true;
 
 
-/*
   //getBeamSpot
   edm::InputTag beamSpot =  theConfig.getParameter<edm::InputTag>("beamSpot");
   edm::Handle<reco::BeamSpot> bsHandle;
   ev.getByLabel( beamSpot, bsHandle);
   math::XYZPoint reference =  (bsHandle.isValid())  ?  math::XYZPoint(bsHandle->x0(), bsHandle->y0(), bsHandle->z0())
                                                     :  math::XYZPoint(0.,0.,0.);
-*/
 
   //get Muon
   edm::Handle<reco::MuonCollection> muons;
-  static std::string muonCollName =  theConfig.getParameter<std::string>("muonColl");
+  edm::InputTag muonColl =  theConfig.getParameter<edm::InputTag>("muonColl");
   static bool warnNoColl = theConfig.getUntrackedParameter<bool>("warnNoColl", true);
-  ev.getByLabel( muonCollName, muons);
+  ev.getByLabel( muonColl, muons);
   if (!muons.isValid()) {
-    if (warnNoColl) std::cout <<"** WARNING - no collection labeled: "<<muonCollName<<std::endl; 
+    if (warnNoColl) std::cout <<"** WARNING - no collection labeled: "<<muonColl <<std::endl; 
     return false;
   }
   theAllMuons = muons->size();
@@ -91,7 +103,7 @@ if (ev.id().event() == 352597514) {
 
     if (    theConfig.getParameter<bool>("requireInnerTrack")) {
       if (!im->isTrackerMuon() || !im->innerTrack().isNonnull()) continue;
-//      if (im->innerTrack()->dxy(reference) >  theConfig.getParameter<double>("maxTIP")) continue;
+      if (im->innerTrack()->dxy(reference) >  theConfig.getParameter<double>("maxTIP")) continue;
       if (im->innerTrack()->normalizedChi2() >  theConfig.getParameter<double>("maxChi2Tk")) continue;
       if (hMuonPt_BMF)   hMuonPt_BMF->Fill( im->innerTrack()->pt());
       if (hMuonEta_BMF) hMuonEta_BMF->Fill( im->innerTrack()->eta());

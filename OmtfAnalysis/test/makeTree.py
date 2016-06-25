@@ -163,10 +163,12 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
   treeFileName = cms.string("omtfTree.root"),
   omtfEmulSrc = cms.InputTag('omtfEmulator','OMTF'),
   omtfDataSrc = cms.InputTag('gmtStage2Digis','OMTF'),
+  emtfDataSrc = cms.InputTag('gmtStage2Digis','EMTF'),
+  bmtfDataSrc = cms.InputTag('gmtStage2Digis','BMTF'),
   onlyBestMuEvents = cms.bool(False),
 
   bestMuonFinder = cms.PSet(
-    muonColl = cms.string("muons"),
+    muonColl = cms.InputTag("muons"),
     beamSpot = cms.InputTag("offlineBeamSpot"),
     requireInnerTrack = cms.bool(True),
     requireOuterTrack = cms.bool(True),
