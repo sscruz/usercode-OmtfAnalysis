@@ -3,7 +3,8 @@ import commands
 import os
 
 from Configuration.StandardSequences.Eras import eras
-process = cms.Process('OmtfTree',eras.Run2_2016)
+#process = cms.Process('OmtfTree',eras.Run2_2016)
+process = cms.Process('OmtfTree')
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -16,8 +17,8 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource", 
 #fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run274777-Cosmic_0CB8BC0E-D82D-E611-BBF2-02163E0128EA.root'),
 fileNames = cms.untracked.vstring(
-  'file:/afs/cern.ch/work/k/konec/data/runs/run275911-Express-400_36C1CFB4-BD3D-E611-895F-02163E012B2D.root',
-# 'file:/afs/cern.ch/work/k/konec/data/runs/run275376-Express-1950_3A49E7B5-4C37-E611-B9F5-02163E013921.root',
+#  'file:/afs/cern.ch/work/k/konec/data/runs/run275911-Express-400_36C1CFB4-BD3D-E611-895F-02163E012B2D.root',
+ 'file:/afs/cern.ch/work/k/konec/data/runs/run275376-Express-1950_3A49E7B5-4C37-E611-B9F5-02163E013921.root',
 #'file:/afs/cern.ch/work/k/konec/data/runs/run275375-Express-1000_F4B901E0-CE36-E611-BD7E-02163E0139BF.root',
 #'file:/afs/cern.ch/work/k/konec/data/runs/run275370-SingleMuon-150_3E506452-7436-E611-B1D1-02163E014372.root',
 #'file:/afs/cern.ch/work/k/konec/data/runs/run275291-SingleMuon-050_788C99A6-4934-E611-AED2-02163E01275B.root',
@@ -46,7 +47,9 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
+process.load('EventFilter.L1TRawToDigi.bmtfDigis_cfi')
 process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
+process.load('EventFilter.L1TRawToDigi.gmtStage2Digis_cfi')
 
 #
 # set proper GlobalTag
@@ -64,8 +67,8 @@ process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
 #process.GlobalTag.globaltag  = '80X_dataRun2_Prompt_v8'
 #from Configuration.AlCa.GlobalTag import GlobalTag
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
-#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 
 
