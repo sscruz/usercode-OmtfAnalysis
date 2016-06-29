@@ -5,13 +5,15 @@
 #include <string>
 
 #include "TObjArray.h"
+#include "TGraphErrors.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TAxis.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
 #include "L1Trigger/L1TMuonOverlap/interface/OmtfName.h"
+#include "UserCode/OmtfDataFormats/interface/EventObj.h"
+#include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
 
 namespace {
   TH1D *hDataEmulCompare; 
@@ -158,7 +160,7 @@ void AnaDataEmul::init(TObjArray& histos)
 
 }
 
-void AnaDataEmul::run(L1ObjColl * coll)
+void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
 {
   if ( !*coll ) return;
 
@@ -186,6 +188,7 @@ void AnaDataEmul::run(L1ObjColl * coll)
   if (data && emul && (dataColl.getL1Objs().size() != emulColl.getL1Objs().size()) ) diff = sizeDiff;
 
   hDataEmulCompare->Fill(diff);
+   theRunMap.addEvent(event->run, (diff==agree) ); 
 
   unsigned int hits = 0;
   if (emul) hits |= emul->hits;
@@ -300,5 +303,19 @@ const L1Obj * AnaDataEmul::bestMatch( const L1Obj * data, const L1ObjColl & emuC
     }
   }
   return emul;
+}
+
+void AnaDataEmul::resume(TObjArray& histos)
+{
+  TGraphErrors * hGraphRun = new TGraphErrors();
+  hGraphRun->SetName("hGraphDataEmulHistory");
+  histos.Add(hGraphRun);
+  std::vector<unsigned int> runs = theRunMap.runs();
+  hGraphRun->Set(runs.size());
+  for (unsigned int iPoint = 0; iPoint < runs.size(); iPoint++) {
+    unsigned int run = runs[iPoint];
+    hGraphRun->SetPoint(iPoint, run, theRunMap.eff(run));
+    hGraphRun->SetPointError(iPoint, 0., theRunMap.effErr(run));
+  }
 }
 

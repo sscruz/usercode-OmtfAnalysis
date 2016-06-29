@@ -4,7 +4,6 @@
 #include "FWCore/Framework/interface/EDFilter.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
-#include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
 
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
@@ -36,7 +35,6 @@ private:
 
   unsigned int theCounterIN, theCounterL1, theCounterHLT;
 
-//  L1GtUtils theL1GtUtils;
   HLTConfigProvider theHltConfig;
   edm::ParameterSetID theTriggerParSetID;
   bool theWarnNoColl;

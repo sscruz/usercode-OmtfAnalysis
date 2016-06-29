@@ -2,9 +2,11 @@
 #define UserCode_OmtfAnalysis_AnaDataEmul_H
 
 #include <string>
+#include "UserCode/OmtfAnalysis/interface/Utilities.h"
 
 class L1ObjColl;
 class L1Obj;
+class EventObj;
 class TObjArray;
 namespace edm { class ParameterSet; }
 
@@ -12,7 +14,9 @@ class AnaDataEmul {
 public:
   AnaDataEmul(const edm::ParameterSet& cfg);
   void init(TObjArray& histos);
-  void run(L1ObjColl* coll);
+  void run(EventObj* event, L1ObjColl* coll);
+  void resume(TObjArray& histos);
+
 private:
 
   enum DIFF { agree=1, almostAgree=2, ratherAgree = 3, disagree=4, dataOnly=5, emulOnly=6, sizeDiff=7, unknown };
@@ -27,6 +31,9 @@ private:
   unsigned int hasRpcHitsB(unsigned int hitPattern);
   unsigned int hasRpcHitsE(unsigned int hitPattern);
 
+  RunEffMap theRunMap;
+
+  
 };
 
 

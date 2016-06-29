@@ -53,3 +53,40 @@ int L1RpcEtaScale::etaCode(float etaValue)
   return result;
 }
 
+
+bool RunEffMap::hasRun(unsigned int run) const { return (theRunMap.find(run) != theRunMap.end()); }
+void RunEffMap::addEvent(unsigned int run, bool fired)
+{
+  if (!hasRun(run)) theRunMap[run] = std::make_pair(0,0);
+  theRunMap[run].first++;
+  if (fired) theRunMap[run].second++;
+}
+std::vector<unsigned int> RunEffMap::runs() const
+{
+  std::vector<unsigned int> result;
+  for (auto & runEntry : theRunMap ) result.push_back(runEntry.first);
+  return result;
+}
+double RunEffMap::eff(unsigned int run) const
+{
+  double eff = 0.;
+  if (!hasRun(run)) return 0.;
+  unsigned int nEvent = theRunMap.at(run).first;
+  unsigned int nFired = theRunMap.at(run).second;
+  if (nEvent != 0) eff = double(nFired)/double(nEvent);
+  return eff;  
+}
+double RunEffMap::effErr(unsigned int run) const
+{
+  double effErr = 0.;
+  if (!hasRun(run)) return 0.;
+  unsigned int nEvent = theRunMap.at(run).first;
+  unsigned int nFired = theRunMap.at(run).second;
+  if (nEvent > 0) {
+    float effM1 = (nFired > 0) ? double(nFired-1)/nEvent : 0.;
+    effErr = sqrt( (1-effM1)*std::max((int)nFired,1))/nEvent;
+  }
+  //if (nEvent > 0 ) effErr = sqrt( double(nFired))/ nEvent;
+  return effErr;
+}
+

@@ -16,10 +16,12 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource", 
 #fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run274777-Cosmic_0CB8BC0E-D82D-E611-BBF2-02163E0128EA.root'),
 fileNames = cms.untracked.vstring(
- 'file:/afs/cern.ch/work/k/konec/data/runs/run275375-Express-1000_F4B901E0-CE36-E611-BD7E-02163E0139BF.root',
+  'file:/afs/cern.ch/work/k/konec/data/runs/run275911-Express-400_36C1CFB4-BD3D-E611-895F-02163E012B2D.root',
+# 'file:/afs/cern.ch/work/k/konec/data/runs/run275376-Express-1950_3A49E7B5-4C37-E611-B9F5-02163E013921.root',
+#'file:/afs/cern.ch/work/k/konec/data/runs/run275375-Express-1000_F4B901E0-CE36-E611-BD7E-02163E0139BF.root',
 #'file:/afs/cern.ch/work/k/konec/data/runs/run275370-SingleMuon-150_3E506452-7436-E611-B1D1-02163E014372.root',
-# 'file:/afs/cern.ch/work/k/konec/data/runs/run275291-SingleMuon-050_788C99A6-4934-E611-AED2-02163E01275B.root',
-# 'file:/afs/cern.ch/work/k/konec/data/runs/run275291-SingleMuon-150_F0FF7781-4F34-E611-A177-02163E01191D.root',
+#'file:/afs/cern.ch/work/k/konec/data/runs/run275291-SingleMuon-050_788C99A6-4934-E611-AED2-02163E01275B.root',
+#'file:/afs/cern.ch/work/k/konec/data/runs/run275291-SingleMuon-150_F0FF7781-4F34-E611-A177-02163E01191D.root',
 #                                  '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/275/291/00000/06D05EF0-5434-E611-B92B-02163E0145B0.root',
 #                                  '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/275/291/00000/06A162C3-6634-E611-8C29-02163E0141A3.root',
                                    ),
@@ -61,9 +63,9 @@ process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
 #process.GlobalTag.globaltag  = 'auto:run2_data'
 #process.GlobalTag.globaltag  = '80X_dataRun2_Prompt_v8'
 #from Configuration.AlCa.GlobalTag import GlobalTag
-#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 
 
@@ -176,8 +178,8 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
     muonColl = cms.InputTag("muons"),
     beamSpot = cms.InputTag("offlineBeamSpot"),
     requireInnerTrack = cms.bool(True),
-    requireOuterTrack = cms.bool(True),
-    requireGlobalTrack = cms.bool(True),
+    requireOuterTrack = cms.bool(False),
+    requireGlobalTrack = cms.bool(False),
     minPt = cms.double(5.),
     maxTIP = cms.double(0.2),
     maxAbsEta = cms.double(1.6),

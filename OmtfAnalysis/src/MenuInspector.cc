@@ -21,6 +21,11 @@
 #include "DataFormats/L1GlobalMuonTrigger/interface/L1MuGMTExtendedCand.h"
 #include "DataFormats/L1GlobalMuonTrigger/interface/L1MuGMTReadoutCollection.h"
 */
+#include "CondFormats/L1TObjects/interface/L1GtTriggerMenuFwd.h"
+#include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
+#include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerRecord.h"
 
 #include <iostream>
 #include <fstream>
@@ -28,49 +33,45 @@
 #include <set>
 #include <bitset>
 
-#include "CondFormats/L1TObjects/interface/L1GtTriggerMenuFwd.h"
-#include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
-#include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
+#include "DataFormats/L1TGlobal/interface/GlobalAlgBlk.h"
+#include "CondFormats/DataRecord/interface/L1TUtmTriggerMenuRcd.h"
+#include "CondFormats/L1TObjects/interface/L1TUtmTriggerMenu.h"
 
-#include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "FWCore/Common/interface/TriggerResultsByName.h"
 
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerRecord.h"
 
 namespace {
   edm::EDGetTokenT<edm::TriggerResults> theTrigResultToken;
+  edm::EDGetTokenT<GlobalAlgBlkBxCollection> theGlobalAlgToken;
 }
 
 
-MenuInspector::MenuInspector(const edm::ParameterSet& cfg, edm::ConsumesCollector&& iC)
+MenuInspector::MenuInspector(const edm::ParameterSet& cfg, edm::ConsumesCollector&& cColl)
   : theCounterIN(0), theCounterL1(0), theCounterHLT(0),
     theWarnNoColl(cfg.getUntrackedParameter<bool>("warnNoColl",true))
 { 
-  theTrigResultToken = iC.consumes<edm::TriggerResults>(edm::InputTag("TriggerResults","","HLT"));
+  theTrigResultToken = cColl.consumes<edm::TriggerResults>(edm::InputTag("TriggerResults","","HLT"));
+  theGlobalAlgToken  = cColl.consumes<GlobalAlgBlkBxCollection>(edm::InputTag("gtStage2Digis"));
 }
 
 bool MenuInspector::checkRun(const edm::Run& run, const edm::EventSetup & es)
 {
-  std::cout <<"MenuInspector::beginRun CALLED"<<std::endl;
-/*
-
   //
   // L1
   //
-  theL1GtUtils.getL1GtRunCache(run,es, false, true);
-  int errorCode = -1;
-  const L1GtTriggerMenuLite* menu = theL1GtUtils.ptrL1GtTriggerMenuLite(errorCode);
-  if (errorCode) return false;
+  edm::ESHandle<L1TUtmTriggerMenu> menu;
+  es.get<L1TUtmTriggerMenuRcd>().get(menu);
   theNamesAlgoL1.clear();
-  for (unsigned int  idx = 0; idx <128; ++idx) { 
-    const std::string *pname = menu->gtAlgorithmName(idx,errorCode);
-    if (errorCode==0) theNamesAlgoL1.push_back(*pname); else theNamesAlgoL1.push_back("");
+  theNamesAlgoL1.resize(menu->getAlgorithmMap().size(),"");
+  for (auto const & keyval: menu->getAlgorithmMap()) {
+    std::string const & name  = keyval.second.getName();
+    unsigned int        index = keyval.second.getIndex();
+//    std::cout << " Index: " << index << " name: " << name << std::endl;
+    if (index >= theNamesAlgoL1.size() ) theNamesAlgoL1.resize( index+1,"");  
+    theNamesAlgoL1[index]=name;
   }
-*/
-
 
   //
   // HLT
@@ -85,7 +86,7 @@ bool MenuInspector::checkRun(const edm::Run& run, const edm::EventSetup & es)
 //      theHltConfig.dump("PrescaleTable");
 //      theHltConfig.dump("ProcessPSet");
       theNamesAlgoHLT.clear();
-      //up to .size()-1, since the last is "Final" decision.
+      //for goes up to .size()-1, since the last is "Final" decision.
       for (unsigned int idx =0;  idx < theHltConfig.size()-1; idx++) theNamesAlgoHLT.push_back( theHltConfig.triggerName(idx) );
     }
   } 
@@ -100,7 +101,6 @@ MenuInspector::~MenuInspector()
 bool MenuInspector::filter(edm::Event&ev, const edm::EventSetup&es)
 {
 /*
-  std::cout <<"-------------------------------------------------------------------"<<std::endl;
   theCounterIN++;
   if ( !filterL1(ev,es) ) return false;
   theCounterL1++;
@@ -112,50 +112,26 @@ bool MenuInspector::filter(edm::Event&ev, const edm::EventSetup&es)
 
 
 
-
 std::vector<unsigned int>  MenuInspector::firedAlgosL1(const edm::Event&ev, const edm::EventSetup&es) 
 {
   std::vector<unsigned int> result;
-/*
 
-   //
-  // get mask set
-  //
-  theL1GtUtils.getL1GtRunCache(ev,es, false, true);
-  int errorCode = -1;
-  const std::vector<unsigned int>& triggerMaskSet =  theL1GtUtils.triggerMaskSet( L1GtUtils::AlgorithmTrigger, errorCode);
-  if (errorCode) return result;
-
-  //
-  // get decsion
-  //
-  edm::Handle<L1GlobalTriggerReadoutRecord> gtReadoutRecord;
-  edm::InputTag l1GtDaqReadoutRecordInputTag("gtDigis");
-  ev.getByLabel(l1GtDaqReadoutRecordInputTag, gtReadoutRecord);
-  if (!gtReadoutRecord.isValid()) { 
-    if (theWarnNoColl) std::cout <<" PROBLEM, record not OK" << std::endl; 
+  edm::Handle<GlobalAlgBlkBxCollection> ugt;
+  ev.getByToken(theGlobalAlgToken, ugt);
+  if (!ugt.isValid()) {
+    std::cout << " PROBLEM, record uGT not OK " << std::endl;
     return result;
   }
-  DecisionWord gtDecisionWord = gtReadoutRecord->decisionWord();
 
-  //
-  // save only not masked bits
-  //
-  for (unsigned int i=0; i<128;++i) if (gtDecisionWord[i] && ! triggerMaskSet[i]) result.push_back(i);
+  GlobalAlgBlk const * glbAlgBlk  = & ugt->at(0, 0);
+  if (!glbAlgBlk) { std::cout << " PROBLEM, no glbAlgBlk, return " << std::endl; return result; }
+//  if (glbAlgBlk) glbAlgBlk->print( std::cout);
+  for (unsigned int idx = 0 ; idx < theNamesAlgoL1.size(); idx++) {
+    bool isAccept = glbAlgBlk->getAlgoDecisionFinal(idx);
+    if (isAccept) result.push_back(idx);
+//    if (isAccept) std::cout <<" FIRED: "<< theNamesAlgoL1[idx] << std::endl;
+  } 
 
-//  for (unsigned int i=0; i<128;++i) if (gtDecisionWord[i] && ! triggerMaskSet[i]) std::cout << i<<" ";
-//  unsigned int ntrig=0;  for (unsigned int i=0; i<128;++i) if (gtDecisionWord[i]  && ! triggerMaskSet[i]) ntrig++;
-//  std::cout <<" --->  TOTAL NUMBER OF L1 TRIGGERS: " <<  ntrig << std::endl;
-
-//  std::bitset<128> bs(0ul);
-//  for (unsigned int i=0; i<128;++i) std::cout <<gtDecisionWord[i]; std::cout <<std::endl;
-//  for (unsigned int i=0; i<64; ++i) { bs1[i] = gtDecisionWord[i]; bs2[i]=gtDecisionWord[i+64]; }
-//  for (unsigned int i=0; i<128;++i) bs[i] = gtDecisionWord[i];
-//  std::stringstream str;
-//  gtReadoutRecord->printGtDecision(str);
-//  std::cout <<str.str()<<std::endl;
-
-*/
   return result;
 }
 
@@ -195,7 +171,7 @@ std::vector<unsigned int> MenuInspector::firedAlgosHLT(const edm::Event&ev, cons
   for (unsigned int triggerIndex =0; triggerIndex < theHltConfig.size()-1; ++triggerIndex) {   //skip "Final" decision indes
     bool isAccept = triggerResults->accept(triggerIndex);
     if (isAccept) result.push_back(triggerIndex);
-    //    if (isAccept) std::cout <<  triggerIndex <<"("<< theHltConfig.triggerName(triggerIndex)<<") ";
+//    if (isAccept) std::cout <<  triggerIndex <<" ("<< theHltConfig.triggerName(triggerIndex)<<") "<< std::endl;;
     //    if (isAccept) ntrig++;
   }
   //std::cout <<"  --->  TOTAL NUMBER OF HLT TRIGGERS: " <<  ntrig << std::endl;

@@ -1,6 +1,9 @@
 #ifndef L1RpcTriggerAnalysis_Utilities_H
 #define L1RpcTriggerAnalysis_Utilities_H
 
+#include <vector>
+#include <map>
+
 // variable-size PT bins corresponding to L1 trigger scale. 
 // Lower bound of bin ipt corresponds to L1Pt(ipt),
 // with exception of ipt=0 and 1 (which should be NAN and 0. instead of 0. and 0.1 respectively)
@@ -21,5 +24,16 @@ public:
   static double etaBins[nEtaBins+1];
 };
 
+class RunEffMap {
+public:
+  std::vector<unsigned int> runs() const;
+  bool hasRun(unsigned int run) const;
+  void addEvent(unsigned int run, bool fired);
+  double eff(unsigned int run) const;
+  double effErr(unsigned int run) const;
+private:
+   typedef std::map< unsigned int, std::pair<unsigned int, unsigned int> > Map;
+   Map theRunMap;
+};
 
 #endif

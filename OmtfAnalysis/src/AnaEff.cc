@@ -8,17 +8,20 @@
 #include "TTree.h"
 #include "TFile.h"
 
-#include "UserCode/OmtfDataFormats/interface/EventData.h"
+#include "UserCode/OmtfDataFormats/interface/EventObj.h"
 #include "UserCode/OmtfDataFormats/interface/MuonObj.h"
 #include "UserCode/OmtfDataFormats/interface/L1Obj.h"
 #include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
 #include "UserCode/OmtfAnalysis/interface/Utilities.h"
+#include "DataFormats/Math/interface/deltaR.h"
+
 #include <cmath>
 #include <vector>
 #include <sstream>
 
 namespace {
-  TH1D  *hEff_EtaOmtfn, *hEff_EtaOmtfn_D, *hEff_EtaOmtfp, *hEff_EtaOmtfp_D;
+  TH1D  *hEffEtaOMTFn, *hEffEtaOMTFn_D, *hEffEtaOMTFp, *hEffEtaOMTFp_D;
+  TH1D  *hEffEtaAll, *hEffEtaAll_D;
 }
 
 
@@ -32,16 +35,50 @@ const double AnaEff::ptCuts[ AnaEff::nPtCuts] ={0., 0.1,
 std::string reg[5]={"_Bar","_Int","_End","_Qeq0","_Qgt0"};
 */
 
+void AnaEff::resume(TObjArray& histos)
+{
+  TGraphErrors * hGraphRun = new TGraphErrors();
+  hGraphRun->SetName("hGraphEffRun");
+  histos.Add(hGraphRun);
+  std::vector<unsigned int> runs = theRunMap.runs();
+  hGraphRun->Set(runs.size());
+  for (unsigned int iPoint = 0; iPoint < runs.size(); iPoint++) {
+    unsigned int run = runs[iPoint];
+    hGraphRun->SetPoint(iPoint, run, theRunMap.eff(run));
+    hGraphRun->SetPointError(iPoint, 0., theRunMap.effErr(run));
+  }
+   
+/*
+  for( auto const & run : theRunMap) {
+    double eff=0.;
+    double effErr=0.;
+    unsigned int nEventsN = run.second.second; 
+    unsigned int nEventsD = run.second.first;
+    if (nEventsD !=0 ) {
+      eff = static_cast<double>(nEventsN) / nEventsD;
+      effErr = sqrt( static_cast<double>(nEventsN)) / nEventsD;
+    }
+    std::cout <<" RUN: "<<run.first <<" eff: "<< eff<<" +/- "<<effErr<<std::endl;
+    hGraphRun->SetPoint(iPoint, run.first , eff);
+    hGraphRun->SetPointError(iPoint, 0., effErr);
+    iPoint++;
+  }
+*/
+}
+
 
 void AnaEff::init(TObjArray& histos)
 {
   int nBins = 60;
   double omin = 0.75;
   double omax = 1.35;
-  hEff_EtaOmtfn   = new TH1D("hEff_EtaOmtfn",  "hEff_EtaOmtfn",   nBins, -omax, -omin); histos.Add(hEff_EtaOmtfn);
-  hEff_EtaOmtfn_D = new TH1D("hEff_EtaOmtfn_D","hEff_EtaOmtfn_D", nBins, -omax, -omin); histos.Add(hEff_EtaOmtfn_D);
-  hEff_EtaOmtfp   = new TH1D("hEff_EtaOmtfp",  "hEff_EtaOmtfp",   nBins,  omin, omax); histos.Add(hEff_EtaOmtfp);
-  hEff_EtaOmtfp_D = new TH1D("hEff_EtaOmtfp_D","hEff_EtaOmtfp_D", nBins,  omin, omax); histos.Add(hEff_EtaOmtfp_D);
+  hEffEtaOMTFn   = new TH1D("hEffEtaOMTFn",  "hEffEtaOMTFn",   nBins, -omax, -omin); histos.Add(hEffEtaOMTFn);
+  hEffEtaOMTFn_D = new TH1D("hEffEtaOMTFn_D","hEffEtaOMTFn_D", nBins, -omax, -omin); histos.Add(hEffEtaOMTFn_D);
+  hEffEtaOMTFp   = new TH1D("hEffEtaOMTFp",  "hEffEtaOMTFp",   nBins,  omin, omax); histos.Add(hEffEtaOMTFp);
+  hEffEtaOMTFp_D = new TH1D("hEffEtaOMTFp_D","hEffEtaOMTFp_D", nBins,  omin, omax); histos.Add(hEffEtaOMTFp_D);
+
+  hEffEtaAll     =  new TH1D("hEffEtaAll",    "hEffEtaAll",   96,   -2.4, 2.4); histos.Add(hEffEtaAll); 
+  hEffEtaAll_D   =  new TH1D("hEffEtaAll_D",  "hEffEtaAll_D", 96,   -2.4, 2.4); histos.Add(hEffEtaAll_D); 
 
 /*
   hEfficMuPt_D = new TH1D("hEfficMuPt_D","hEfficMuPt_D", L1PtScale::nPtBins, L1PtScale::ptBins); histos.Add(hEfficMuPt_D);
@@ -91,19 +128,46 @@ void AnaEff::run(  const EventObj* event, const MuonObj* muon, const L1ObjColl *
   if (!muon) return;
   double etaMu = muon->eta();
   double ptMu  = muon->pt();  
-  if (!muon->isGlobal()) return;
+//  if (!muon->isGlobal()) return;
 
 //  std::cout <<" MUON: " << *muon << std::endl;
-  TH1D* h_N = (etaMu > 0 ) ? hEff_EtaOmtfp : hEff_EtaOmtfn; 
-  TH1D* h_D = (etaMu > 0 ) ? hEff_EtaOmtfp_D : hEff_EtaOmtfn_D; 
+  TH1D* h_N = (etaMu > 0 ) ? hEffEtaOMTFp : hEffEtaOMTFn; 
+  TH1D* h_D = (etaMu > 0 ) ? hEffEtaOMTFp_D : hEffEtaOMTFn_D; 
 
   std::vector<L1Obj> l1Omtfs = l1Coll->selectByType(L1Obj::OMTF);
-
-  if (ptMu > 6.) {
-    h_D->Fill(etaMu);
-    if(l1Omtfs.size()) h_N->Fill(etaMu);
+  bool fired = false;
+  for (auto l1Omtf : l1Omtfs) {
+    double deltaR = reco::deltaR( l1Omtf.etaValue(),l1Omtf.phiValue(), muon->eta(),muon->phi() );
+    std::cout << "deltaR: " << deltaR << std::endl;
+    if (deltaR < 0.5) fired = true;
   }
-  
+  if (ptMu > 7.) {
+    h_D->Fill(etaMu);
+    if (fired) h_N->Fill(etaMu);
+  }
+
+/* 
+  if (ptMu > 7.) {
+    hEffEtaAll_D->Fill(etaMu);
+    if (firedAll) hEffEtaAll->Fill(etaMu);
+  }
+
+  std::vector<L1Obj> l1oths = (l1Coll->selectByType(L1Obj::BMTF)+l1Coll->selectByType(L1Obj::EMTF));
+  bool firedOther = false;
+  for (auto l1oth : l1oths)
+    double deltaR = reco::deltaR( reco::deltaR(l1oth.etaValue(),l1oth.phiValue(),muon->eta(),muon.phi() );
+    if (deltaR < 0.5) firedOther = true;
+  }
+*/
+
+
+  //
+  // OMTF efficiency history 
+  //
+  if ( ptMu > 7. && fabs(etaMu) < 1.15 && fabs(etaMu) > 0.9) theRunMap.addEvent(event->run, fired); 
+
+
+
 /*
   static double matchingdR = theConfig.getParameter<double>("maxDR");
   std::vector<L1Obj> l1Rpcs = l1Coll->l1RpcColl().selectByBx().selectByDeltaR( matchingdR);
