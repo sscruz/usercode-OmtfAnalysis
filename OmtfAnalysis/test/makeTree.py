@@ -2,8 +2,9 @@ import FWCore.ParameterSet.Config as cms
 import commands
 import os
 
-from Configuration.StandardSequences.Eras import eras
+#from Configuration.StandardSequences.Eras import eras
 #process = cms.Process('OmtfTree',eras.Run2_2016)
+
 process = cms.Process('OmtfTree')
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -17,8 +18,8 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource", 
 #fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run274777-Cosmic_0CB8BC0E-D82D-E611-BBF2-02163E0128EA.root'),
 fileNames = cms.untracked.vstring(
-#  'file:/afs/cern.ch/work/k/konec/data/runs/run275911-Express-400_36C1CFB4-BD3D-E611-895F-02163E012B2D.root',
- 'file:/afs/cern.ch/work/k/konec/data/runs/run275376-Express-1950_3A49E7B5-4C37-E611-B9F5-02163E013921.root',
+  'file:/afs/cern.ch/work/k/konec/data/runs/run275911-Express-400_36C1CFB4-BD3D-E611-895F-02163E012B2D.root',
+# 'file:/afs/cern.ch/work/k/konec/data/runs/run275376-Express-1950_3A49E7B5-4C37-E611-B9F5-02163E013921.root',
 #'file:/afs/cern.ch/work/k/konec/data/runs/run275375-Express-1000_F4B901E0-CE36-E611-BD7E-02163E0139BF.root',
 #'file:/afs/cern.ch/work/k/konec/data/runs/run275370-SingleMuon-150_3E506452-7436-E611-B1D1-02163E014372.root',
 #'file:/afs/cern.ch/work/k/konec/data/runs/run275291-SingleMuon-050_788C99A6-4934-E611-AED2-02163E01275B.root',
@@ -40,7 +41,7 @@ fileNames = cms.untracked.vstring(
 #
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
-process.load('Configuration.EventContent.EventContent_cff')
+#process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.Geometry.GeometryExtended2016Reco_cff')
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
@@ -81,25 +82,6 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
 process.MessageLogger.suppressWarning  = cms.untracked.vstring('Geometry', 'AfterSource','L1T','L1GlobalTriggerRawToDigi')
 process.options = cms.untracked.PSet( wantSummary=cms.untracked.bool(False))
 
-#
-# fixes to R2D and emulation
-#
-#process.RawToDigi.remove(process.siPixelDigis)
-#process.RawToDigi.remove(process.siStripDigis)
-#process.RawToDigi.remove(process.ecalDigis)
-#process.RawToDigi.remove(process.ecalPreshowerDigis)
-#process.RawToDigi.remove(process.hcalDigis)
-#process.RawToDigi.remove(process.castorDigis)
-#process.RawToDigi.remove(process.tcdsDigis)
-#process.RawToDigi.remove(process.caloStage1Digis)
-#process.RawToDigi.remove(process.caloStage1FinalDigis)
-#process.RawToDigi.remove(process.caloStage1LegacyFormatDigis)
-#process.RawToDigi.remove(process.caloStage2Digis)
-#process.RawToDigi.remove(process.gtStage2Digis)
-#process.RawToDigi.remove(process.gtDigis)
-#process.RawToDigi.remove(process.muonDTDigis)
-#process.RawToDigi.remove(process.scalersRawToDigi)
-#process.RawToDigi.remove(process.gctDigis)
 
 
 #OMTF ESProducer. Fills CondFormats from XML files.
@@ -143,10 +125,13 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
 )
 
 process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.gmtStage2Digis)
-#process.raw2digi_step = cms.Path(process.RawToDigi+process.emtfStage2Digis)
 process.omtf_step = cms.Path(process.omtfEmulator)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, process.endjob_step)
+
+#process.raw2digi_step = cms.Path(process.bmtfDigis+process.emtfStage2Digis+process.gmtStage2Digis)
+#process.endjob_step = cms.EndPath(process.endOfProcess)
+#process.schedule = cms.Schedule(process.raw2digi_step, process.endjob_step)
 
 #
 # re-emulate L1T
