@@ -143,7 +143,8 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   }
     
   
-  if (!l1Objs.size() && theMuon) {
+//  if (!l1Objs.size() && theMuon) {
+  if (l1Objs.size()) {
     std::cout <<"#"<<theCounter<<" "<< *event << std::endl;
     if (theMuon) std::cout <<"MUON "<<*muon << std::endl;
     for (auto obj : l1Objs) {

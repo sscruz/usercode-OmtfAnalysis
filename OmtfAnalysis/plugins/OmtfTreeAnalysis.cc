@@ -134,9 +134,9 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
      
 
   std::cout << *event << std::endl;
-   //if ( muon && muon->pt()>0  && !(*l1ObjColl) ) std::cout <<" muon : " << *muon << std::endl << " L1Obj: " <<  *l1ObjColl << std::endl;
-//   if ( muon && muon->pt()>0  ) std::cout <<" muon : " << *muon << std::endl; 
-//   if (*l1ObjColl) std::cout << *l1ObjColl << std::endl; 
+//   if ( muon && muon->pt()>0  && !(*l1ObjColl) ) std::cout <<" muon : " << *muon << std::endl << " L1Obj: " <<  *l1ObjColl << std::endl;
+   if ( muon && muon->pt()>0  ) std::cout <<" muon : " << *muon << std::endl; 
+   if (*l1ObjColl)  std::cout << *l1ObjColl << std::endl; 
   }
 }
 

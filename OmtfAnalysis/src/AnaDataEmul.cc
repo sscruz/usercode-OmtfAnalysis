@@ -178,6 +178,7 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
 //  if (emul && makeName(*emul).name()=="OMTFn4") return;  
 //  if (data && makeName(*data).name()=="OMTFn4") return;  
 
+
   bool unique = data && emul && (dataColl.getL1Objs().size() == 1) && (emulColl.getL1Objs().size() == 1);
 
 //  bool lowQuality = false;
@@ -188,7 +189,7 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
   if (data && emul && (dataColl.getL1Objs().size() != emulColl.getL1Objs().size()) ) diff = sizeDiff;
 
   hDataEmulCompare->Fill(diff);
-   theRunMap.addEvent(event->run, (diff==agree) ); 
+  theRunMap.addEvent(event->run, (diff==agree) ); 
 
   unsigned int hits = 0;
   if (emul) hits |= emul->hits;
@@ -211,21 +212,20 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
      hDataEmulNotAgreePhi->Fill( OmtfName(emul->iProcessor, emul->position), emul->phi ); 
   }
 
-//  if (!dt && !csc && rpc && diff!=agree) std::cout <<" ***** RPC only, not agree  "<< std::endl;
-//  if (diff!=agree ) std::cout << "NOT agree("<<diffName(diff)<<"), dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl; 
+  if (diff!=agree ) std::cout << "NOT agree("<<diffName(diff)<<"), dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl; 
 
- if (unique) {
-   hDataEmulPt->Fill( code2pt(data->pt), code2pt(emul->pt) );
-   hDataEmulPhi->Fill(data->phi, emul->phi);
-   hDataEmulIssue->Fill(1);
-   if (data->hits != emul->hits)          hDataEmulIssue->Fill(2);
-   if (data->pt != emul->pt)              hDataEmulIssue->Fill(3); 
-   if ( abs(data->phi - emul->phi) > 1)   hDataEmulIssue->Fill(4); 
-   if (data->eta != emul->eta)            hDataEmulIssue->Fill(5);
-   if ( data->charge !=  emul->charge)   hDataEmulIssue->Fill(6);
-   if ( (data->q >>2) != (emul->q >>2) )  hDataEmulIssue->Fill(7);
- }
- if(diff==agree) { hDataEmulEta->Fill(code2HistoBin(abs(data->eta)), code2HistoBin(abs(emul->eta)) ); }
+  if (unique) {
+    hDataEmulPt->Fill( code2pt(data->pt), code2pt(emul->pt) );
+    hDataEmulPhi->Fill(data->phi, emul->phi);
+    hDataEmulIssue->Fill(1);
+    if (data->hits != emul->hits)          hDataEmulIssue->Fill(2);
+    if (data->pt != emul->pt)              hDataEmulIssue->Fill(3); 
+    if ( abs(data->phi - emul->phi) > 1)   hDataEmulIssue->Fill(4); 
+    if (data->eta != emul->eta)            hDataEmulIssue->Fill(5);
+    if ( data->charge !=  emul->charge)   hDataEmulIssue->Fill(6);
+    if ( (data->q >>2) != (emul->q >>2) )  hDataEmulIssue->Fill(7);
+  }
+  if(diff==agree) { hDataEmulEta->Fill(code2HistoBin(abs(data->eta)), code2HistoBin(abs(emul->eta)) ); }
     
 }
 

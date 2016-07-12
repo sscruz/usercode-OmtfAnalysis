@@ -11,9 +11,8 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
 
   filterByAnaEvent = cms.bool(True),
   anaEvent = cms.PSet(
-#    skipRuns = cms.vuint32(275290),
     skipRuns = cms.vuint32(),
-#   onlyRuns = cms.vuint32(275319),
+#    onlyRuns = cms.vuint32(275963),
   ),
 
   filterByAnaMuonDistribution = cms.bool(True),
@@ -31,37 +30,8 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
     minNumberDtCscHits = cms.uint32(0),
   ),
 
-  filterByAnaMenu = cms.bool(True),
-  anaMenu = cms.PSet(  #OR of confiditions for L1 and HLT
-#   acceptL1_OtherThanMu             = cms.bool(False),
-#   acceptL1_Mu                      = cms.bool(True),
-#   acceptL1_Names                   = cms.vstring("L1_ZeroBias"),
-#   acceptHLT_OtherThanMuPhysicsAlCa = cms.bool(False),
-#   acceptHLT_L1                     = cms.bool(False),
-#   acceptHLT_ZeroBias               = cms.bool(True),
-#   acceptHLT_Physics                = cms.bool(False),
-#   acceptHLT_Mu                     = cms.bool(False),
-
-
-#   acceptL1_OtherThanMu             = cms.bool(False),
-#   acceptL1_Mu                      = cms.bool(True),
-#   acceptL1_Names                   = cms.vstring("L1_ZeroBias"),
-#   acceptHLT_OtherThanMuPhysicsAlCa = cms.bool(False),
-#   acceptHLT_L1                     = cms.bool(True),
-#   acceptHLT_ZeroBias               = cms.bool(False),
-#   acceptHLT_Physics                = cms.bool(False),
-#   acceptHLT_Mu                     = cms.bool(False),
-
-
-#   acceptL1_OtherThanMu             = cms.bool(True),
-#   acceptL1_Mu                      = cms.bool(True),
-#   acceptL1_Names                   = cms.vstring("L1_ZeroBias","L1_SingleMu16"),
-#   acceptHLT_OtherThanMuPhysicsAlCa = cms.bool(True),
-#   acceptHLT_L1                     = cms.bool(True),
-#   acceptHLT_ZeroBias               = cms.bool(True),
-#   acceptHLT_Physics                = cms.bool(True),
-#   acceptHLT_Mu                     = cms.bool(True),
-
+  filterByAnaMenu = cms.bool(False),
+  anaMenu = cms.PSet( #OR of conditions for L1 and separately for HLT
     acceptL1_OtherThanMu             = cms.bool(True),
     acceptL1_Mu                      = cms.bool(False),
     acceptL1_Names                   = cms.vstring("L1_ZeroBias"),
@@ -71,7 +41,6 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
     acceptHLT_Physics                = cms.bool(False),
     acceptHLT_Mu                     = cms.bool(False),
   ),
-
 
   anaDataEmul =  cms.PSet(),
   anaEff =  cms.PSet(),     
