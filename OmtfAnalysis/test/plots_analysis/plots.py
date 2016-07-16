@@ -19,15 +19,18 @@ f.ls();
 #--------- HERE plots
 
 canvas = TObjArray()
-plotsDataEmul.plotAll(canvas)
-plotsEvent.plotAll(canvas)
+#plotsDataEmul.plotAll(canvas)
+#plotsEvent.plotAll(canvas)
 plotsMuon.plotAll(canvas)
 plotsEff.plotAll(canvas)
 
-#--------- HERE plots
+#--------- HERE pause 
 raw_input('press enter to exit')
 
+#--------- HERE plots
 for canva in canvas :
+  canvaName =  canva.ClassName()
+  if canvaName != 'TCanvas' : continue
   pictName  = "fig_png/"+canva.GetName()+".png"
   canva.Print(pictName)
 

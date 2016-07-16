@@ -6,7 +6,7 @@
 
 class L1Obj : public TObject {
 
- public:
+public:
   
   enum TYPE { NONE, RPCb, RPCf, DT, CSC, GMT, RPCb_emu, RPCf_emu, GMT_emu, OMTF, OMTF_emu, BMTF, EMTF };
 
@@ -17,12 +17,19 @@ class L1Obj : public TObject {
   int   iProcessor, position;
 
   L1Obj();
-  bool isValid() const { return q >= 0;}
 
-  double ptValue() { return (pt-1.)/2.; }
-  double etaValue() { return eta/240.*2.26; }
-  double phiValue() { return ( (15.+iProcessor*60.)/360. + phi/576. ) *2*M_PI; } 
-  int chargeValue() { return pow(-1,charge); }
+  bool isValid() const { return type!=NONE && pt>0;}
+  operator bool() const { return isValid(); }
+
+  double ptValue() const { return (pt-1.)/2.; }
+  double etaValue() const { return eta/240.*2.26; }
+  double phiValue() const {
+    if (type==OMTF || type==OMTF_emu || type==EMTF) 
+    return ( (15.+iProcessor*60.)/360. + phi/576. ) *2*M_PI;  
+    else if (type==BMTF) return ( (-15.+iProcessor*30.)/360. + phi/576. ) *2*M_PI;
+    else return 9999.;
+  }
+  int chargeValue() const { return pow(-1,charge); }
 
   ClassDef(L1Obj,4)
 };

@@ -6,7 +6,7 @@ from ROOT import *
 
 def fillHistoFromGraph(histo, graph) :
 
-  for iPoint in range(0,graph.GetN()-1):
+  for iPoint in range(graph.GetN()):
     run = Double(0.)
     value = Double(0.)
     graph.GetPoint(iPoint,run, value) 
@@ -24,7 +24,7 @@ def runHistoFromGraph(graph) :
   maxRun = 0;
   minRun = 999999999;
 
-  for iPoint in range(0,graph.GetN()-1):
+  for iPoint in range(graph.GetN()):
     xTmp = Double(0.)
     yTmp = Double(0.) 
     graph.GetPoint(iPoint,xTmp,yTmp)

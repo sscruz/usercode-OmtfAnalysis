@@ -119,6 +119,9 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
       std::cout<<std::endl; 
     }
 
+    //
+    // Base distributions and Filters
+    //
     // EVENT NUMBER, BX structure etc.
     if ( theAnaEvent && !theAnaEvent->filter(event) && theConfig.getParameter<bool>("filterByAnaEvent") ) continue;
     // ANALYSE AND FILTER KINEMCTICS
@@ -126,17 +129,27 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
     // ANALYSE AND FILTER TRIGGER MENU
     if ( theAnaMenu && !theAnaMenu->filter(event, muon, bitsL1, bitsHLT) && theConfig.getParameter<bool>("filterByAnaMenu") ) continue;
 
+
+/*
+    if (muon && muon->pt() > 21) continue;
+    std::cout <<"---------------------------------------"<<std::endl;
+    std::cout << *event << std::endl;
+    if ( muon && muon->pt()>0  ) std::cout <<" muon : " << *muon << std::endl; 
+    if (  *l1ObjColl)  std::cout << *l1ObjColl << std::endl; 
+    theAnaMenu->debug=true;
+    theAnaEff->debug=true;
+    theAnaMenu->filter(event, muon, bitsL1, bitsHLT);
+    theAnaMenu->debug=false;
+*/
+
     //
     // Analyses
     //
-    if (theAnaEff) { theAnaEff->run ( event, muon, l1ObjColl); }
+    if (theAnaMuonDistribution) theAnaMuonDistribution->run(muon);
+    if (theAnaEff)      theAnaEff->run ( event, muon, l1ObjColl); 
     if (theAnaDataEmul) theAnaDataEmul->run(event, l1ObjColl); 
      
 
-  std::cout << *event << std::endl;
-//   if ( muon && muon->pt()>0  && !(*l1ObjColl) ) std::cout <<" muon : " << *muon << std::endl << " L1Obj: " <<  *l1ObjColl << std::endl;
-   if ( muon && muon->pt()>0  ) std::cout <<" muon : " << *muon << std::endl; 
-   if (*l1ObjColl)  std::cout << *l1ObjColl << std::endl; 
   }
 }
 

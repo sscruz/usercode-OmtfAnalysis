@@ -18,9 +18,10 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource", 
 #fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run274777-Cosmic_0CB8BC0E-D82D-E611-BBF2-02163E0128EA.root'),
 fileNames = cms.untracked.vstring(
-#'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/846A13FA-733E-E611-BC5C-02163E011D84.root',
+#'/store/data/Run2016C/ZeroBias/RECO/PromptReco-v2/000/276/097/00000/54FC3E14-0141-E611-882B-02163E014116.root'
+'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/846A13FA-733E-E611-BC5C-02163E011D84.root',
 #'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/426B9BF4-733E-E611-BD17-02163E011B2D.root',
-'file:/afs/cern.ch/work/k/konec/data/runs/run275963-Express-150_24AE8B98-743E-E611-ABC2-02163E0138E3.root', 
+#'file:/afs/cern.ch/work/k/konec/data/runs/run275963-Express-150_24AE8B98-743E-E611-ABC2-02163E0138E3.root', 
 #'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/60BF23FA-733E-E611-9DB7-02163E0126B2.root',
 #'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/76B0FAEE-733E-E611-9E7F-02163E0119E8.root',
 #  'file:/afs/cern.ch/work/k/konec/data/runs/run275911-Express-400_36C1CFB4-BD3D-E611-895F-02163E012B2D.root',

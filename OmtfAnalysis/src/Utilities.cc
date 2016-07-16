@@ -3,15 +3,31 @@
 #include <sstream>
 #include <cmath>
 
+#include "UserCode/OmtfDataFormats/interface/L1Obj.h"
+
+OmtfName makeName(const L1Obj & obj) 
+{  
+  return (obj.type==L1Obj::OMTF || obj.type==L1Obj::OMTF_emu) ? 
+             OmtfName(obj.iProcessor, obj.position) : OmtfName(); 
+}
+
 //  for each index return corresponding ipt code value.   
 //  exception: 0 -> returns 0. instead of "no muon"
 //             1 -> returns 0.1 instead of 0.
 //             32 -> is outside of L1 ptscale. Returns 160.
+double L1PtScale::ptBins[]={ 0., 0.1, 
+                         1.5,  2., 2.5,  3., 3.5,  4.,   4.5,   5.,   6.,   8., 
+                         10., 12., 14., 16., 18., 20.,   22.,  25.,  30.,  35., 
+                         40., 50., 60., 70., 80., 100., 120., 150., 200., 500., 
+                         1000. };
+
+/*
 double L1PtScale::ptBins[]={0., 0.1, 
                          1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 6., 7., 8., 
                          10., 12., 14., 16., 18., 20., 25., 30., 35., 40., 45., 
                          50., 60., 70., 80., 90., 100., 120., 140., 
                          160. };
+*/
 
 double L1RpcEtaScale::etaBins[] = {
    -2.10, -1.97, -1.85, -1.73, -1.61, -1.48, -1.36, -1.24, -1.14,
@@ -55,11 +71,16 @@ int L1RpcEtaScale::etaCode(float etaValue)
 
 
 bool RunEffMap::hasRun(unsigned int run) const { return (theRunMap.find(run) != theRunMap.end()); }
+
+std::pair<unsigned int, unsigned int> RunEffMap::stat(unsigned int run) const {
+  if (hasRun(run) ) return  theRunMap.at(run); else return {0,0}; 
+}
+
 void RunEffMap::addEvent(unsigned int run, bool fired)
 {
   if (!hasRun(run)) theRunMap[run] = std::make_pair(0,0);
-  theRunMap[run].first++;
-  if (fired) theRunMap[run].second++;
+  theRunMap[run].second++;
+  if (fired) theRunMap[run].first++;
 }
 std::vector<unsigned int> RunEffMap::runs() const
 {
@@ -67,26 +88,36 @@ std::vector<unsigned int> RunEffMap::runs() const
   for (auto & runEntry : theRunMap ) result.push_back(runEntry.first);
   return result;
 }
-double RunEffMap::eff(unsigned int run) const
+
+RunEffMap::EffAndErr  RunEffMap::effAndErr() const
 {
-  double eff = 0.;
-  if (!hasRun(run)) return 0.;
-  unsigned int nEvent = theRunMap.at(run).first;
-  unsigned int nFired = theRunMap.at(run).second;
-  if (nEvent != 0) eff = double(nFired)/double(nEvent);
-  return eff;  
+  unsigned int nFired = 0;
+  unsigned int nEvent = 0;
+  for (auto aRunStat : theRunMap) {
+    nFired += aRunStat.second.first;
+    nEvent += aRunStat.second.second;
+  } 
+  return effAndErr(nFired,nEvent);
 }
-double RunEffMap::effErr(unsigned int run) const
+
+RunEffMap::EffAndErr  RunEffMap::effAndErr(unsigned int run) const
+{
+  if (!hasRun(run)) return {0.,0.};
+  unsigned int nFired = theRunMap.at(run).first;
+  unsigned int nEvent = theRunMap.at(run).second;
+  return effAndErr(nFired, nEvent);
+}
+
+RunEffMap::EffAndErr RunEffMap::effAndErr(unsigned int nFired, unsigned int nEvents) const
 {
   double effErr = 0.;
-  if (!hasRun(run)) return 0.;
-  unsigned int nEvent = theRunMap.at(run).first;
-  unsigned int nFired = theRunMap.at(run).second;
-  if (nEvent > 0) {
-    float effM1 = (nFired > 0) ? double(nFired-1)/nEvent : 0.;
-    effErr = sqrt( (1-effM1)*std::max((int)nFired,1))/nEvent;
+  double eff    = 0.;
+  if (nEvents > 0) {
+    eff    = double(nFired)/double(nEvents);
+    double effMod = (nFired != nEvents) ?  eff : double(nFired-1)/(double)nEvents;
+    effErr = sqrt( (1-effMod)*std::max((double)nFired,1.)) /(double)nEvents;
   }
-  //if (nEvent > 0 ) effErr = sqrt( double(nFired))/ nEvent;
-  return effErr;
+  return {eff,effErr};
 }
+
 

@@ -11,9 +11,11 @@ public:
   AnaMuonDistribution (const edm::ParameterSet&);
   void init(TObjArray& histos);
   bool filter(const MuonObj* muon);
+  void run(const MuonObj* muon);
+  
 private:
   double ptMin, etaMax;
-  unsigned int  minNumberOfMatchedStations, minNumberRpcHits, minNumberDtCscHits;
+  unsigned int  minNumberOfMatchedStations, minNumberTkHits, minNumberRpcHits, minNumberDtCscHits, minNumberRpcDtCscHits;
   bool requireAnyMuon, requireUnique, requireOnlyOne, requireGlobal, requireInner, requireOuter;
 };
 #endif

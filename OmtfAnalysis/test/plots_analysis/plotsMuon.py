@@ -57,6 +57,6 @@ def cMuonPtVsEta(canvas):
 
 def plotAll(canvas) :
   cMuonDIS(canvas)
-  cMuonPtVsEta(canvas)
+#  cMuonPtVsEta(canvas)
   return
 

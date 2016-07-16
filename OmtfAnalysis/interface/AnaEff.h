@@ -26,7 +26,10 @@ public:
   bool debug;
 
 private:
-   RunEffMap theRunMap;
+
+  RunEffMap theRunMap;
+  std::map< std::string, TH1D* > theHistoMap;
+
 };
 
 #endif

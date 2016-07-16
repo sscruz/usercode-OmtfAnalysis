@@ -14,6 +14,7 @@
 
 namespace {
   TH1D *hMuonPt_DIS, *hMuonEta_DIS, *hMuonPhi_DIS;
+  TH1D *hMuonPt_MEN, *hMuonEta_MEN, *hMuonPhi_MEN;
   TH2D *hMuonPtVsEta_Tk, *hMuonPtVsEta_Ma, *hMuonPtVsEta_Gl;
 }
 
@@ -21,8 +22,10 @@ AnaMuonDistribution::AnaMuonDistribution(const edm::ParameterSet& cfg)
   : ptMin( cfg.getParameter<double>("ptMin") ),
     etaMax (cfg.getParameter<double>("etaMax") ),
     minNumberOfMatchedStations( cfg.getParameter<unsigned int>("minNumberOfMatchedStations") ),
+    minNumberTkHits( cfg.getParameter<uint>("minNumberTkHits") ),
     minNumberRpcHits( cfg.getParameter<uint>("minNumberRpcHits") ),
     minNumberDtCscHits( cfg.getParameter<unsigned int>("minNumberDtCscHits") ), 
+    minNumberRpcDtCscHits( cfg.getParameter<unsigned int>("minNumberRpcDtCscHits") ), 
     requireAnyMuon(cfg.getParameter<bool>("requireAnyMuon")),
     requireUnique(cfg.getParameter<bool>("requireUnique")),
     requireOnlyOne(cfg.getParameter<bool>("requireOnlyOne")),
@@ -37,12 +40,15 @@ void AnaMuonDistribution::init(TObjArray& histos)
   hMuonEta_DIS = new TH1D("hMuonEta_DIS","All global muons Eta;Glb.muon #eta;Muons / bin",96, -2.4, 2.4);  histos.Add(hMuonEta_DIS);
   hMuonPhi_DIS = new TH1D("hMuonPhi_DIS","All global muons Phi;Glb.muon #phi [rad];Muons / bin",90,-M_PI,M_PI);  histos.Add(hMuonPhi_DIS);
 
+  hMuonPt_MEN  = new TH1D("hMuonPt_MEN","All global muons Pt;Glb.muon p_{T} [GeV];Muons / bin",L1PtScale::nPtBins,L1PtScale::ptBins); histos.Add(hMuonPt_MEN);
+  hMuonEta_MEN = new TH1D("hMuonEta_MEN","All global muons Eta;Glb.muon #eta;Muons / bin",96, -2.4, 2.4);  histos.Add(hMuonEta_MEN);
+  hMuonPhi_MEN = new TH1D("hMuonPhi_MEN","All global muons Phi;Glb.muon #phi [rad];Muons / bin",90,-M_PI,M_PI);  histos.Add(hMuonPhi_MEN);
+
   hMuonPtVsEta_Tk = new TH2D("hMuonPtVsEta_Tk","hMuonPtVsEta_Tk", L1RpcEtaScale::nEtaBins, L1RpcEtaScale::etaBins, L1PtScale::nPtBins, L1PtScale::ptBins); histos.Add(hMuonPtVsEta_Tk);
   hMuonPtVsEta_Ma = new TH2D("hMuonPtVsEta_Ma","hMuonPtVsEta_Ma", L1RpcEtaScale::nEtaBins, L1RpcEtaScale::etaBins, L1PtScale::nPtBins, L1PtScale::ptBins); histos.Add(hMuonPtVsEta_Ma);
   hMuonPtVsEta_Gl = new TH2D("hMuonPtVsEta_Gl","hMuonPtVsEta_Gl", L1RpcEtaScale::nEtaBins, L1RpcEtaScale::etaBins, L1PtScale::nPtBins, L1PtScale::ptBins); histos.Add(hMuonPtVsEta_Gl);
 
 }
-
 bool AnaMuonDistribution::filter(const MuonObj *muon)
 {
 //  std::cout << *muon << std::endl;
@@ -55,8 +61,10 @@ bool AnaMuonDistribution::filter(const MuonObj *muon)
   if (muon->pt() < ptMin) return false;
   if (fabs(muon->eta()) > etaMax) return false;
   if (muon->nMatchedStations < minNumberOfMatchedStations) return false;
+  if (muon->nTrackerHits < minNumberTkHits) return false;
   if (muon->nRPCHits < minNumberRpcHits) return false;
   if (muon->nDTHits + muon->nCSCHits < minNumberDtCscHits) return false;
+  if (muon->nRPCHits + muon->nDTHits + muon->nCSCHits < minNumberRpcDtCscHits) return false;
 
   hMuonPt_DIS->Fill(muon->pt());
   hMuonEta_DIS->Fill(muon->eta());
@@ -67,3 +75,12 @@ bool AnaMuonDistribution::filter(const MuonObj *muon)
   if (muon->isGlobal()) hMuonPtVsEta_Gl->Fill(muon->eta(), muon->pt());
   return true;
 }
+
+void AnaMuonDistribution::run(const MuonObj *muon)
+{
+//  std::cout << *muon << std::endl;
+  if (hMuonPt_MEN)  hMuonPt_MEN->Fill(muon->pt());
+  if (hMuonEta_MEN) hMuonEta_MEN->Fill(muon->eta());
+  if (hMuonPhi_MEN) hMuonPhi_MEN->Fill(muon->phi());
+}
+

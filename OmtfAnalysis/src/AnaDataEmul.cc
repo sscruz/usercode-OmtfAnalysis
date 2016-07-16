@@ -14,6 +14,7 @@
 #include "L1Trigger/L1TMuonOverlap/interface/OmtfName.h"
 #include "UserCode/OmtfDataFormats/interface/EventObj.h"
 #include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
+#include "UserCode/OmtfAnalysis/interface/Utilities.h"
 
 namespace {
   TH1D *hDataEmulCompare; 
@@ -56,7 +57,7 @@ namespace {
     }
   } 
 
-  OmtfName makeName(const L1Obj & obj) { return OmtfName(obj.iProcessor, obj.position); }
+
 
    
 
@@ -314,8 +315,9 @@ void AnaDataEmul::resume(TObjArray& histos)
   hGraphRun->Set(runs.size());
   for (unsigned int iPoint = 0; iPoint < runs.size(); iPoint++) {
     unsigned int run = runs[iPoint];
-    hGraphRun->SetPoint(iPoint, run, theRunMap.eff(run));
-    hGraphRun->SetPointError(iPoint, 0., theRunMap.effErr(run));
+    RunEffMap::EffAndErr effAndErr = theRunMap.effAndErr(run); 
+    hGraphRun->SetPoint(iPoint, run, effAndErr.eff());
+    hGraphRun->SetPointError(iPoint, 0., effAndErr.effErr());
   }
 }
 

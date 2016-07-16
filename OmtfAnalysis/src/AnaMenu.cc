@@ -11,9 +11,7 @@
 #include <iostream>
 #include <cmath>
 
-namespace { 
- TH1D *hMuonPt_MEN, *hMuonEta_MEN, *hMuonPhi_MEN;
-} 
+namespace { } 
 
 
 void  AnaMenu::updateMenu(const std::vector<std::string> & menuL1, const std::vector<std::string> & menuHLT)
@@ -35,7 +33,6 @@ bool AnaMenu::filter( const EventObj* ev, const MuonObj* muon,
   bool okL1 = false;
   
 //  debug = true;
-  if (debug) std::cout <<"--------------------------------------------------------------"<<std::endl;
   if (debug) std::cout << "================== L1 names: "<< std::endl;
   std::vector<std::string> acceptL1_Names = theConfig.exists("acceptL1_Names") ?  theConfig.getParameter<std::vector<std::string> >("acceptL1_Names") : std::vector<std::string>();
   for (CIT it=algosL1.begin(); it != algosL1.end(); ++it) {
@@ -46,8 +43,7 @@ bool AnaMenu::filter( const EventObj* ev, const MuonObj* muon,
     if (theConfig.getParameter<bool>("acceptL1_OtherThanMu") && !isMu ) aokL1 = true;
     if (theConfig.getParameter<bool>("acceptL1_Mu") &&  isMu) aokL1 = true;
     for ( std::vector<std::string>::const_iterator is=acceptL1_Names.begin(); is != acceptL1_Names.end(); ++is) {
-       if ((*is).find(nameAlgo) != std::string::npos) aokL1 = true;
-//     if (nameAlgo==(*is)) aokL1 = true;
+       if (nameAlgo==(*is)) aokL1 = true;
     }
     if (debug) {std::cout <<nameAlgo; if (aokL1) std::cout <<" <--"; std::cout << std::endl; }
     if (aokL1) okL1=true;
@@ -59,17 +55,18 @@ bool AnaMenu::filter( const EventObj* ev, const MuonObj* muon,
     bool aokHLT = false;
     std::string nameAlgo = theMenuHLT[*it];
     if (theAlgosHLT.find(nameAlgo) == theAlgosHLT.end()) theAlgosHLT[nameAlgo]=0;    
-    bool isMu = (    (    (nameAlgo.find("Mu") != std::string::npos   ) 
-                       && (nameAlgo.find("Multi") == std::string::npos) ) 
-                  || (     nameAlgo.find("muon") != std::string::npos   )  );
-    if ( theConfig.getParameter<bool>("acceptHLT_OtherThanMuPhysicsAlCa") 
+    bool isMu = (    (nameAlgo.find("Mu") != std::string::npos   ) 
+                  || (nameAlgo.find("Tau") != std::string::npos   )
+                  || (nameAlgo.find("Trk") != std::string::npos   )
+                  || (nameAlgo.find("muon") != std::string::npos )  );
+    if ( theConfig.getParameter<bool>("acceptHLT_OtherThanMuPhysics") 
          && !isMu 
          && (nameAlgo.find("Physics") == std::string::npos) 
-         && (nameAlgo.find("AlCa") == std::string::npos) ) aokHLT = true;
+         && (nameAlgo.find("HLT_") != std::string::npos) ) aokHLT = true;
     if (theConfig.getParameter<bool>("acceptHLT_Mu") && isMu) aokHLT = true; 
     if (theConfig.getParameter<bool>("acceptHLT_L1")       && (nameAlgo.find("HLT_L1")   != std::string::npos) ) aokHLT = true;
-    if (theConfig.getParameter<bool>("acceptHLT_Physics")  && (nameAlgo.find("Physics")  != std::string::npos) ) aokHLT = true;
-    if (theConfig.getParameter<bool>("acceptHLT_ZeroBias") && (nameAlgo.find("ZeroBias") != std::string::npos) ) aokHLT = true;
+    if (theConfig.getParameter<bool>("acceptHLT_Physics")  && (nameAlgo.find("HLT_Physics")  != std::string::npos) ) aokHLT = true;
+    if (theConfig.getParameter<bool>("acceptHLT_ZeroBias") && (nameAlgo.find("HLT_ZeroBias") != std::string::npos) ) aokHLT = true;
     if (debug) {std::cout <<nameAlgo; if (aokHLT) std::cout <<" <--"; std::cout << std::endl; }
     if (aokHLT) okHLT=true;
   }
@@ -77,9 +74,6 @@ bool AnaMenu::filter( const EventObj* ev, const MuonObj* muon,
   if (okL1  && okHLT) {
     for (CIT it=algosL1.begin();  it != algosL1.end();  ++it)  theAlgosL1[ theMenuL1[*it] ]++; 
     for (CIT it=algosHLT.begin(); it != algosHLT.end(); ++it) theAlgosHLT[ theMenuHLT[*it] ]++;
-    if (hMuonPt_MEN)  hMuonPt_MEN->Fill(muon->pt());
-    if (hMuonEta_MEN) hMuonEta_MEN->Fill(muon->eta());
-    if (hMuonPhi_MEN) hMuonPhi_MEN->Fill(muon->phi());
     return true; 
   } else return  false;
 
@@ -110,8 +104,4 @@ void AnaMenu::resume(TObjArray& histos)
 
 
 void AnaMenu::init(TObjArray& histos)
-{
-  hMuonPt_MEN  = new TH1D("hMuonPt_MEN","All global muons Pt;Glb.muon p_{T} [GeV];Muons / bin",L1PtScale::nPtBins,L1PtScale::ptBins); histos.Add(hMuonPt_MEN);
-  hMuonEta_MEN = new TH1D("hMuonEta_MEN","All global muons Eta;Glb.muon #eta;Muons / bin",96, -2.4, 2.4);  histos.Add(hMuonEta_MEN);
-  hMuonPhi_MEN = new TH1D("hMuonPhi_MEN","All global muons Phi;Glb.muon #phi [rad];Muons / bin",90,-M_PI,M_PI);  histos.Add(hMuonPhi_MEN);
-}
+{ }
