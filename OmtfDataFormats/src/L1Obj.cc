@@ -1,8 +1,14 @@
 #include "UserCode/OmtfDataFormats/interface/L1Obj.h"
+#include "L1Trigger/L1TMuonOverlap/interface/OmtfName.h"
 #include <bitset>
+#include <iomanip>
 
 
-L1Obj::L1Obj() : pt(0),eta(0),phi(0),disc(0), bx(0),q(0), hits(0), charge(0), type(NONE) {};
+L1Obj::L1Obj() : pt(0),eta(0),phi(0),
+                 disc(0), 
+                 bx(0),q(0), hits(0), charge(0), refLayer(0), 
+                 type(NONE), 
+                 iProcessor(-1), position(0) {};
 
 std::ostream & operator<< (std::ostream &out, const L1Obj &o)
 {
@@ -20,13 +26,21 @@ std::ostream & operator<< (std::ostream &out, const L1Obj &o)
     case L1Obj::OMTF_emu: { out <<"OMTF_emu"; break; }
     case L1Obj::BMTF   :  { out <<"BMTF    "; break; }
     case L1Obj::EMTF   :  { out <<"EMTF    "; break; }
+    case L1Obj::uGMT   :  { out <<"uGMT    "; break; }
     case L1Obj::NONE   :  { out <<"NONE    "; break; }
     default: out <<"Unknown";
   };
-  out <<" ip: " << o.iProcessor << "  pt: ";
-  if (o.charge==1) out <<"-"; else if (o.charge==0) out <<"+";
-  out <<o.pt<<", eta: "<<o.eta<<", phi: "<<o.phi<<", q: "<<o.q<<", bx: "<<o.bx
-      <<" track: "<< std::bitset<29>(o.hits);
+  out << "  pt: "; 
+    if (o.chargeValue()==1) out <<"+"; 
+    else if (o.chargeValue()==-1) out <<"-";
+  out <<o.pt<<", eta: "<<o.eta;
+  out <<", phi: ";  
+  if (o.iProcessor >= 0){ out<<std::setw(2)<<o.iProcessor<<"_";} else { out<<std::setw(5); }
+  out <<o.phi <<" (V: "<<std::setprecision(4)<<o.phiValue()<<std::setprecision(6)<<")";
+  out <<", q: "<<o.q<<", bx: "<<o.bx;
+  if (o.type ==  L1Obj::OMTF || o. type== L1Obj::OMTF_emu) {
+      out <<" track: "<< std::bitset<29>(o.hits) <<", "<< OmtfName(o.iProcessor, o.position);
+  }
   return out;
 }
 

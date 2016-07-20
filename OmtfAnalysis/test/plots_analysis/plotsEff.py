@@ -101,6 +101,7 @@ def cEffPt(canvas):
     frame.SetMaximum(1.05)
     frame.SetMinimum(0.)
     frame.SetXTitle("muon p_{T}")
+    frame.GetXaxis().SetTitleOffset(1.4)
     frame.SetYTitle("efficiency") 
     frame.SetTitle(region)
     frame.GetXaxis().SetRange(5,32)
@@ -109,9 +110,9 @@ def cEffPt(canvas):
     one = TLine()
     one.SetLineStyle(2)
     one.SetLineColor(1)
-    one.DrawLine(5.,1.,140.,1.)
+    one.DrawLine(5.,1.,490.,1.)
 
-    legend = TLegend(50, 0.1, 140., 0.3,"","")
+    legend = TLegend(50, 0.05, 690., 0.28,"","")
     legend.SetName("lEffPt"+region)
     canvas.Add(legend)
 
@@ -122,8 +123,8 @@ def cEffPt(canvas):
       if (hn==None) :  continue
       hn.Divide(hn,hDenom,1.,1.,'B')
       hn.SetLineColor(color)
-      hn.DrawCopy('same')  
-      legend.AddEntry(hn,'p_{T}L1 #geq '+cut)
+      hn.DrawCopy('same ][ e')  
+      legend.AddEntry(hn,'p_{T}L1 #geq '+cut+" GeV")
 
     legend.Draw()
 
@@ -137,10 +138,11 @@ def cEffHistory(canvas):
   h = runHistoFromGraph(gr)
   fillHistoFromGraph(h,gr)
   h.SetMaximum(1.02)
-  h.SetMinimum(0.8)
+  h.SetMinimum(0.5)
   gStyle.SetOptStat(10)
   h.SetStats(1)
   h.DrawCopy()
+  c.Update()
   return
 
 def cEffDelta(canvas):

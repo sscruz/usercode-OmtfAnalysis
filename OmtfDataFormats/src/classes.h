@@ -3,6 +3,7 @@
 #include "UserCode/OmtfDataFormats/interface/EventObj.h"
 #include "UserCode/OmtfDataFormats/interface/TrackObj.h"
 #include "UserCode/OmtfDataFormats/interface/MuonObj.h"
+#include "UserCode/OmtfDataFormats/interface/MuonObjColl.h"
 #include "UserCode/OmtfDataFormats/interface/L1Obj.h"
 #include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
 #include "UserCode/OmtfDataFormats/interface/TriggerMenuResultObj.h"
@@ -14,6 +15,7 @@ namespace {
     EventObj aEvt;
     TrackObj aTrack; 
     MuonObj  aMuon;
+    MuonObjColl  aMuons;
     L1Obj aL1;
     L1ObjColl aL1Coll;
     TriggerMenuResultObj aMenuRes;

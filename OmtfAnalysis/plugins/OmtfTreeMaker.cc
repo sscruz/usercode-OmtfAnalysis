@@ -28,7 +28,7 @@ template <class T> T sqr( T t) {return t*t;}
 OmtfTreeMaker::OmtfTreeMaker(const edm::ParameterSet& cfg)
   : theConfig(cfg), theCounter(0), theFile(0), theTree(0), 
     bitsL1(0), bitsHLT(0),
-    event(0), muon(0), l1ObjColl(0), 
+    event(0), muon(0), muonColl(0), l1ObjColl(0), 
     theMenuInspector(cfg.getParameter<edm::ParameterSet>("menuInspector"), consumesCollector()),
     theBestMuonFinder(cfg.getParameter<edm::ParameterSet>("bestMuonFinder"), consumesCollector()),
     theL1ObjMaker(cfg.getParameter<edm::ParameterSet>("l1ObjMaker"), consumesCollector()) 
@@ -48,6 +48,7 @@ void OmtfTreeMaker::beginJob()
 
   theTree->Branch("event","EventObj",&event,32000,99);
   theTree->Branch("muon","MuonObj",&muon,32000,99);
+  theTree->Branch("muonColl", "MuonObjColl", &muonColl, 32000,99);
   theTree->Branch("l1ObjColl","L1ObjColl",&l1ObjColl,32000,99);
 
   theTree->Branch("bitsL1" ,"TriggerMenuResultObj",&bitsL1 ,32000,99);
@@ -80,6 +81,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   // initial filter. Optionally do not further use events without muon
   //
   const reco::Muon * theMuon = theBestMuonFinder.result(ev,es);
+
   if (theConfig.getParameter<bool>("onlyBestMuEvents") && (!theMuon) ) return;
   theCounter++;
 
@@ -99,6 +101,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   //
 
   muon = new MuonObj();
+  muonColl = new MuonObjColl (theBestMuonFinder.muons(ev,es));
   l1ObjColl = new L1ObjColl;
 
 
@@ -126,6 +129,9 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   muon->nRPCHits = theBestMuonFinder.numberOfValidMuonRPCHits();
   muon->nDTHits  = theBestMuonFinder.numberOfValidMuonDTHits();
   muon->nCSCHits = theBestMuonFinder.numberOfValidMuonCSCHits();
+  muon->isLoose = theBestMuonFinder.isLoose();
+  muon->isMedium = theBestMuonFinder.isMedium();
+  muon->isTight = theBestMuonFinder.isTight();
   muon->nTrackerHits = theBestMuonFinder.numberOfValidTrackerHits();
   if (theMuon) {
     muon->setKine(theMuon->bestTrack()->pt(), theMuon->bestTrack()->eta(), theMuon->bestTrack()->phi(), theMuon->bestTrack()->charge());
@@ -143,16 +149,13 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   }
     
   
-//  if (!l1Objs.size() && theMuon) {
-  if (l1Objs.size()) {
+/*
+  if (l1ObjColl->selectByType(L1Obj::OMTF)) {
     std::cout <<"#"<<theCounter<<" "<< *event << std::endl;
-    if (theMuon) std::cout <<"MUON "<<*muon << std::endl;
-    for (auto obj : l1Objs) {
-     std::cout << obj;
-     if (obj.type==L1Obj::OMTF || obj.type==L1Obj::OMTF_emu) std::cout <<" "<<OmtfName(obj.iProcessor,obj.position);
-     std::cout << std::endl; 
-    }
+    std::cout << *muonColl << std::endl;
+    std::cout << *l1ObjColl << std::endl;
   }
+*/
 
   //
   // fill ntuple + cleanup
@@ -161,6 +164,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   theTree->Fill();
   delete event; event = 0;
   delete muon;  muon = 0;
+  delete muonColl; muonColl = 0;
   delete bitsL1;  bitsL1= 0;
   delete bitsHLT;  bitsHLT= 0;
   delete l1ObjColl; l1ObjColl = 0;

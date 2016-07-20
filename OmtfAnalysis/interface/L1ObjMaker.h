@@ -17,7 +17,8 @@ public:
 
 private:
   void run(const edm::Event &ev);
-  bool makeCandidates(const edm::Event &ev, L1Obj::TYPE t, std::vector<L1Obj> &result);
+  bool makeRegCandidates(const edm::Event &ev, L1Obj::TYPE t, std::vector<L1Obj> &result);
+  bool makeGmtCandidates(const edm::Event &ev, L1Obj::TYPE t, std::vector<L1Obj> &result);
 
 private:
 /*

@@ -31,7 +31,10 @@ AnaMuonDistribution::AnaMuonDistribution(const edm::ParameterSet& cfg)
     requireOnlyOne(cfg.getParameter<bool>("requireOnlyOne")),
     requireGlobal(cfg.getParameter<bool>("requireGlobal")),
     requireInner(cfg.getParameter<bool>("requireInner")),
-    requireOuter(cfg.getParameter<bool>("requireOuter"))
+    requireOuter(cfg.getParameter<bool>("requireOuter")),
+    requireLoose(cfg.getParameter<bool>("requireLoose")),
+    requireMedium(cfg.getParameter<bool>("requireMedium")),
+    requireTight(cfg.getParameter<bool>("requireTight")) 
 { }
 
 void AnaMuonDistribution::init(TObjArray& histos) 
@@ -58,6 +61,9 @@ bool AnaMuonDistribution::filter(const MuonObj *muon)
   if (requireGlobal  && !muon->isGlobal()) return false;
   if (requireInner   && !muon->isTracker()) return false;
   if (requireOuter   && !muon->isOuter()) return false;
+  if (requireLoose   && !muon->isLoose) return false;
+  if (requireMedium  && !muon->isMedium) return false;
+  if (requireTight   && !muon->isTight) return false;
   if (muon->pt() < ptMin) return false;
   if (fabs(muon->eta()) > etaMax) return false;
   if (muon->nMatchedStations < minNumberOfMatchedStations) return false;

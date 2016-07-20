@@ -51,6 +51,7 @@ bool AnaMenu::filter( const EventObj* ev, const MuonObj* muon,
 
   bool okHLT = false;
   if (debug) std::cout << "================= HLT names: "<< std::endl;
+  std::vector<std::string> acceptHLT_Names = theConfig.exists("acceptHLT_Names") ?  theConfig.getParameter<std::vector<std::string> >("acceptHLT_Names") : std::vector<std::string>();
   for (CIT it=algosHLT.begin(); it != algosHLT.end(); ++it) {
     bool aokHLT = false;
     std::string nameAlgo = theMenuHLT[*it];
@@ -67,6 +68,9 @@ bool AnaMenu::filter( const EventObj* ev, const MuonObj* muon,
     if (theConfig.getParameter<bool>("acceptHLT_L1")       && (nameAlgo.find("HLT_L1")   != std::string::npos) ) aokHLT = true;
     if (theConfig.getParameter<bool>("acceptHLT_Physics")  && (nameAlgo.find("HLT_Physics")  != std::string::npos) ) aokHLT = true;
     if (theConfig.getParameter<bool>("acceptHLT_ZeroBias") && (nameAlgo.find("HLT_ZeroBias") != std::string::npos) ) aokHLT = true;
+
+    for (const auto & nameHLT : acceptHLT_Names)  if (nameAlgo.find(nameHLT) !=  std::string::npos ) aokHLT = true;
+
     if (debug) {std::cout <<nameAlgo; if (aokHLT) std::cout <<" <--"; std::cout << std::endl; }
     if (aokHLT) okHLT=true;
   }

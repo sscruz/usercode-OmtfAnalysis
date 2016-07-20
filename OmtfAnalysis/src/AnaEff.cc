@@ -34,7 +34,7 @@ namespace {
   struct BestL1Obj : public L1Obj {
     BestL1Obj() : deltaR(9999.) {}
     BestL1Obj(const L1Obj & l1, const  MuonObj *muon) : L1Obj(l1) , deltaR(9999.) {
-      if (l1 && muon) deltaR = reco::deltaR( l1.etaValue(),l1.phiValue(), muon->eta(), muon->phi());
+      if (l1.isValid() && muon) deltaR = reco::deltaR( l1.etaValue(),l1.phiValue(), muon->eta(), muon->phi());
     }
     bool fired(double ptCut=0., double matchinDeltaR=0.5) const {
       double epsilon = 1.e-5;
@@ -100,14 +100,14 @@ void AnaEff::init(TObjArray& histos)
   std::string opt[nOpt]={"_uGmtPtCut","_BmtfPtCut","_OmtfPtCut","_EmtfPtCut"};
   for (unsigned int ir=0; ir<3; ++ir) {
     std::string name=base+"_PtCutDenom"+reg[ir];
-    TH1D *h= new TH1D(name.c_str(),name.c_str(), L1PtScale::nPtBins, L1PtScale::ptBins);
+    TH1D *h= new TH1D(name.c_str(),name.c_str(), L1PtScale::nPtBins, L1PtScale::ptBins); h->Sumw2(); 
     histos.Add(h); theHistoMap[name]=h;
     //for (unsigned int iopt=0; iopt< nOpt; ++iopt) {
     for (unsigned int iopt=0; iopt< 1; ++iopt) {
     for (unsigned int icut=0; icut<nPtCuts; ++icut) {
       std::ostringstream str;
       str << base << opt[iopt] << ptCuts[icut]<<reg[ir];
-      TH1D *h= new TH1D(str.str().c_str(),str.str().c_str(), L1PtScale::nPtBins, L1PtScale::ptBins);
+      TH1D *h= new TH1D(str.str().c_str(),str.str().c_str(), L1PtScale::nPtBins, L1PtScale::ptBins); h->Sumw2(); 
       h->SetXTitle("muon p_{T} [GeV/c]  "); h->SetYTitle("events");
       histos.Add(h); theHistoMap[str.str()]=h;
     }
@@ -115,10 +115,10 @@ void AnaEff::init(TObjArray& histos)
   }
   for (unsigned int icut=0; icut<nPtCuts; ++icut) {
       std::ostringstream strEtaDenom; strEtaDenom << base << "_EtaDenom"<< ptCuts[icut];
-      TH1D *hD = new TH1D(strEtaDenom.str().c_str(),strEtaDenom.str().c_str(), L1RpcEtaScale::nEtaBins, L1RpcEtaScale::etaBins);
+      TH1D *hD = new TH1D(strEtaDenom.str().c_str(),strEtaDenom.str().c_str(), L1RpcEtaScale::nEtaBins, L1RpcEtaScale::etaBins); hD->Sumw2();
       hD->SetXTitle("muon pseudorapidity"); hD->SetYTitle("events"); histos.Add(hD); theHistoMap[strEtaDenom.str()]=hD;
       std::ostringstream strEtaCut  ; strEtaCut << base << "_EtaCut"<< ptCuts[icut];
-      TH1D *hN = new TH1D(strEtaCut.str().c_str(),strEtaCut.str().c_str(), L1RpcEtaScale::nEtaBins, L1RpcEtaScale::etaBins);
+      TH1D *hN = new TH1D(strEtaCut.str().c_str(),strEtaCut.str().c_str(), L1RpcEtaScale::nEtaBins, L1RpcEtaScale::etaBins); hN->Sumw2();
       hN->SetXTitle("muon pseudorapidity"); hN->SetYTitle("events"); histos.Add(hN); theHistoMap[strEtaCut.str()]=hN;
   }
 
@@ -134,23 +134,24 @@ void AnaEff::run(  const EventObj* event, const MuonObj* muon, const L1ObjColl *
   //
   // best (closest) L1Obj to muon
   //
-  BestL1Obj bestOMTF, bestBMTF, bestEMTF;
-  std::vector<L1Obj> l1s = (l1Coll->selectByType(L1Obj::BMTF)+l1Coll->selectByType(L1Obj::EMTF)+l1Coll->selectByType(L1Obj::OMTF));
+  BestL1Obj bestOMTF, bestBMTF, bestEMTF, bestuGMT;
+  std::vector<L1Obj> l1s = (l1Coll->selectByType(L1Obj::BMTF)+l1Coll->selectByType(L1Obj::EMTF)+l1Coll->selectByType(L1Obj::OMTF) +l1Coll->selectByType(L1Obj::uGMT) );
   for (auto l1 : l1s) {
-//    if (l1.q < 12) continue;
     BestL1Obj cand(l1,muon);
     if (cand.type==L1Obj::BMTF && cand.deltaR < bestBMTF.deltaR) bestBMTF = cand;
     if (cand.type==L1Obj::OMTF && cand.deltaR < bestOMTF.deltaR) bestOMTF = cand;
     if (cand.type==L1Obj::EMTF && cand.deltaR < bestEMTF.deltaR) bestEMTF = cand;
+    if (cand.type==L1Obj::uGMT && cand.deltaR < bestuGMT.deltaR) bestuGMT = cand;
   }
-  if (debug && bestBMTF) std::cout <<bestBMTF << std::endl;
-  if (debug && bestOMTF) std::cout <<bestOMTF << std::endl;
-  if (debug && bestEMTF) std::cout <<bestEMTF << std::endl;
+  if (debug && bestuGMT.isValid()) std::cout <<bestuGMT << std::endl;
+  if (debug && bestBMTF.isValid()) std::cout <<bestBMTF << std::endl;
+  if (debug && bestOMTF.isValid()) std::cout <<bestOMTF << std::endl;
+  if (debug && bestEMTF.isValid()) std::cout <<bestEMTF << std::endl;
 
   //
   // control histos for bestOMTF
   //
-  if (bestOMTF && ptMu > 7. && fabs(etaMu) > 0.9 && fabs(etaMu) < 1.1) {
+  if (bestOMTF.isValid() && ptMu > 7. && fabs(etaMu) > 0.9 && fabs(etaMu) < 1.1) {
     hEffDeltaR->Fill(bestOMTF.deltaR); 
     hEffDeltaPhi->Fill(reco::deltaPhi(bestOMTF.phiValue(),muon->phi())); 
     hEffDeltaEta->Fill(bestOMTF.etaValue()-muon->eta()); 
@@ -189,7 +190,8 @@ void AnaEff::run(  const EventObj* event, const MuonObj* muon, const L1ObjColl *
     double ptMuPlat = 1.5*threshold; 
     std::ostringstream strEtaDenom;  strEtaDenom  << "hEff_EtaDenom"<<  ptCuts[icut];
     if (ptMu >= ptMuPlat) theHistoMap[strEtaDenom.str()]->Fill(muon->eta()); 
-    if (bestBMTF.fired(threshold) || bestOMTF.fired(threshold) || bestEMTF.fired(threshold)) {
+
+    if ( bestuGMT.fired(threshold) ) {
        std::ostringstream strPt;  strPt  << "hEff_uGmtPtCut"<<  ptCuts[icut]<<reg[iregion];
        theHistoMap[strPt.str()]->Fill(ptMu);
        std::ostringstream strEtaCut;  strEtaCut  << "hEff_EtaCut"<<  ptCuts[icut];

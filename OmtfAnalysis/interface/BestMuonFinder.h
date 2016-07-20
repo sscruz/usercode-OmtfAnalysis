@@ -5,10 +5,13 @@
 #include "DataFormats/Provenance/interface/RunID.h"
 #include "DataFormats/Provenance/interface/EventID.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
+#include "UserCode/OmtfDataFormats/interface/MuonObj.h"
 
 namespace edm { class Event; class EventSetup; }
 namespace reco { class Muon; }
 namespace edm { class EDAnalyzer; }
+
+#include <vector>
 
 class TH1D;
 class TH2D;
@@ -20,6 +23,7 @@ public:
   BestMuonFinder( const edm::ParameterSet& cfg, edm::ConsumesCollector&& cColl);
  
   const reco::Muon* result( const edm::Event &ev, const edm::EventSetup &es) { run(ev,es); return theMuon; }
+  std::vector<MuonObj> muons( const edm::Event &ev, const edm::EventSetup &es) { run(ev,es); return theMuonObjs; }
   bool isUnique( const edm::Event &ev, const edm::EventSetup &es) { run(ev,es); return theUnique;}
   unsigned int numberOfAllMuons( const edm::Event &ev, const edm::EventSetup &es) { run(ev,es); return theAllMuons; }
   void initHistos( TObjArray & histos);
@@ -28,6 +32,9 @@ public:
   unsigned int numberOfValidMuonDTHits()  const { return theDTHits; }
   unsigned int numberOfValidMuonCSCHits() const { return theCSCHits; }
   unsigned int numberOfValidTrackerHits() const { return theTrackerHits; } 
+  bool isLoose() const { return theIsLoose; }
+  bool isMedium() const { return theIsMedium; }
+  bool isTight() const { return theIsTight; }
 
 private:
   bool run(const edm::Event &ev, const edm::EventSetup &es);
@@ -37,9 +44,10 @@ private:
   edm::RunNumber_t   lastRun;
   edm::ParameterSet  theConfig;
 
-  bool theUnique;
+  bool theUnique, theIsLoose, theIsMedium, theIsTight;
   unsigned int theAllMuons;
   const reco::Muon* theMuon;
+  std::vector<MuonObj> theMuonObjs; 
 
   unsigned int theTrackerHits, theRPCHits, theDTHits, theCSCHits;
 

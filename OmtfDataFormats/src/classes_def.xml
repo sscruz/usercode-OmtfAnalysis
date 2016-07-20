@@ -13,8 +13,13 @@
     <version ClassVersion="1" checksum="1223179708"/>
    </class>
 
-   <class name="MuonObj" ClassVersion="2">
+   <class name="MuonObj" ClassVersion="3">
+    <version ClassVersion="3" checksum="51503100"/>
     <version ClassVersion="2" checksum="3811774293"/>
+   </class>
+
+   <class name="MuonObjColl" ClassVersion="1">
+    <version ClassVersion="1" checksum="3020723748"/>
    </class>
 
    <class name="L1Obj" ClassVersion="4">
@@ -23,6 +28,7 @@
     <version ClassVersion="2" checksum="3302072089"/>
     <version ClassVersion="1" checksum="2131458997"/>
    </class>
+
    <class name="L1ObjColl" ClassVersion="1">
     <version ClassVersion="1" checksum="30982113"/>
    </class>

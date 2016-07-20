@@ -16,30 +16,18 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 # (there is 255 file limit though). Can be empty for crab.
 #
 process.source = cms.Source("PoolSource", 
-#fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/runs/run274777-Cosmic_0CB8BC0E-D82D-E611-BBF2-02163E0128EA.root'),
 fileNames = cms.untracked.vstring(
+#  'root://cms-xrd-global.cern.ch//store/data/Run2016D/SingleMuon/RAW-RECO/ZMu-PromptReco-v2/000/276/811/00000/44797745-794C-E611-A7F9-02163E011CC9.root',
+#  'file:/afs/cern.ch/work/k/konec/data/runs/run276811-SM_ZMu_Prompt-300_44797745-794C-E611-A7F9-02163E011CC9.root',
+#  'file:/afs/cern.ch/work/k/konec/data/runs/run275963-Express-150_24AE8B98-743E-E611-ABC2-02163E0138E3.root',
+   'file:/afs/cern.ch/work/k/konec/data/runs/run276870-Express-500_F8CB4B4B-6C4B-E611-ADEA-02163E01429D.root',
 #'/store/data/Run2016C/ZeroBias/RECO/PromptReco-v2/000/276/097/00000/54FC3E14-0141-E611-882B-02163E014116.root'
-'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/846A13FA-733E-E611-BC5C-02163E011D84.root',
+#'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/846A13FA-733E-E611-BC5C-02163E011D84.root',
 #'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/426B9BF4-733E-E611-BD17-02163E011B2D.root',
 #'file:/afs/cern.ch/work/k/konec/data/runs/run275963-Express-150_24AE8B98-743E-E611-ABC2-02163E0138E3.root', 
 #'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/60BF23FA-733E-E611-9DB7-02163E0126B2.root',
 #'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/76B0FAEE-733E-E611-9E7F-02163E0119E8.root',
-#  'file:/afs/cern.ch/work/k/konec/data/runs/run275911-Express-400_36C1CFB4-BD3D-E611-895F-02163E012B2D.root',
-#  'file:/afs/cern.ch/work/k/konec/data/runs/run275911-Express-350_E20C0FDB-BF3D-E611-9E00-02163E0137F9.root',
-# 'file:/afs/cern.ch/work/k/konec/data/runs/run275376-Express-1950_3A49E7B5-4C37-E611-B9F5-02163E013921.root',
-#'file:/afs/cern.ch/work/k/konec/data/runs/run275375-Express-1000_F4B901E0-CE36-E611-BD7E-02163E0139BF.root',
-#'file:/afs/cern.ch/work/k/konec/data/runs/run275370-SingleMuon-150_3E506452-7436-E611-B1D1-02163E014372.root',
-#'file:/afs/cern.ch/work/k/konec/data/runs/run275291-SingleMuon-050_788C99A6-4934-E611-AED2-02163E01275B.root',
-#'file:/afs/cern.ch/work/k/konec/data/runs/run275291-SingleMuon-150_F0FF7781-4F34-E611-A177-02163E01191D.root',
-#                                  '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/275/291/00000/06D05EF0-5434-E611-B92B-02163E0145B0.root',
-#                                  '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/275/291/00000/06A162C3-6634-E611-8C29-02163E0141A3.root',
-                                   ),
-#fileNames = cms.untracked.vstring( 
-#                                   'file:/afs/cern.ch/work/k/konec/data/runs/run274094_32779D03-C323-E611-BE75-02163E011821.root',
-#                                   '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/274/094/00000/0070F70B-BD23-E611-A5C3-02163E011A28.root',
-#                                   '/store/express/Run2016B/ExpressPhysics/FEVT/Express-v2/000/274/094/00000/06E08AB1-C723-E611-AD43-02163E011C18.root',
-#                                   'file:/afs/cern.ch/work/k/konec/data/runs/run274157-384_12A67A1E-E324-E611-831F-02163E012658.root',
-#                                  ),
+                                  ),
 #skipEvents =  cms.untracked.uint32(1037)
 )
 
@@ -58,6 +46,7 @@ process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
 process.load('EventFilter.L1TRawToDigi.bmtfDigis_cfi')
 process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
 process.load('EventFilter.L1TRawToDigi.gmtStage2Digis_cfi')
+process.load('EventFilter.L1TXRawToDigi.twinMuxStage2Digis_cfi')
 
 #
 # set proper GlobalTag
@@ -107,13 +96,15 @@ process.omtfParams = cms.ESProducer( "L1TMuonOverlapParamsESProducer",
 process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
 #  srcDTPh =  cms.InputTag('simTwinMuxDigis'),
 #  srcDTTh =  cms.InputTag('simTwinMuxDigis'),
+#  srcDTPh =  cms.InputTag('twinMuxStage2Digis'),
+#  srcDTTh =  cms.InputTag('twinMuxStage2Digis'),
   srcDTPh =  cms.InputTag('bmtfDigis'),
   srcDTTh =  cms.InputTag('bmtfDigis'),
 #  srcDTPh =  cms.InputTag('bmtfDigis:PhiDigis'),
 #  srcDTTh =  cms.InputTag('bmtfDigis:TheDigis'),
 #  srcDTPh = cms.InputTag('simDtTriggerPrimitiveDigis'),
 #  srcDTTh = cms.InputTag('simDtTriggerPrimitiveDigis'),
-  srcCSC = cms.InputTag('csctfDigis'),
+   srcCSC = cms.InputTag('csctfDigis'),
 #  srcCSC = cms.InputTag('emtfStage2Digis'),
 #  srcCSC = cms.InputTag('muonCSCDigis','MuonCSCCorrelatedLCTDigi'),
 #  srcCSC = cms.InputTag('simCscTriggerPrimitiveDigis','MPCSORTED'),
@@ -131,7 +122,7 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
   dropCSCPrimitives = cms.bool(False),
 )
 
-process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.gmtStage2Digis)
+process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis)
 process.omtf_step = cms.Path(process.omtfEmulator)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, process.endjob_step)
@@ -166,6 +157,7 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
     omtfDataSrc = cms.InputTag('gmtStage2Digis','OMTF'),
     emtfDataSrc = cms.InputTag('gmtStage2Digis','EMTF'),
     bmtfDataSrc = cms.InputTag('gmtStage2Digis','BMTF'),
+     gmtDataSrc = cms.InputTag('gmtStage2Digis','Muon'),
   ),
 
   onlyBestMuEvents = cms.bool(False),
@@ -175,18 +167,22 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
     requireInnerTrack = cms.bool(True),
     requireOuterTrack = cms.bool(False),
     requireGlobalTrack = cms.bool(False),
-    minPt = cms.double(5.),
+    requireLoose       = cms.bool(True),
+    minPt = cms.double(3.),
     maxTIP = cms.double(0.2),
-    maxAbsEta = cms.double(1.6),
+    maxAbsEta = cms.double(2.4),
+    checkChi2NotLoose = cms.bool(True),
     maxChi2Mu = cms.double(2.),
     maxChi2Sa = cms.double(2.),
     maxChi2Tk = cms.double(2.),
-    minNumberTrackerHits = cms.int32(0),
+    minNumberTrackerHits = cms.int32(6),
     minNumberRpcHits = cms.int32(0),
     minNumberDtCscHits = cms.int32(0),
     minNumberOfMatchedStations = cms.int32(0),
     deltaPhiUnique = cms.double(1.0),
-    deltaEtaUnique = cms.double(0.5)
+    deltaEtaUnique = cms.double(0.5),
+    minPtUnique = cms.double(2.0),
+    looseUnique = cms.bool(True)
   ),
 )
 

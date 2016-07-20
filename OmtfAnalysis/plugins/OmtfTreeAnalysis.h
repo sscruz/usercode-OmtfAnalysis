@@ -11,6 +11,7 @@ class AnaEff;
 class AnaMuonDistribution;
 class AnaDataEmul;
 class AnaMenu;
+class AnaSecMuSelector;
 
 namespace edm { class Event; class EventSetup; }
 
@@ -32,6 +33,7 @@ private:
   AnaMenu             *theAnaMenu;
   AnaDataEmul         *theAnaDataEmul;
   AnaEff              *theAnaEff;
+  AnaSecMuSelector    *theAnaSecMu;
 
 
 }; 

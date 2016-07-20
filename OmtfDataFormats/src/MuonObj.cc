@@ -11,6 +11,9 @@ std::ostream & operator<< (std::ostream &out, const MuonObj &o)
   if (o.isGlobal())  out << "_GLB";
   out <<" #AllMuons: "<<o.nAllMuons;
   if (o.isUnique) out<<"_UNIQUE";
+  if (o.isTight) out <<"_Tight";
+  else if (o.isMedium) out <<"_Medium";
+  else if (o.isLoose) out <<"_Loose";
   return out;
 }
 

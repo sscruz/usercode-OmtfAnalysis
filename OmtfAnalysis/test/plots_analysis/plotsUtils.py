@@ -36,6 +36,7 @@ def runHistoFromGraph(graph) :
   maxRun = int(maxRun/10)*10+10
   name = "h"+graph.GetName()
   result = TH1D(name,name,maxRun-minRun+1, minRun-0.5, maxRun+0.5)
+  result.Sumw2()
 
   result.SetXTitle("Run number");
   result.GetXaxis().SetLabelSize(0.045);

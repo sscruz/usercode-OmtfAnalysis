@@ -15,20 +15,25 @@
 
 #include "DataFormats/L1TMuon/interface/RegionalMuonCand.h"
 #include "DataFormats/L1TMuon/interface/RegionalMuonCandFwd.h"
+#include "DataFormats/L1Trigger/interface/Muon.h"
+
 
 using namespace std;
 namespace {
   edm::EDGetTokenT<l1t::RegionalMuonCandBxCollection> theOmtfEmulToken, theOmtfDataToken, theEmtfDataToken, theBmtfDataToken;
+  edm::EDGetTokenT<l1t::MuonBxCollection> theGmtDataToken;
 }
 
 L1ObjMaker::L1ObjMaker(const  edm::ParameterSet & cfg, edm::ConsumesCollector&& cColl)
   :  theConfig(cfg),
      lastEvent(0),lastRun(0)
 {
- if (theConfig.exists("omtfEmulSrc")) theOmtfEmulToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("omtfEmulSrc") );
- if (theConfig.exists("omtfDataSrc")) theOmtfDataToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("omtfDataSrc") );
- if (theConfig.exists("bmtfDataSrc")) theBmtfDataToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("bmtfDataSrc") );
- if (theConfig.exists("emtfDataSrc")) theEmtfDataToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("emtfDataSrc") );
+  if (theConfig.exists("omtfEmulSrc")) theOmtfEmulToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("omtfEmulSrc") );
+  if (theConfig.exists("omtfDataSrc")) theOmtfDataToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("omtfDataSrc") );
+  if (theConfig.exists("bmtfDataSrc")) theBmtfDataToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("bmtfDataSrc") );
+  if (theConfig.exists("emtfDataSrc")) theEmtfDataToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("emtfDataSrc") );
+  if (theConfig.exists("gmtDataSrc"))  theGmtDataToken  =  cColl.consumes<l1t::MuonBxCollection>( theConfig.getParameter<edm::InputTag>("gmtDataSrc") );
+ 
 }
 
 void L1ObjMaker::run(const edm::Event &ev)
@@ -38,10 +43,11 @@ void L1ObjMaker::run(const edm::Event &ev)
   lastRun = ev.run();
   theL1Objs.clear();
 
-  if (!theOmtfEmulToken.isUninitialized())  makeCandidates(ev, L1Obj::OMTF_emu, theL1Objs);
-  if (!theOmtfDataToken.isUninitialized())  makeCandidates(ev, L1Obj::OMTF    , theL1Objs);
-  if (!theBmtfDataToken.isUninitialized())  makeCandidates(ev, L1Obj::BMTF    , theL1Objs);
-  if (!theEmtfDataToken.isUninitialized())  makeCandidates(ev, L1Obj::EMTF    , theL1Objs);
+  if (!theEmtfDataToken.isUninitialized())  makeGmtCandidates(ev, L1Obj::uGMT    , theL1Objs);
+  if (!theOmtfDataToken.isUninitialized())  makeRegCandidates(ev, L1Obj::OMTF    , theL1Objs);
+  if (!theOmtfEmulToken.isUninitialized())  makeRegCandidates(ev, L1Obj::OMTF_emu, theL1Objs);
+  if (!theBmtfDataToken.isUninitialized())  makeRegCandidates(ev, L1Obj::BMTF    , theL1Objs);
+  if (!theEmtfDataToken.isUninitialized())  makeRegCandidates(ev, L1Obj::EMTF    , theL1Objs);
 
 /*
   if (theConfig.exists("l1RpcSource"))     getGMTReadout( ev, theL1Objs, theConfig.getParameter<edm::InputTag>("l1RpcSource"),    L1Obj::RPCb);
@@ -55,7 +61,33 @@ void L1ObjMaker::run(const edm::Event &ev)
 
 }
 
-bool L1ObjMaker::makeCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, std::vector<L1Obj> &result)
+bool L1ObjMaker::makeGmtCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, std::vector<L1Obj> &result)
+{
+  int bxNumber = 0;
+  edm::Handle<l1t::MuonBxCollection> candidates;
+  switch (type) {
+    case  L1Obj::uGMT    : { iEvent.getByToken(theGmtDataToken, candidates); break; }
+    default: { std::cout <<"Invalid type : " << type << std::endl; abort(); }
+  }
+
+  for (l1t::MuonBxCollection::const_iterator it = candidates.product()->begin(bxNumber);
+      it != candidates.product()->end(bxNumber);
+      ++it) {
+
+    L1Obj obj;
+    obj.type =  type;
+    obj.phi = it->hwPhi(); 
+    obj.eta = it->hwEta();  // eta = hwEta/240.*2.61
+    obj.pt  = it->hwPt();         // pt = (hwPt-1.)/2.
+    obj.q   = it->hwQual();   // charge=  pow(-1,hwSign)
+    obj.bx = bxNumber;
+    obj.charge = it->charge();
+    result.push_back(obj);
+  }
+  return true; 
+}
+
+bool L1ObjMaker::makeRegCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, std::vector<L1Obj> &result)
 {
   int bxNumber = 0;
   edm::Handle<l1t::RegionalMuonCandBxCollection> candidates;

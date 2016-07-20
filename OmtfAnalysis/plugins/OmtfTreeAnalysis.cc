@@ -17,6 +17,7 @@
 #include "UserCode/OmtfDataFormats/interface/EventObj.h"
 #include "UserCode/OmtfDataFormats/interface/TrackObj.h"
 #include "UserCode/OmtfDataFormats/interface/MuonObj.h"
+#include "UserCode/OmtfDataFormats/interface/MuonObjColl.h"
 #include "UserCode/OmtfDataFormats/interface/L1Obj.h"
 #include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
 #include "UserCode/OmtfDataFormats/interface/TriggerMenuResultObj.h"
@@ -26,6 +27,7 @@
 #include "UserCode/OmtfAnalysis/interface/AnaMuonDistribution.h"
 #include "UserCode/OmtfAnalysis/interface/AnaEff.h"
 #include "UserCode/OmtfAnalysis/interface/AnaDataEmul.h"
+#include "UserCode/OmtfAnalysis/interface/AnaSecMuSelector.h"
 
 OmtfTreeAnalysis::OmtfTreeAnalysis(const edm::ParameterSet & cfg)
   : theConfig(cfg),
@@ -33,13 +35,15 @@ OmtfTreeAnalysis::OmtfTreeAnalysis(const edm::ParameterSet & cfg)
     theAnaMuonDistribution(0),
     theAnaMenu(0), 
     theAnaDataEmul(0), 
-    theAnaEff(0) 
+    theAnaEff(0),
+    theAnaSecMu(0) 
 { 
   if (theConfig.exists("anaEvent")) theAnaEvent = new   AnaEvent(cfg.getParameter<edm::ParameterSet>("anaEvent") );
   if (theConfig.exists("anaMuonDistribution")) theAnaMuonDistribution = new AnaMuonDistribution( cfg.getParameter<edm::ParameterSet>("anaMuonDistribution"));
   if (theConfig.exists("anaMenu")) theAnaMenu = new AnaMenu(theConfig.getParameter<edm::ParameterSet>("anaMenu"));
   if (theConfig.exists("anaEff")) theAnaEff = new   AnaEff(cfg.getParameter<edm::ParameterSet>("anaEff") );
   if (theConfig.exists("anaDataEmul")) theAnaDataEmul = new AnaDataEmul(cfg.getParameter<edm::ParameterSet>("anaDataEmul"));
+  if (theConfig.exists("anaSecMuSel")) theAnaSecMu = new AnaSecMuSelector(cfg.getParameter<edm::ParameterSet>("anaSecMuSel"));
 }
 
 void OmtfTreeAnalysis::beginJob()
@@ -83,14 +87,15 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
   // prepare datastructures and branches
   //
   EventObj * event = 0;
-  MuonObj * muon = 0;
+  MuonObjColl * muonColl = 0;
   L1ObjColl* l1ObjColl = 0;
   TriggerMenuResultObj *bitsL1  = 0;
   TriggerMenuResultObj *bitsHLT = 0;
   
 
   chain.SetBranchAddress("event",&event);
-  chain.SetBranchAddress("muon",&muon);
+//  chain.SetBranchAddress("muon",&muon);
+  chain.SetBranchAddress("muonColl",&muonColl);
   chain.SetBranchAddress("l1ObjColl",&l1ObjColl);
   chain.SetBranchAddress("bitsL1",&bitsL1);
   chain.SetBranchAddress("bitsHLT",&bitsHLT);
@@ -108,6 +113,7 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
   unsigned int lastRun = 0;
   for (int ev=0; ev<nentries; ev++) {
 
+
     chain.GetEntry(ev);
     if (theAnaMenu) theAnaMenu->updateMenu(bitsL1->names, bitsHLT->names);
 
@@ -120,33 +126,46 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
     }
 
     //
+    // set reference muon
+    // 
+    MuonObj muon;
+    if (theAnaSecMu) {
+       muon = theAnaSecMu->run(event, *muonColl, l1ObjColl);
+    } else { 
+      std::vector<MuonObj> muons = *muonColl; 
+      if (!muons.empty()) muon = muons[0];
+    }
+
+    //
     // Base distributions and Filters
     //
     // EVENT NUMBER, BX structure etc.
     if ( theAnaEvent && !theAnaEvent->filter(event) && theConfig.getParameter<bool>("filterByAnaEvent") ) continue;
     // ANALYSE AND FILTER KINEMCTICS
-    if ( theAnaMuonDistribution && !theAnaMuonDistribution->filter(muon) && theConfig.getParameter<bool>("filterByAnaMuonDistribution") ) continue;
+    if ( theAnaMuonDistribution && !theAnaMuonDistribution->filter(&muon) && theConfig.getParameter<bool>("filterByAnaMuonDistribution") ) continue;
     // ANALYSE AND FILTER TRIGGER MENU
-    if ( theAnaMenu && !theAnaMenu->filter(event, muon, bitsL1, bitsHLT) && theConfig.getParameter<bool>("filterByAnaMenu") ) continue;
-
+    if ( theAnaMenu && !theAnaMenu->filter(event, &muon, bitsL1, bitsHLT) && theConfig.getParameter<bool>("filterByAnaMenu") ) continue;
 
 /*
-    if (muon && muon->pt() > 21) continue;
+    if (!muon.isValid() ||  muon.pt() < 300 || muon.pt() > 400 ) continue;
     std::cout <<"---------------------------------------"<<std::endl;
     std::cout << *event << std::endl;
-    if ( muon && muon->pt()>0  ) std::cout <<" muon : " << *muon << std::endl; 
-    if (  *l1ObjColl)  std::cout << *l1ObjColl << std::endl; 
+    if (muonColl) std::cout << *muonColl << std::endl;
+    if (l1ObjColl)  std::cout << *l1ObjColl << std::endl; 
+    if ( muon.isValid() ) std::cout <<" muon: " << muon << std::endl; 
     theAnaMenu->debug=true;
     theAnaEff->debug=true;
-    theAnaMenu->filter(event, muon, bitsL1, bitsHLT);
+    theAnaMenu->filter(event, &muon, bitsL1, bitsHLT);
     theAnaMenu->debug=false;
+    theAnaEff->debug=false;
 */
+
 
     //
     // Analyses
     //
-    if (theAnaMuonDistribution) theAnaMuonDistribution->run(muon);
-    if (theAnaEff)      theAnaEff->run ( event, muon, l1ObjColl); 
+    if (theAnaMuonDistribution) theAnaMuonDistribution->run(&muon);
+    if (theAnaEff)      theAnaEff->run ( event, &muon, l1ObjColl); 
     if (theAnaDataEmul) theAnaDataEmul->run(event, l1ObjColl); 
      
 

@@ -9,6 +9,7 @@
 
 #include "UserCode/OmtfDataFormats/interface/EventObj.h"
 #include "UserCode/OmtfDataFormats/interface/MuonObj.h"
+#include "UserCode/OmtfDataFormats/interface/MuonObjColl.h"
 #include "UserCode/OmtfDataFormats/interface/L1Obj.h"
 #include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
 #include "UserCode/OmtfDataFormats/interface/TriggerMenuResultObj.h"
@@ -56,6 +57,7 @@ private:
 
   EventObj* event;
   MuonObj* muon;
+  MuonObjColl* muonColl;
   L1ObjColl * l1ObjColl;
 								    
   TObjArray      theHelper;

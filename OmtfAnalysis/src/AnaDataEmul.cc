@@ -213,7 +213,7 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
      hDataEmulNotAgreePhi->Fill( OmtfName(emul->iProcessor, emul->position), emul->phi ); 
   }
 
-  if (diff!=agree ) std::cout << "NOT agree("<<diffName(diff)<<"), dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl; 
+//  if (diff!=agree ) std::cout << "NOT agree("<<diffName(diff)<<"), dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl; 
 
   if (unique) {
     hDataEmulPt->Fill( code2pt(data->pt), code2pt(emul->pt) );
@@ -316,8 +316,11 @@ void AnaDataEmul::resume(TObjArray& histos)
   for (unsigned int iPoint = 0; iPoint < runs.size(); iPoint++) {
     unsigned int run = runs[iPoint];
     RunEffMap::EffAndErr effAndErr = theRunMap.effAndErr(run); 
+    std::cout <<" RUN: "<<run <<" D-E: "<< effAndErr
+              <<" stat: "<<theRunMap.stat(run).first<<"/"<<theRunMap.stat(run).second<<std::endl;
     hGraphRun->SetPoint(iPoint, run, effAndErr.eff());
     hGraphRun->SetPointError(iPoint, 0., effAndErr.effErr());
   }
+  std::cout << "Data-Emul summ.: " << theRunMap.effAndErr() << std::endl;
 }
 

@@ -8,6 +8,7 @@
 
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
+#include "DataFormats/MuonReco/interface/MuonSelectors.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
@@ -21,8 +22,33 @@
 
 //TH2D* hMuHitsCSCvsEta;
 
+namespace {
+bool isMediumMuon(const reco::Muon & recoMu) {
+      bool goodGlob = recoMu.isGlobalMuon() && 
+                      recoMu.globalTrack()->normalizedChi2() < 3 && 
+                      recoMu.combinedQuality().chi2LocalPosition < 12 && 
+                      recoMu.combinedQuality().trkKink < 20; 
+      bool isMedium = muon::isLooseMuon(recoMu) && 
+                      recoMu.innerTrack()->validFraction() > 0.49 && 
+                      muon::segmentCompatibility(recoMu) > (goodGlob ? 0.303 : 0.451); 
+      return isMedium; 
+}
+bool isTightMuon(const reco::Muon& muon){
+  if(!muon.isPFMuon() || !muon.isGlobalMuon() ) return false;
+  bool muID = muon::isGoodMuon(muon,muon::GlobalMuonPromptTight) && (muon.numberOfMatchedStations() > 1);
+  bool hits = muon.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 &&
+    muon.innerTrack()->hitPattern().numberOfValidPixelHits() > 0;
+  bool ip = true;
+  return muID && hits && ip;
+}
+}
+
+
+
 BestMuonFinder::BestMuonFinder(const edm::ParameterSet& cfg, edm::ConsumesCollector&& cColl)
-  : lastEvent(0), lastRun(0), theConfig(cfg), theUnique(true), theAllMuons(0), theMuon(0),
+  : lastEvent(0), lastRun(0), theConfig(cfg), 
+    theUnique(true), theIsLoose(false), theIsMedium(false), theIsTight(false), 
+    theAllMuons(0), theMuon(0),
     theTrackerHits(0), theRPCHits(0), theDTHits(0), theCSCHits(0),
     hMuChi2Tk(0), hMuChi2Gl(0), hMuNHitsTk(0), 
     hMuPtVsEta(0), hMuHitsRPCvsCSC(0), hMuHitsRPCvsDT(0),
@@ -45,12 +71,17 @@ bool BestMuonFinder::run(const edm::Event &ev, const edm::EventSetup &es)
   lastRun = ev.run();
   theMuon = 0;
   theUnique = true;
+  theIsLoose = false;
+  theIsMedium = false;
+  theIsTight= false;
+  theMuonObjs.clear();
 
 
   //getBeamSpot
   edm::InputTag beamSpot =  theConfig.getParameter<edm::InputTag>("beamSpot");
   edm::Handle<reco::BeamSpot> bsHandle;
   ev.getByLabel( beamSpot, bsHandle);
+  if (!bsHandle.isValid()) return false;
   math::XYZPoint reference =  (bsHandle.isValid())  ?  math::XYZPoint(bsHandle->x0(), bsHandle->y0(), bsHandle->z0())
                                                     :  math::XYZPoint(0.,0.,0.);
 
@@ -69,36 +100,27 @@ bool BestMuonFinder::run(const edm::Event &ev, const edm::EventSetup &es)
   for (reco::MuonCollection::const_iterator im = muons->begin(); im != muons->end(); ++im) {
 
 //    std::cout << "HERE Muon:" <<" Glb: "<< im->isGlobalMuon() <<" pt="<<im->bestTrack()->pt() 
-//              <<" eta="<<im->bestTrack()->eta() <<" phi="<<im->bestTrack()->phi() <<" chi2: "<<im->bestTrack()->normalizedChi2()<<std::endl;
+//              <<" eta="<<im->bestTrack()->eta() <<" phi="<<im->bestTrack()->phi() <<" chi2: "<<im->bestTrack()->normalizedChi2()
+//              <<" isLoose: " << muon::isLooseMuon(*im)<<" isMedium: " << isMediumMuon(*im) << " isTight: " << isTightMuon(*im) 
+//              <<std::endl;
 
-/*
-if (ev.id().event() == 352597514) {
-    std::cout << "HERE Muon: matched stations:"<<im->numberOfMatchedStations() <<std::endl;
-    if (im->isGlobalMuon()) {
-       std::cout <<"  GlobalMuon: "
-                 <<" pt="<<im->combinedMuon()->pt()
-                 <<" eta="<<im->combinedMuon()->eta()
-                 <<" phi="<<im->combinedMuon()->phi()
-                 <<" chi2: "<<im->combinedMuon()->normalizedChi2()<<std::endl;
-     }
-    if (im->isTrackerMuon() && im->innerTrack().isNonnull()) { 
-      std::cout <<" TrackerMuon: " 
-                <<" pt="<<im->innerTrack()->pt()
-                <<" eta="<<im->innerTrack()->eta()
-                <<" phi="<<im->innerTrack()->phi()
-              << std::endl;
-    }
-    if (im->isStandAloneMuon())  std::cout <<" StandaloneMuon"<<std::endl;
-}
-*/
+    //
+    // set type of muon
+    //
+    bool isLoose =  muon::isLooseMuon(*im);
+    bool isMedium = isMediumMuon(*im);
+    bool isTight = isTightMuon(*im);
+
     if ( fabs(im->bestTrack()->eta()) >  theConfig.getParameter<double>("maxAbsEta")) continue;
     if (im->bestTrack()->pt() < theConfig.getParameter<double>("minPt")) continue;
     if (im->numberOfMatchedStations() <  theConfig.getParameter<int>("minNumberOfMatchedStations")) continue;
+    if (theConfig.getParameter<bool>("requireLoose") && !muon::isLooseMuon(*im) ) continue;
 
     if (    theConfig.getParameter<bool>("requireInnerTrack")) {
       if (!im->isTrackerMuon() || !im->innerTrack().isNonnull()) continue;
       if (im->innerTrack()->dxy(reference) >  theConfig.getParameter<double>("maxTIP")) continue;
-      if (im->innerTrack()->normalizedChi2() >  theConfig.getParameter<double>("maxChi2Tk")) continue;
+      if (!isLoose && theConfig.getParameter<bool>("checkChi2NotLoose")
+          && im->innerTrack()->normalizedChi2() >  theConfig.getParameter<double>("maxChi2Tk")) continue;
       if (hMuonPt_BMF)   hMuonPt_BMF->Fill( im->innerTrack()->pt());
       if (hMuonEta_BMF) hMuonEta_BMF->Fill( im->innerTrack()->eta());
       if (hMuonPhi_BMF) hMuonPhi_BMF->Fill( im->innerTrack()->phi());
@@ -106,12 +128,14 @@ if (ev.id().event() == 352597514) {
       if (hMuPtVsEta) hMuPtVsEta->Fill(im->innerTrack()->eta(), im->innerTrack()->pt());
     }
     if (    theConfig.getParameter<bool>("requireOuterTrack")){ 
-       if(!im->isStandAloneMuon() || !im->outerTrack().isNonnull())continue;
-	 if(im->standAloneMuon()->normalizedChi2() >  theConfig.getParameter<double>("maxChi2Sa")) continue;
+      if (!im->isStandAloneMuon() || !im->outerTrack().isNonnull())continue;
+      if (!isLoose && theConfig.getParameter<bool>("checkChi2NotLoose")
+          && im->standAloneMuon()->normalizedChi2() >  theConfig.getParameter<double>("maxChi2Sa")) continue;
     }
     if ( theConfig.getParameter<bool>("requireGlobalTrack")) { 
-	  if(!im->isGlobalMuon() ||  !im->globalTrack().isNonnull()) continue;  
-	  if(im->combinedMuon()->normalizedChi2() >  theConfig.getParameter<double>("maxChi2Mu")) continue;
+	if (!im->isGlobalMuon() ||  !im->globalTrack().isNonnull()) continue;  
+      if (!isLoose && theConfig.getParameter<bool>("checkChi2NotLoose")
+	    && im->combinedMuon()->normalizedChi2() >  theConfig.getParameter<double>("maxChi2Mu")) continue;
     }
 
     if (hMuChi2Gl && im->isGlobalMuon()) hMuChi2Gl->Fill(im->combinedMuon()->normalizedChi2());
@@ -154,33 +178,62 @@ if (ev.id().event() == 352597514) {
         nCSCHits = hp.numberOfValidMuonCSCHits();
       }
     }
+
+
     
     if (nTrackerHits< theConfig.getParameter<int>("minNumberTrackerHits")) continue;
     if ( nRPCHits < theConfig.getParameter<int>("minNumberRpcHits")) continue;
     if ( nDTHits + nCSCHits < theConfig.getParameter<int>("minNumberDtCscHits")  ) continue;
+    
 
+    //
+    // check if muon is unigue
+    //
+    bool isUnique = true;
+    double muonEta = im->bestTrack()->eta();
+    double muonPhi = im->bestTrack()->phi();
+    for (reco::MuonCollection::const_iterator imm = muons->begin(); imm != muons->end(); ++imm) {
+      if (&(*imm) == &(*im)) continue;
+      if (theConfig.getParameter<bool>("looseUnique") && ! muon::isLooseMuon(*imm)) continue;
+      if ( imm->bestTrack()->pt() <   theConfig.getParameter<double>("minPtUnique") ) continue;
+      if ( fabs(reco::deltaPhi(muonPhi, imm->bestTrack()->phi())) > theConfig.getParameter<double>("deltaPhiUnique")) continue; 
+      if ( fabs(muonEta-imm->bestTrack()->eta()) > theConfig.getParameter<double>("deltaEtaUnique")) continue;
+      isUnique = false;
+    }
+   
+    MuonObj muonObj;
+    muonObj.isUnique = isUnique;
+    muonObj.isLoose  = isLoose;
+    muonObj.isMedium = isMedium;
+    muonObj.isTight  = isTight;
+    muonObj.nAllMuons = theAllMuons;
+    muonObj.nRPCHits = nRPCHits;
+    muonObj.nDTHits  = nDTHits;
+    muonObj.nCSCHits = nCSCHits;
+    muonObj.nTrackerHits = nTrackerHits;
+    muonObj.nMatchedStations = im->numberOfMatchedStations();
+    muonObj.setKine(im->bestTrack()->pt(), im->bestTrack()->eta(), im->bestTrack()->phi(), im->bestTrack()->charge());
+    muonObj.setBits(im->isGlobalMuon(), im->isTrackerMuon(), im->isStandAloneMuon(), im->isCaloMuon(), im->isMatchesValid());
+    theMuonObjs.push_back(muonObj);
+ 
     if (!theMuon || (im->bestTrack()->pt() > theMuon->bestTrack()->pt()) ) {
       theMuon = &(*im);
       theTrackerHits = nTrackerHits;
       theRPCHits = nRPCHits;
       theDTHits = nDTHits;
       theCSCHits = nCSCHits;
+      theUnique = isUnique;
+      theIsLoose = isLoose;
+      theIsMedium = isMedium;
+      theIsTight = isTight;
     }
   }
+ 
+  //
+  // sort resulting container by pT, in descending order
+  //
+  std::sort(theMuonObjs.begin(), theMuonObjs.end(), []( const MuonObj &m1, const MuonObj &m2) { return m1.pt() > m2.pt(); } );
 
-  //
-  // check if muon is unigue
-  //
-  if (theMuon) {
-    double muonEta = theMuon->bestTrack()->eta();
-    double muonPhi = theMuon->bestTrack()->phi();
-    for (reco::MuonCollection::const_iterator im = muons->begin(); im != muons->end(); ++im) {
-      if (&(*im) == theMuon) continue;
-      if ( fabs(reco::deltaPhi(muonPhi, im->bestTrack()->phi())) > theConfig.getParameter<double>("deltaPhiUnique")) continue; 
-      if ( fabs(muonEta-im->bestTrack()->eta()) > theConfig.getParameter<double>("deltaEtaUnique")) continue;
-      theUnique = false;
-    }
-  }
   return true;
 }
 

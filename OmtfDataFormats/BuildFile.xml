@@ -1,5 +1,7 @@
 <use   name="root"/>
 <use   name="rootrflx"/>
+<use   name="L1Trigger/L1TMuonOverlap"/>
+
 <export>
   <lib   name="1"/>
 </export>

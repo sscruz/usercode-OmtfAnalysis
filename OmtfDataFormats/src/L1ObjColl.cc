@@ -136,7 +136,7 @@ std::ostream & operator<< (std::ostream &out, const L1ObjColl &col)
  {
   for (unsigned int i=0; i< col.theL1Obj.size(); ++i) {
     out <<"("<<i<<")"<<col.theL1Obj[i];
-    out <<" matched: "<< col.theL1Matching[i]<<" deltaR: "<< col.theDeltaR[i];
+//    out <<" matched: "<< col.theL1Matching[i]<<" deltaR: "<< col.theDeltaR[i];
     if (i !=  col.theL1Obj.size()-1) out <<std::endl;
   }
    return out;
