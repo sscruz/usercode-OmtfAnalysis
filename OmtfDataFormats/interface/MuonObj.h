@@ -9,6 +9,9 @@ public:
       : TrackObj(pt,eta,phi,charge), 
         nRPCHits(0), nDTHits(0), nCSCHits(0), nTrackerHits(0), nMatchedStations(0),
         isUnique(true), isLoose(false), isMedium(false), isTight(false), 
+        isMatchedHlt(false), isMatchedIsoHlt(false),
+        isTkIsolated(false), isPFIsolated(false),
+        chi2Norm(0.),
         nAllMuons(0), theMuonBits(0) {}
   virtual ~MuonObj(){}
   void setBits(bool isGlobal, bool isTracker, bool isOuter, bool isCalo, bool isMatched) {
@@ -28,11 +31,14 @@ public:
 public:
   unsigned int nRPCHits, nDTHits, nCSCHits, nTrackerHits, nMatchedStations;
   bool         isUnique, isLoose, isMedium, isTight;
+  bool         isMatchedHlt, isMatchedIsoHlt;
+  bool         isTkIsolated, isPFIsolated;
+  float        chi2Norm;
   unsigned int nAllMuons;
 private:  
   unsigned int theMuonBits; 
 public:
-ClassDef(MuonObj,3)
+ClassDef(MuonObj,4)
 };
 
 

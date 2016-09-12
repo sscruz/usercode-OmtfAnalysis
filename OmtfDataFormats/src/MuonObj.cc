@@ -1,4 +1,6 @@
 #include "UserCode/OmtfDataFormats/interface/MuonObj.h"
+#include <iomanip>
+
 ClassImp(MuonObj)
 
 std::ostream & operator<< (std::ostream &out, const MuonObj &o)
@@ -9,8 +11,13 @@ std::ostream & operator<< (std::ostream &out, const MuonObj &o)
   if (o.isTracker()) out << "_TRK";
   if (o.isOuter())   out << "_OUT";
   if (o.isGlobal())  out << "_GLB";
+  out <<std::setprecision(2)<<" chi2:"<<o.chi2Norm;
   out <<" #AllMuons: "<<o.nAllMuons;
   if (o.isUnique) out<<"_UNIQUE";
+  if (o.isMatchedHlt) out <<"_HLT";
+  if (o.isMatchedIsoHlt) out <<"_ISOHLT";
+  if (o.isTkIsolated) out <<"_TkIso";
+  if (o.isPFIsolated) out <<"_PFIso";
   if (o.isTight) out <<"_Tight";
   else if (o.isMedium) out <<"_Medium";
   else if (o.isLoose) out <<"_Loose";

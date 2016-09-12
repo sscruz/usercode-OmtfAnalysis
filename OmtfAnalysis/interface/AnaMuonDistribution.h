@@ -14,9 +14,10 @@ public:
   void run(const MuonObj* muon);
   
 private:
-  double ptMin, etaMax;
+  double ptMin, etaMax, chi2Norm;
   unsigned int  minNumberOfMatchedStations, minNumberTkHits, minNumberRpcHits, minNumberDtCscHits, minNumberRpcDtCscHits;
-  bool requireAnyMuon, requireUnique, requireOnlyOne, requireGlobal, requireInner, requireOuter;
+  bool requireUnique, requireGlobal, requireInner, requireOuter;
   bool requireLoose, requireMedium, requireTight;
+  bool requireTkIso, requirePFIso;
 };
 #endif

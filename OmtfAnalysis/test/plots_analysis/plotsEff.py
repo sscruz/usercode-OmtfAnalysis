@@ -65,19 +65,23 @@ def cEffEta(canvas):
   one.SetLineColor(1)
   one.DrawLine(-2.,1.,2.,1.)
   
-  legend = TLegend(0.7, 0.75, 1.4, 0.85,"muon p_{T}^{reco} > 1.5*p_{T}L1","")
+  legend = TLegend(-0.7, 0.71, 0.7, 0.79,"muon p_{T}^{reco} > 1.5*p_{T}L1, p_{T}L1=16GeV","")
   legend.SetName("lEffEta")
   canvas.Add(legend)
 
-  colors = [2,3,4,6] 
-  for index, cut in enumerate(['0','10','16','25']) :
+  colors = [2,4,4,6] 
+  for index, opt in enumerate(['Bmtf','Omtf','OmtfQ4','Emtf']) :
+    cut='16'
     color = colors[index]
     hn_D = gROOT.FindObject('hEff_EtaDenom'+cut)
-    hn  = gROOT.FindObject('hEff_EtaCut'+cut)
+    hn  = gROOT.FindObject('hEff_EtaCut'+cut+'_'+opt)
     hn.Divide(hn,hn_D,1.,1.,'B')
     hn.SetLineColor(color)
-    hn.DrawCopy('same')  
-    legend.AddEntry(hn,'p_{T}L1 #geq '+cut)
+    hn.SetLineStyle(1)
+    if (opt=='OmtfQ4') : hn.SetLineStyle(3)
+    hn.DrawCopy('hist same')
+#    legend.AddEntry(hn,'p_{T}L1 #geq '+cut)
+    legend.AddEntry(hn,opt)
 
   legend.Draw()
   return
@@ -128,6 +132,7 @@ def cEffPt(canvas):
 
     legend.Draw()
 
+  c.Update()
   return
 
 def cEffHistory(canvas):
@@ -165,7 +170,7 @@ def plotAll(canvas) :
   cEffEtaOMTF(canvas)
   cEffDelta(canvas)
   cEffEtaAll(canvas)
-  cEffEta(canvas)
   cEffPt(canvas)
+  cEffEta(canvas)
   return
 

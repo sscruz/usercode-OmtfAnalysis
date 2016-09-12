@@ -56,7 +56,7 @@ private:
   TriggerMenuResultObj *bitsHLT;
 
   EventObj* event;
-  MuonObj* muon;
+//  MuonObj* muon;
   MuonObjColl* muonColl;
   L1ObjColl * l1ObjColl;
 								    

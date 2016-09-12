@@ -5,14 +5,14 @@ import sys
 import commands
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(-1)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1)
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(False))
 
 process.source = cms.Source( 'PoolSource',
 # skipEvents = cms.untracked.uint32(2667),
   fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/omtf/JPsi_21kEvents.root')
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000))
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(50))
 #process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1))
 
 ###PostLS1 geometry used
@@ -32,7 +32,7 @@ process.omtfParamsSource = cms.ESSource( "EmptyESSource",
 
 process.omtfParams = cms.ESProducer( "L1TMuonOverlapParamsESProducer",
     patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x0003.xml")),),
-    configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x0003.xml"),
+    configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x0004.xml"),
 )
 
 ###OMTF emulator configuration

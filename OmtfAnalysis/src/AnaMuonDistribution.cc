@@ -21,20 +21,21 @@ namespace {
 AnaMuonDistribution::AnaMuonDistribution(const edm::ParameterSet& cfg)
   : ptMin( cfg.getParameter<double>("ptMin") ),
     etaMax (cfg.getParameter<double>("etaMax") ),
+    chi2Norm (cfg.getParameter<double>("chi2Norm") ),
     minNumberOfMatchedStations( cfg.getParameter<unsigned int>("minNumberOfMatchedStations") ),
     minNumberTkHits( cfg.getParameter<uint>("minNumberTkHits") ),
     minNumberRpcHits( cfg.getParameter<uint>("minNumberRpcHits") ),
     minNumberDtCscHits( cfg.getParameter<unsigned int>("minNumberDtCscHits") ), 
     minNumberRpcDtCscHits( cfg.getParameter<unsigned int>("minNumberRpcDtCscHits") ), 
-    requireAnyMuon(cfg.getParameter<bool>("requireAnyMuon")),
     requireUnique(cfg.getParameter<bool>("requireUnique")),
-    requireOnlyOne(cfg.getParameter<bool>("requireOnlyOne")),
     requireGlobal(cfg.getParameter<bool>("requireGlobal")),
     requireInner(cfg.getParameter<bool>("requireInner")),
     requireOuter(cfg.getParameter<bool>("requireOuter")),
     requireLoose(cfg.getParameter<bool>("requireLoose")),
     requireMedium(cfg.getParameter<bool>("requireMedium")),
-    requireTight(cfg.getParameter<bool>("requireTight")) 
+    requireTight(cfg.getParameter<bool>("requireTight")), 
+    requireTkIso(cfg.getParameter<bool>("requireTkIso")), 
+    requirePFIso(cfg.getParameter<bool>("requirePFIso")) 
 { }
 
 void AnaMuonDistribution::init(TObjArray& histos) 
@@ -55,8 +56,6 @@ void AnaMuonDistribution::init(TObjArray& histos)
 bool AnaMuonDistribution::filter(const MuonObj *muon)
 {
 //  std::cout << *muon << std::endl;
-  if (requireAnyMuon && (muon->nAllMuons==0)) return false;
-  if (requireOnlyOne && !(muon->nAllMuons==1)) return false;
   if (requireUnique  && !muon->isUnique) return false;
   if (requireGlobal  && !muon->isGlobal()) return false;
   if (requireInner   && !muon->isTracker()) return false;
@@ -64,6 +63,9 @@ bool AnaMuonDistribution::filter(const MuonObj *muon)
   if (requireLoose   && !muon->isLoose) return false;
   if (requireMedium  && !muon->isMedium) return false;
   if (requireTight   && !muon->isTight) return false;
+  if (requireTkIso   && !muon->isTkIsolated) return false;
+  if (requirePFIso   && !muon->isPFIsolated) return false;
+  if (muon->chi2Norm >  chi2Norm) return false;
   if (muon->pt() < ptMin) return false;
   if (fabs(muon->eta()) > etaMax) return false;
   if (muon->nMatchedStations < minNumberOfMatchedStations) return false;

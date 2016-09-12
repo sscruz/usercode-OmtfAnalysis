@@ -20,8 +20,8 @@ f.ls();
 
 canvas = TObjArray()
 #plotsEvent.plotAll(canvas)
-plotsMuon.plotAll(canvas)
-plotsEff.plotAll(canvas)
+#plotsMuon.plotAll(canvas)
+#plotsEff.plotAll(canvas)
 plotsDataEmul.plotAll(canvas)
 
 #--------- HERE pause 

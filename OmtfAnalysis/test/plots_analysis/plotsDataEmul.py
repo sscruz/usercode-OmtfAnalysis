@@ -37,11 +37,9 @@ def cDataEmulCompare(canvas):
   h.DrawCopy('text')
   return
 
-def cDataEmulPtPhi(canvas):
-  c = TCanvas('cDataEmulPtPhi','cDataEmulPtPhi',800,400)
+def cDataEmulPt(canvas):
+  c = TCanvas('cDataEmulPt','cDataEmulPt',900,900)
   canvas.Add(c)
-  c.Divide(2)
-  pad1 = c.cd(1)
   h = gROOT.FindObject('hDataEmulPt')
   h.SetStats(0)
   h.GetXaxis().SetRange(5,32)
@@ -50,10 +48,15 @@ def cDataEmulPtPhi(canvas):
   h.GetYaxis().SetTitleOffset(1.4)
   h.SetXTitle("data p_{T} [GeV]");
   h.SetYTitle("emul p_{T} [GeV]");
-  pad1.SetLogx() 
-  pad1.SetLogy() 
-  h.DrawCopy('colo')
-  c.cd(2)
+  h.SetMarkerSize(0.65)
+  c.SetLogx() 
+  c.SetLogy() 
+  h.DrawCopy('colo text')
+  return
+
+def cDataEmulPhi(canvas):
+  c = TCanvas('cDataEmulPhi','cDataEmulPhi',600,600)
+  canvas.Add(c)
   h = gROOT.FindObject('hDataEmulPhi')
   h.SetStats(0)
   h.GetXaxis().SetTitleOffset(1.4)
@@ -107,9 +110,10 @@ def cDataEmulHistory(canvas):
 
 def plotAll(canvas) :
   cDataEmulCompare(canvas)
-  cDataEmulPtPhi(canvas)
+  cDataEmulPhi(canvas)
   cDataEmulEta(canvas)
   cDataEmulNotAgree(canvas)
   cDataEmulIssue(canvas)
   cDataEmulHistory(canvas)
+  cDataEmulPt(canvas)
   return

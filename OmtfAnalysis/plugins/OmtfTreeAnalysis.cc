@@ -148,17 +148,18 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
 
 /*
     if (!muon.isValid() ||  muon.pt() < 300 || muon.pt() > 400 ) continue;
+*/
     std::cout <<"---------------------------------------"<<std::endl;
     std::cout << *event << std::endl;
     if (muonColl) std::cout << *muonColl << std::endl;
     if (l1ObjColl)  std::cout << *l1ObjColl << std::endl; 
     if ( muon.isValid() ) std::cout <<" muon: " << muon << std::endl; 
-    theAnaMenu->debug=true;
-    theAnaEff->debug=true;
-    theAnaMenu->filter(event, &muon, bitsL1, bitsHLT);
+//    theAnaMenu->debug=true;
+//    theAnaEff->debug=true;
+//    theAnaMenu->filter(event, &muon, bitsL1, bitsHLT);
     theAnaMenu->debug=false;
     theAnaEff->debug=false;
-*/
+    theAnaDataEmul->debug = true; 
 
 
     //
@@ -167,6 +168,7 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
     if (theAnaMuonDistribution) theAnaMuonDistribution->run(&muon);
     if (theAnaEff)      theAnaEff->run ( event, &muon, l1ObjColl); 
     if (theAnaDataEmul) theAnaDataEmul->run(event, l1ObjColl); 
+    theAnaDataEmul->debug = false; 
      
 
   }

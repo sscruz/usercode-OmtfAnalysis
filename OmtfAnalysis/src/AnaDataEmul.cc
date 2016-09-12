@@ -65,6 +65,7 @@ namespace {
 }
 
 AnaDataEmul::AnaDataEmul(const edm::ParameterSet& cfg)
+  : debug(false)
 {
 }
 
@@ -213,7 +214,7 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
      hDataEmulNotAgreePhi->Fill( OmtfName(emul->iProcessor, emul->position), emul->phi ); 
   }
 
-//  if (diff!=agree ) std::cout << "NOT agree("<<diffName(diff)<<"), dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl; 
+  if (debug && diff!=agree ) std::cout << "NOT agree("<<diffName(diff)<<"), dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl; 
 
   if (unique) {
     hDataEmulPt->Fill( code2pt(data->pt), code2pt(emul->pt) );

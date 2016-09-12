@@ -27,6 +27,11 @@
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerRecord.h"
 
+#include "UserCode/OmtfDataFormats/interface/MuonObjColl.h"
+#include "DataFormats/Math/interface/deltaR.h"
+
+
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -41,6 +46,9 @@
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "FWCore/Common/interface/TriggerResultsByName.h"
 
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
+#include "DataFormats/HLTReco/interface/TriggerObject.h"
+
 
 namespace {
   edm::EDGetTokenT<edm::TriggerResults> theTrigResultToken;
@@ -49,11 +57,17 @@ namespace {
 
 
 MenuInspector::MenuInspector(const edm::ParameterSet& cfg, edm::ConsumesCollector&& cColl)
-  : theCounterIN(0), theCounterL1(0), theCounterHLT(0),
+  : lastEvent(0), lastRun(0),
+    theCounterIN(0), theCounterL1(0), theCounterHLT(0),
     theWarnNoColl(cfg.getUntrackedParameter<bool>("warnNoColl",true))
 { 
   theTrigResultToken = cColl.consumes<edm::TriggerResults>(edm::InputTag("TriggerResults","","HLT"));
   theGlobalAlgToken  = cColl.consumes<GlobalAlgBlkBxCollection>(edm::InputTag("gtStage2Digis"));
+
+  cColl.consumes<trigger::TriggerEvent>(edm::InputTag("hltTriggerSummaryAOD","","HLT"));
+
+  std::vector<std::string> names = cfg.getParameter<std::vector<std::string> >("namesCheckHltMuMatch");
+  for (auto name : names) theNamesCheckHltMuMatchIdx[name]=-1;
 }
 
 bool MenuInspector::checkRun(const edm::Run& run, const edm::EventSetup & es)
@@ -86,8 +100,14 @@ bool MenuInspector::checkRun(const edm::Run& run, const edm::EventSetup & es)
 //      theHltConfig.dump("PrescaleTable");
 //      theHltConfig.dump("ProcessPSet");
       theNamesAlgoHLT.clear();
+      for (auto & im : theNamesCheckHltMuMatchIdx) im.second = -1;
+
       //for goes up to .size()-1, since the last is "Final" decision.
-      for (unsigned int idx =0;  idx < theHltConfig.size()-1; idx++) theNamesAlgoHLT.push_back( theHltConfig.triggerName(idx) );
+      for (unsigned int idx =0;  idx < theHltConfig.size()-1; idx++) {
+        std::string name = theHltConfig.triggerName(idx);
+        theNamesAlgoHLT.push_back( name );
+        for (auto & im : theNamesCheckHltMuMatchIdx) if (name.find(im.first) != std::string::npos) im.second = idx; 
+      }
     }
   } 
   return true; 
@@ -96,6 +116,59 @@ bool MenuInspector::checkRun(const edm::Run& run, const edm::EventSetup & es)
 MenuInspector::~MenuInspector()
 {
   std::cout <<"MenuInspector, IN: "<<theCounterIN<<"  AfterL1: "<< theCounterL1 << " AfterHLT: "<<theCounterHLT<< std::endl;
+}
+
+bool MenuInspector::run(const edm::Event &ev, const edm::EventSetup &es)
+{
+  if (lastEvent==ev.id().event() && lastRun==ev.run()) return false;
+  lastEvent = ev.id().event() ;
+  lastRun = ev.run();
+
+  theFiredL1 = runFiredAlgosL1(ev,es);
+  theFiredHLT = runFiredAlgosHLT(ev,es);
+
+  return true;
+}
+
+bool MenuInspector::associateHLT(const edm::Event &ev, const edm::EventSetup &es, MuonObjColl * muonColl)
+{
+  run(ev,es);
+
+  //get HLT result
+  edm::Handle<trigger::TriggerEvent> triggerAOD;
+  ev.getByLabel(edm::InputTag("hltTriggerSummaryAOD","","HLT"), triggerAOD);
+  if (!triggerAOD.isValid()) return false;
+  const trigger::TriggerObjectCollection & triggerObjects = triggerAOD->getObjects();
+  std::vector<MuonObj> & muons = muonColl->data();
+
+  for (const auto & checkHlt : theNamesCheckHltMuMatchIdx) {
+    int checkAlgoIndex = checkHlt.second; 
+    if (checkAlgoIndex < 0) continue;
+    bool isIsoAlgo = (theNamesAlgoHLT[checkAlgoIndex].find("Iso") != std::string::npos); 
+    if( std::find(theFiredHLT.begin(), theFiredHLT.end(), checkAlgoIndex) == theFiredHLT.end() ) continue; 
+
+
+    const std::vector<std::string> moduleLabels(theHltConfig.moduleLabels(checkAlgoIndex));
+    unsigned int moduleFireIndex = theHltConfig.size(checkAlgoIndex)-2;
+    // check if better way exists, this one is crazy....
+    unsigned hltFilterIndex = triggerAOD->filterIndex( edm::InputTag ( moduleLabels[moduleFireIndex], "", "HLT") ); 
+    if (hltFilterIndex >= triggerAOD->sizeFilters())  { std::cout <<" PROBLEM, wrong filter index, skip" << std::endl; continue;}
+
+    trigger::Keys triggerKeys(triggerAOD->filterKeys(hltFilterIndex));
+
+    unsigned nTriggers = triggerKeys.size();
+//    std::cout <<" fired algo: " << theNamesAlgoHLT[checkAlgoIndex] <<", triggers: " << nTriggers<<std::endl;
+    for (size_t iTrig = 0; iTrig < nTriggers; ++iTrig) {
+      trigger::TriggerObject trigObject = triggerObjects[triggerKeys[iTrig]];
+      for (auto & muon : muons) {
+        double dR = reco::deltaR(muon, trigObject);
+        if (dR < 0.1) { if (isIsoAlgo) muon.isMatchedIsoHlt = true; else  muon.isMatchedHlt = true; }
+      }
+    }
+  } 
+
+  return true;
+
 }
 
 bool MenuInspector::filter(edm::Event&ev, const edm::EventSetup&es)
@@ -112,7 +185,7 @@ bool MenuInspector::filter(edm::Event&ev, const edm::EventSetup&es)
 
 
 
-std::vector<unsigned int>  MenuInspector::firedAlgosL1(const edm::Event&ev, const edm::EventSetup&es) 
+std::vector<unsigned int>  MenuInspector::runFiredAlgosL1(const edm::Event&ev, const edm::EventSetup&es) 
 {
   std::vector<unsigned int> result;
 
@@ -135,7 +208,7 @@ std::vector<unsigned int>  MenuInspector::firedAlgosL1(const edm::Event&ev, cons
   return result;
 }
 
-std::vector<unsigned int> MenuInspector::firedAlgosHLT(const edm::Event&ev, const edm::EventSetup&es) 
+std::vector<unsigned int> MenuInspector::runFiredAlgosHLT(const edm::Event&ev, const edm::EventSetup&es) 
 {
   std::vector<unsigned int> result;
 
@@ -181,12 +254,12 @@ std::vector<unsigned int> MenuInspector::firedAlgosHLT(const edm::Event&ev, cons
 
 
 
+/*
 
 bool MenuInspector::filterL1(edm::Event&ev, const edm::EventSetup&es)
 {
 //  bool result = false;
   bool result = true;
-/*
 
   // reinitialiast Gt Menu,
   // not clear why it needs ev.
@@ -238,16 +311,16 @@ bool MenuInspector::filterL1(edm::Event&ev, const edm::EventSetup&es)
   //result = !hasMuSeed;
   //result=true;
 
-*/
   
   return result;
 }
+*/
 
+/*
 bool MenuInspector::filterHLT(edm::Event&ev, const edm::EventSetup&es)
 {
   //bool result = false;
   bool result = true;
-/*
 
   // get event products
   edm::Handle<edm::TriggerResults>   triggerResultsHandle;
@@ -283,7 +356,7 @@ bool MenuInspector::filterHLT(edm::Event&ev, const edm::EventSetup&es)
     }
   }
   std::cout <<" total number of HLT triggers: "<<ntrig<<std::endl;
-*/
   return result;
 }
+*/
 

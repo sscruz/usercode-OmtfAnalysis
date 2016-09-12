@@ -17,6 +17,7 @@ public:
   void run(EventObj* event, L1ObjColl* coll);
   void resume(TObjArray& histos);
 
+  bool debug;
 private:
 
   enum DIFF { agree=1, almostAgree=2, ratherAgree = 3, disagree=4, dataOnly=5, emulOnly=6, sizeDiff=7, unknown };

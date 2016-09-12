@@ -85,6 +85,7 @@ bool BestMuonFinder::run(const edm::Event &ev, const edm::EventSetup &es)
   math::XYZPoint reference =  (bsHandle.isValid())  ?  math::XYZPoint(bsHandle->x0(), bsHandle->y0(), bsHandle->z0())
                                                     :  math::XYZPoint(0.,0.,0.);
 
+
   //get Muon
   edm::Handle<reco::MuonCollection> muons;
   edm::InputTag muonColl =  theConfig.getParameter<edm::InputTag>("muonColl");
@@ -119,8 +120,6 @@ bool BestMuonFinder::run(const edm::Event &ev, const edm::EventSetup &es)
     if (    theConfig.getParameter<bool>("requireInnerTrack")) {
       if (!im->isTrackerMuon() || !im->innerTrack().isNonnull()) continue;
       if (im->innerTrack()->dxy(reference) >  theConfig.getParameter<double>("maxTIP")) continue;
-      if (!isLoose && theConfig.getParameter<bool>("checkChi2NotLoose")
-          && im->innerTrack()->normalizedChi2() >  theConfig.getParameter<double>("maxChi2Tk")) continue;
       if (hMuonPt_BMF)   hMuonPt_BMF->Fill( im->innerTrack()->pt());
       if (hMuonEta_BMF) hMuonEta_BMF->Fill( im->innerTrack()->eta());
       if (hMuonPhi_BMF) hMuonPhi_BMF->Fill( im->innerTrack()->phi());
@@ -129,13 +128,9 @@ bool BestMuonFinder::run(const edm::Event &ev, const edm::EventSetup &es)
     }
     if (    theConfig.getParameter<bool>("requireOuterTrack")){ 
       if (!im->isStandAloneMuon() || !im->outerTrack().isNonnull())continue;
-      if (!isLoose && theConfig.getParameter<bool>("checkChi2NotLoose")
-          && im->standAloneMuon()->normalizedChi2() >  theConfig.getParameter<double>("maxChi2Sa")) continue;
     }
     if ( theConfig.getParameter<bool>("requireGlobalTrack")) { 
 	if (!im->isGlobalMuon() ||  !im->globalTrack().isNonnull()) continue;  
-      if (!isLoose && theConfig.getParameter<bool>("checkChi2NotLoose")
-	    && im->combinedMuon()->normalizedChi2() >  theConfig.getParameter<double>("maxChi2Mu")) continue;
     }
 
     if (hMuChi2Gl && im->isGlobalMuon()) hMuChi2Gl->Fill(im->combinedMuon()->normalizedChi2());
@@ -179,11 +174,21 @@ bool BestMuonFinder::run(const edm::Event &ev, const edm::EventSetup &es)
       }
     }
 
-
-    
     if (nTrackerHits< theConfig.getParameter<int>("minNumberTrackerHits")) continue;
     if ( nRPCHits < theConfig.getParameter<int>("minNumberRpcHits")) continue;
     if ( nDTHits + nCSCHits < theConfig.getParameter<int>("minNumberDtCscHits")  ) continue;
+
+    //
+    // check isolation
+    //
+    bool isTkIsolated = false;
+    if (im->isIsolationValid() && im->isolationR03().sumPt/im->pt() < theConfig.getParameter<double>("cutTkIsoRel") ) isTkIsolated = true;
+    bool isPFIsolated = false;
+    if (im->isPFIsolationValid() && 
+           (   im->pfIsolationR04().sumChargedHadronPt 
+             + max(0., im->pfIsolationR04().sumNeutralHadronEt + im->pfIsolationR04().sumPhotonEt - 0.5*im->pfIsolationR04().sumPUPt)
+            )/im->pt() < theConfig.getParameter<double>("cutPFIsoRel")
+        ) isPFIsolated = true;
     
 
     //
@@ -212,6 +217,9 @@ bool BestMuonFinder::run(const edm::Event &ev, const edm::EventSetup &es)
     muonObj.nCSCHits = nCSCHits;
     muonObj.nTrackerHits = nTrackerHits;
     muonObj.nMatchedStations = im->numberOfMatchedStations();
+    muonObj.chi2Norm = im->bestTrack()->normalizedChi2();
+    muonObj.isTkIsolated = isTkIsolated;
+    muonObj.isPFIsolated = isPFIsolated;
     muonObj.setKine(im->bestTrack()->pt(), im->bestTrack()->eta(), im->bestTrack()->phi(), im->bestTrack()->charge());
     muonObj.setBits(im->isGlobalMuon(), im->isTrackerMuon(), im->isStandAloneMuon(), im->isCaloMuon(), im->isMatchesValid());
     theMuonObjs.push_back(muonObj);

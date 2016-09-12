@@ -17,10 +17,15 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 #
 process.source = cms.Source("PoolSource", 
 fileNames = cms.untracked.vstring(
+  'file:/afs/cern.ch/work/k/konec/data/runs/run279931-Express-2000_82DB28E0-7171-E611-A67B-FA163EE0E3A6.root',
+# 'file:toto.root',
+#'/store/express/Run2016F/ExpressPhysics/FEVT/Express-v1/000/278/017/00000/B69D41C7-4E58-E611-AC3F-02163E01412A.root',
+#'/store/express/Run2016F/ExpressPhysics/FEVT/Express-v1/000/277/982/00000/0627D80B-EB57-E611-9FC6-02163E011B6F.root',
+#  'root://cms-xrd-global.cern.ch//store/express/Run2016F/ExpressPhysics/FEVT/Express-v1/000/277/981/00000/B6751BB0-EB57-E611-8249-FA163E180514.root',
 #  'root://cms-xrd-global.cern.ch//store/data/Run2016D/SingleMuon/RAW-RECO/ZMu-PromptReco-v2/000/276/811/00000/44797745-794C-E611-A7F9-02163E011CC9.root',
 #  'file:/afs/cern.ch/work/k/konec/data/runs/run276811-SM_ZMu_Prompt-300_44797745-794C-E611-A7F9-02163E011CC9.root',
 #  'file:/afs/cern.ch/work/k/konec/data/runs/run275963-Express-150_24AE8B98-743E-E611-ABC2-02163E0138E3.root',
-   'file:/afs/cern.ch/work/k/konec/data/runs/run276870-Express-500_F8CB4B4B-6C4B-E611-ADEA-02163E01429D.root',
+#   'file:/afs/cern.ch/work/k/konec/data/runs/run276870-Express-500_F8CB4B4B-6C4B-E611-ADEA-02163E01429D.root',
 #'/store/data/Run2016C/ZeroBias/RECO/PromptReco-v2/000/276/097/00000/54FC3E14-0141-E611-882B-02163E014116.root'
 #'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/846A13FA-733E-E611-BC5C-02163E011D84.root',
 #'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/426B9BF4-733E-E611-BD17-02163E011B2D.root',
@@ -67,8 +72,6 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
-
-
 #
 # message logger
 #
@@ -77,7 +80,6 @@ process.MessageLogger.debugModules.append('rpcunpacker')
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
 process.MessageLogger.suppressWarning  = cms.untracked.vstring('Geometry', 'AfterSource','L1T','L1GlobalTriggerRawToDigi')
 process.options = cms.untracked.PSet( wantSummary=cms.untracked.bool(False))
-
 
 
 #OMTF ESProducer. Fills CondFormats from XML files.
@@ -89,7 +91,7 @@ process.omtfParamsSource = cms.ESSource( "EmptyESSource",
 
 process.omtfParams = cms.ESProducer( "L1TMuonOverlapParamsESProducer",
      patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x0003.xml")),),
-     configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x0003.xml"),
+     configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x0004.xml"),
 )
 
 ###OMTF emulator configuration
@@ -150,7 +152,9 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
   histoFileName = cms.string("omtfHelper.root"),
   treeFileName = cms.string("omtfTree.root"),
 
-  menuInspector = cms.PSet(),
+  menuInspector = cms.PSet(
+    namesCheckHltMuMatch = cms.vstring("HLT_IsoMu22_v","HLT_IsoTkMu22_v","HLT_Mu50_v","HLT_TkMu50_v","HLT_Mu45_eta2p1_v"),
+  ),
   
   l1ObjMaker = cms.PSet(
     omtfEmulSrc = cms.InputTag('omtfEmulator','OMTF'),
@@ -171,14 +175,12 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
     minPt = cms.double(3.),
     maxTIP = cms.double(0.2),
     maxAbsEta = cms.double(2.4),
-    checkChi2NotLoose = cms.bool(True),
-    maxChi2Mu = cms.double(2.),
-    maxChi2Sa = cms.double(2.),
-    maxChi2Tk = cms.double(2.),
     minNumberTrackerHits = cms.int32(6),
     minNumberRpcHits = cms.int32(0),
     minNumberDtCscHits = cms.int32(0),
     minNumberOfMatchedStations = cms.int32(0),
+    cutTkIsoRel = cms.double(0.1),
+    cutPFIsoRel = cms.double(0.15),
     deltaPhiUnique = cms.double(1.0),
     deltaEtaUnique = cms.double(0.5),
     minPtUnique = cms.double(2.0),

@@ -25,17 +25,25 @@ AnaSecMuSelector::AnaSecMuSelector(const edm::ParameterSet& cfg)
 MuonObj AnaSecMuSelector::run( 
     const EventObj* ev, const std::vector<MuonObj> & muons, const L1ObjColl * l1Objs) 
 {
+
+  //
+  // check for triggering muon
+  //
   MuonObj trg;
   unsigned int imuon =0;
   for (const auto & muon : muons) {
     imuon++;
-    if ( imuon !=1 && theCfgTrg.getParameter<bool>("useFirstOnly")) break; 
-    if ( imuon != muons.size() && theCfgTrg.getParameter<bool>("useLastOnly")) continue; 
     if (   theCfgTrg.exists("requireCharge")
         && theCfgTrg.getParameter<int>("requireCharge") != muon.charge() ) continue;
 
     if (theCfgTrg.getParameter<bool>("requireTight") && !muon.isTight) continue;
     if (theCfgTrg.getParameter<bool>("requireUnique") && !muon.isUnique) continue;
+    if (    theCfgTrg.getParameter<bool>("requireHLT")  
+         && !muon.isMatchedHlt && !muon.isMatchedIsoHlt ) continue;
+    if(     theCfgTrg.getParameter<bool>("requireIsoForHLTIso") && !muon.isMatchedHlt) {
+        if (!muon.isMatchedIsoHlt) continue;
+        if (!muon.isTkIsolated && !muon.isPFIsolated ) continue;
+    }
     if (muon.nMatchedStations < theCfgTrg.getParameter<uint>("minMatchStations") ) continue;
     if (muon.pt() < theCfgTrg.getParameter<double>("minAcceptMuPtVal") ) continue;
     if (fabs(muon.eta()) > theCfgTrg.getParameter<double>("maxMuEtaVal")) continue;
@@ -52,6 +60,9 @@ MuonObj AnaSecMuSelector::run(
   }
   if (!trg.isValid()) return MuonObj();
 
+  //
+  // check for probe muon
+  //
   for (const auto & probe : muons) {
     if (   theCfgProbe.exists("requireCharge")
         && theCfgProbe.getParameter<int>("requireCharge") != probe.charge() ) continue;
@@ -60,8 +71,7 @@ MuonObj AnaSecMuSelector::run(
     if (theCfgProbe.getParameter<bool>("requireMedium") && !probe.isMedium) continue;
     if (theCfgProbe.getParameter<bool>("requireTight") && !probe.isTight) continue;
     if (theCfgProbe.getParameter<double>("maxMuEtaVal") < fabs(probe.eta())) continue;
-    if (   reco::deltaR( trg.eta(), trg.phi(), probe.eta(), probe.phi()) 
-         < theCfgProbe.getParameter<double>("minTrgMuDeltaR") ) continue;
+    if (reco::deltaR(trg,probe) < theCfgProbe.getParameter<double>("minTrgMuDeltaR")) continue;
     return probe; 
   }
 
