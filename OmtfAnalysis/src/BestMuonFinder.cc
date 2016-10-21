@@ -186,7 +186,7 @@ bool BestMuonFinder::run(const edm::Event &ev, const edm::EventSetup &es)
     bool isPFIsolated = false;
     if (im->isPFIsolationValid() && 
            (   im->pfIsolationR04().sumChargedHadronPt 
-             + max(0., im->pfIsolationR04().sumNeutralHadronEt + im->pfIsolationR04().sumPhotonEt - 0.5*im->pfIsolationR04().sumPUPt)
+             + std::max(0., im->pfIsolationR04().sumNeutralHadronEt + im->pfIsolationR04().sumPhotonEt - 0.5*im->pfIsolationR04().sumPUPt)
             )/im->pt() < theConfig.getParameter<double>("cutPFIsoRel")
         ) isPFIsolated = true;
     
