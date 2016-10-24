@@ -177,8 +177,10 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
   if (!data && !emul) return;
   if (emul && ((emul->q & 0b01) !=0) ) return;
 
-//  if (emul && makeName(*emul).name()=="OMTFn4") return;  
-//  if (data && makeName(*data).name()=="OMTFn4") return;  
+  if (emul && makeName(*emul).name()=="OMTFn4") return;  
+  if (data && makeName(*data).name()=="OMTFn4") return;  
+//  if (emul && makeName(*emul).name()=="OMTFp1") return;  
+//  if (data && makeName(*data).name()=="OMTFp1") return;  
 
 
   bool unique = data && emul && (dataColl.getL1Objs().size() == 1) && (emulColl.getL1Objs().size() == 1);

@@ -146,9 +146,9 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
     // ANALYSE AND FILTER TRIGGER MENU
     if ( theAnaMenu && !theAnaMenu->filter(event, &muon, bitsL1, bitsHLT) && theConfig.getParameter<bool>("filterByAnaMenu") ) continue;
 
+    if (!muon.isValid()) continue;
 /*
     if (!muon.isValid() ||  muon.pt() < 300 || muon.pt() > 400 ) continue;
-*/
     std::cout <<"---------------------------------------"<<std::endl;
     std::cout << *event << std::endl;
     if (muonColl) std::cout << *muonColl << std::endl;
@@ -160,6 +160,7 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
     theAnaMenu->debug=false;
     theAnaEff->debug=false;
     theAnaDataEmul->debug = true; 
+*/
 
 
     //
