@@ -30,6 +30,7 @@ namespace {
   TH1D  *hEffEtaOMTFn, *hEffEtaOMTFn_D, *hEffEtaOMTFp, *hEffEtaOMTFp_D;
   TH1D  *hEffEtaAll, *hEffEtaAll_D;
   TH1D  *hEffDeltaR, *hEffDeltaEta, *hEffDeltaPhi;
+  TH1D  *hEffRunAver, *hEffRunAverWeighted;
 
   struct BestL1Obj : public L1Obj {
     BestL1Obj() : deltaR(9999.) {}
@@ -60,6 +61,7 @@ void AnaEff::resume(TObjArray& histos)
   histos.Add(hGraphRun);
   std::vector<unsigned int> runs = theRunMap.runs();
   hGraphRun->Set(runs.size());
+  double epsil = 1.e-6;
   for (unsigned int iPoint = 0; iPoint < runs.size(); iPoint++) {
     unsigned int run = runs[iPoint];
     RunEffMap::EffAndErr effAndErr = theRunMap.effAndErr(run);
@@ -67,6 +69,8 @@ void AnaEff::resume(TObjArray& histos)
               <<" stat: "<<theRunMap.stat(run).first<<"/"<<theRunMap.stat(run).second<<std::endl;
     hGraphRun->SetPoint(iPoint, run, effAndErr.eff());
     hGraphRun->SetPointError(iPoint, 0., effAndErr.effErr());
+    hEffRunAver->Fill(effAndErr.eff()-epsil);
+    hEffRunAverWeighted->Fill(effAndErr.eff()-epsil, theRunMap.stat(run).first);
   }
   std::cout << "Eff run summary: " << theRunMap.effAndErr() << std::endl;
    
@@ -82,6 +86,9 @@ void AnaEff::init(TObjArray& histos)
   hEffEtaOMTFn_D = new TH1D("hEffEtaOMTFn_D","hEffEtaOMTFn_D", nBins, -omax, -omin); histos.Add(hEffEtaOMTFn_D);
   hEffEtaOMTFp   = new TH1D("hEffEtaOMTFp",  "hEffEtaOMTFp",   nBins,  omin, omax); histos.Add(hEffEtaOMTFp);
   hEffEtaOMTFp_D = new TH1D("hEffEtaOMTFp_D","hEffEtaOMTFp_D", nBins,  omin, omax); histos.Add(hEffEtaOMTFp_D);
+
+  hEffRunAver = new TH1D("hEffRunAver","hEffRunAver", 50, 0., 1.); histos.Add(hEffRunAver); hEffRunAver->Sumw2();
+  hEffRunAverWeighted = new TH1D("hEffRunAverWeighted","hEffRunAverWeighted", 50, 0., 1.); histos.Add(hEffRunAverWeighted); hEffRunAverWeighted->Sumw2();
 
   hEffEtaAll     =  new TH1D("hEffEtaAll",    "hEffEtaAll",   96,   -2.4, 2.4); histos.Add(hEffEtaAll); 
   hEffEtaAll_D   =  new TH1D("hEffEtaAll_D",  "hEffEtaAll_D", 96,   -2.4, 2.4); histos.Add(hEffEtaAll_D); 
@@ -187,7 +194,7 @@ void AnaEff::run(  const EventObj* event, const MuonObj* muon, const L1ObjColl *
   //
   // OMTF efficiency history 
   //
-  if ( ptMu > 25. && fabs(etaMu) < 1.24 && fabs(etaMu) > 0.83 ) theRunMap.addEvent(event->run, bestOMTF.fired()); 
+  if ( ptMu > 7. && fabs(etaMu) < 1.24 && fabs(etaMu) > 0.83 ) theRunMap.addEvent(event->run, bestOMTF.fired()); 
 
 
   //

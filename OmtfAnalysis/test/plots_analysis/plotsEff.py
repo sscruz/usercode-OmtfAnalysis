@@ -135,6 +135,22 @@ def cEffPt(canvas):
   c.Update()
   return
 
+def cEffRunAver(canvas):
+  c = TCanvas('cEffRunAver','cEffHistory',1200,600)
+  gStyle.SetOptStat(10)
+  canvas.Add(c)
+  c.Divide(2)
+  pad1 = c.cd(1)
+  h1 = gROOT.FindObject('hEffRunAver')
+  h1.SetStats(1)
+  h1.DrawCopy('hist')
+  pad2 = c.cd(2)
+  h2 = gROOT.FindObject('hEffRunAverWeighted')
+  h2.SetStats(1)
+  h2.DrawCopy('hist')
+  c.Update()
+  return
+
 def cEffHistory(canvas):
   c = TCanvas('cEffHistory','cEffHistory',1200,600)
   canvas.Add(c)
@@ -172,5 +188,6 @@ def plotAll(canvas) :
   cEffEtaAll(canvas)
   cEffPt(canvas)
   cEffEta(canvas)
+  cEffRunAver(canvas)
   return
 
