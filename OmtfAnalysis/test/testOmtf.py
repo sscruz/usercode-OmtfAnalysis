@@ -12,7 +12,7 @@ process.source = cms.Source( 'PoolSource',
 # skipEvents = cms.untracked.uint32(2667),
   fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/konec/data/omtf/JPsi_21kEvents.root')
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(50))
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500))
 #process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1))
 
 ###PostLS1 geometry used

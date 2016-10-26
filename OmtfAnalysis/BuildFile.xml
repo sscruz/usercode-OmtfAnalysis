@@ -20,6 +20,7 @@
 <use   name="Geometry/CommonDetUnit"/>
 <use   name="Geometry/Records"/>
 <use   name="EventFilter/RPCRawToDigi"/>
+<use   name="EventFilter/L1TRawToDigi"/>
 <use   name="CommonTools/UtilAlgos"/>
 <use   name="PhysicsTools/UtilAlgos"/>
 <use   name="FWCore/PluginManager"/>
