@@ -7,7 +7,7 @@ import os
 
 process = cms.Process('OmtfTree')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 #
 # For processing single files insert lines with 'file:/PATH/FILE.root'
@@ -17,9 +17,10 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 #
 process.source = cms.Source("PoolSource", 
 fileNames = cms.untracked.vstring(
-  'file:/afs/cern.ch/work/k/konec/data/runs/run281214-Cosmics_E0D61D8B-E27F-E611-AF32-FA163E368DD1.root',
+#  'file:/afs/cern.ch/work/k/konec/data/runs/run281214-Cosmics_E0D61D8B-E27F-E611-AF32-FA163E368DD1.root',
+   'file:/afs/cern.ch/work/k/konec/data/runs/run283999-Cosmics_14208324-0A9B-E611-B786-02163E01437C.root',
                                   ),
-#skipEvents =  cms.untracked.uint32(9)
+skipEvents =  cms.untracked.uint32(45)
 )
 
 #
@@ -51,11 +52,11 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 # message logger
 #
 process.load('FWCore.MessageService.MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(10)
 process.MessageLogger.cerr.threshold = cms.untracked.string('DEBUG')
 process.MessageLogger.debugModules = cms.untracked.vstring()
 #process.MessageLogger.debugModules.append('muonRPCDigis')
-#process.MessageLogger.debugModules.append('omtfStage2Digis')
+process.MessageLogger.debugModules.append('omtfStage2Digis')
 process.options = cms.untracked.PSet( wantSummary=cms.untracked.bool(False))
 
 process.omtfStage2Digis = cms.EDProducer("OmtfUnpacker",
@@ -64,7 +65,8 @@ process.omtfStage2Digis = cms.EDProducer("OmtfUnpacker",
 
 process.digiComapre = cms.EDAnalyzer("OmtfDigiCompare",
   srcRPC_PACT = cms.InputTag('muonRPCDigis'),
-  srcRPC_OMTF = cms.InputTag('omtfStage2Digis','OMTF')
+  srcRPC_OMTF = cms.InputTag('omtfStage2Digis','OMTF'),
+  srcCSC_CSC = cms.InputTag('csctfDigis'),
 )
 
 process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis+process.omtfStage2Digis+process.digiComapre)

@@ -53,6 +53,10 @@
 #include "DataFormats/RPCDigi/interface/RecordSLD.h"
 #include "DataFormats/RPCDigi/interface/RecordCD.h"
 
+#include "DataFormats/MuonDetId/interface/CSCDetId.h"
+#include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigi.h"
+#include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigiCollection.h"
+
 typedef uint64_t Word64;
 
 namespace DataWord64 {
@@ -124,16 +128,19 @@ public:
   unsigned int halfStrip() const { return halfStrip_; }
   unsigned int linkNum() const { return linkNum_;}
   unsigned int station() const { return station_; }
+  unsigned int bend() const { return lr_; }
 
   friend std::ostream & operator<< (std::ostream &out, const CscDataWord64 &o) {
     out << "CscDataWord64: "
-        //<<" type: "<< std::bitset<4>(o.type())
         <<" type: "<< DataWord64::type(o.type())
         << " bx: "<<o.bxNum()
         << " lnk: "<< o.linkNum() 
         << " stat: "<<o.station()
         << " cscId: " << o.cscID() 
         << " hit: "<< o.hitNum()
+        << " qual: "<< o.quality()
+        << " patt: " << o.clctPattern()
+        << " bending: " << o.bend()
         << " hs: "<<o.halfStrip()
         << " wg: "<< o.wireGroup();
     return out;
@@ -289,6 +296,7 @@ private:
 OmtfUnpacker::OmtfUnpacker(const edm::ParameterSet& pset)
 {
   produces<RPCDigiCollection>("OMTF");
+  produces<CSCCorrelatedLCTDigiCollection>("OMTF");
   fedToken_ = consumes<FEDRawDataCollection>(pset.getParameter<edm::InputTag>("InputLabel"));
 }
 
@@ -346,6 +354,7 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
   event.getByToken(fedToken_,allFEDRawData);
 
   std::auto_ptr<RPCDigiCollection> producedRPCDigis(new RPCDigiCollection);
+  std::auto_ptr<CSCCorrelatedLCTDigiCollection> producedCscLctDigis ( new CSCCorrelatedLCTDigiCollection);
 
   for (int fedId= 1380; fedId<= 1381; ++fedId){
 
@@ -501,13 +510,6 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
         LogTrace("") <<" payload: " <<  *reinterpret_cast<const std::bitset<64>*>(word);
         DataWord64::Type recordType = DataWord64::type(*word); 
 
-        //
-        // CSC data
-        //
-        if (DataWord64::csc==recordType) {
-          CscDataWord64   data(*word);
-          LogTrace("") << data << std::endl;
-        } 
 
         //
         // RPC data
@@ -523,7 +525,8 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
   
   
           rpcrawtodigi::EventRecords records(triggerBX);
-          rpcrawtodigi::RecordBX recordBX(triggerBX+data.bxNum()-2);
+          rpcrawtodigi::RecordBX recordBX(triggerBX+data.bxNum()-3);
+//          rpcrawtodigi::RecordBX recordBX(triggerBX+data.bxNum()-2);
           records.add(recordBX);   // warning: event records must be added in right order
           rpcrawtodigi::RecordSLD recordSLD(rpcEle.tbLinkInputNum, rpcEle.dccInputChannelNum);
           records.add(recordSLD); // warning: event records must be added in right order
@@ -546,11 +549,26 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
             if (records.complete()) formater.recordUnpack( records,  producedRPCDigis.get(), 0,0);
           }
         }
+
+
+
+        //
+        // CSC data
+        //
+        if (DataWord64::csc==recordType) {
+          CscDataWord64   data(*word);
+          LogTrace("") << data << std::endl;
+//          CSCCorrelatedLCTDigi digi;
+
+        } 
+
+
       }
     }         
 
   } 
   event.put(producedRPCDigis,"OMTF");
+  event.put(producedCscLctDigis,"OMTF");
 
 
 }

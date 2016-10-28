@@ -44,6 +44,11 @@
 #include "DataFormats/RPCDigi/interface/RPCDigi.h"
 #include "EventFilter/RPCRawToDigi/interface/DebugDigisPrintout.h"
 
+#include "DataFormats/MuonDetId/interface/CSCDetId.h"
+#include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigi.h"
+#include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigiCollection.h"
+
+
 #include "FWCore/PluginManager/interface/ModuleDef.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
@@ -69,10 +74,16 @@ public:
   OmtfDigiCompare (const edm::ParameterSet & cfg);
   virtual ~OmtfDigiCompare(){}
 
-  virtual void analyze(const edm::Event&, const edm::EventSetup& es);
+  virtual void analyze(const edm::Event &ev, const edm::EventSetup& es) {
+    analyzeRPC(ev,es);
+    analyzeCSC(ev,es);
+  }
+  void analyzeCSC(const edm::Event&, const edm::EventSetup& es);
+  void analyzeRPC(const edm::Event&, const edm::EventSetup& es);
 
 private:
     edm::EDGetTokenT<RPCDigiCollection> inputRPC_PACT, inputRPC_OMTF;
+    edm::EDGetTokenT<CSCCorrelatedLCTDigiCollection> inputCSC_CSC;
 
     unsigned int omtfDigis, omtfDigisError; 
 };
@@ -81,11 +92,28 @@ private:
 OmtfDigiCompare::OmtfDigiCompare(const edm::ParameterSet & cfg) : omtfDigis(0), omtfDigisError(0) {
   inputRPC_PACT = consumes<RPCDigiCollection>(cfg.getParameter<edm::InputTag>("srcRPC_PACT"));
   inputRPC_OMTF = consumes<RPCDigiCollection>(cfg.getParameter<edm::InputTag>("srcRPC_OMTF"));
+  inputCSC_CSC = consumes<CSCCorrelatedLCTDigiCollection>(cfg.getParameter<edm::InputTag>("srcCSC_CSC"));
 }
 
-void OmtfDigiCompare::analyze(const edm::Event &ev, const edm::EventSetup& es)
+void OmtfDigiCompare::analyzeCSC(const edm::Event &ev, const edm::EventSetup& es) {
+  std::cout << "-------- HERE OMTF DIGI COMPARE CSC---------" << std::endl;
+  edm::Handle<CSCCorrelatedLCTDigiCollection> digiCollectionCSC_CSC;
+  ev.getByToken(inputCSC_CSC,digiCollectionCSC_CSC);
+  const CSCCorrelatedLCTDigiCollection & cscDigis = *digiCollectionCSC_CSC.product();
+  for (const auto & chDigis : cscDigis) {
+    auto rawId = chDigis.first;
+    CSCDetId cscDetId(rawId);
+    std::cout <<"CSC DET ID: "<< cscDetId << std::endl; 
+    for (auto digi = chDigis.second.first; digi != chDigis.second.second; digi++) {
+      std::cout << " HERE " << std::endl;
+      std::cout << *digi << std::endl;
+    }
+  } 
+  
+}
+void OmtfDigiCompare::analyzeRPC(const edm::Event &ev, const edm::EventSetup& es)
 {
-  std::cout << "-------- HERE OMTF DIGI COMPARE ---------" << std::endl;
+  std::cout << "-------- HERE OMTF DIGI COMPARE CSC---------" << std::endl;
   edm::Handle< RPCDigiCollection > digiCollectionRPC_PACT;
   ev.getByToken(inputRPC_PACT,digiCollectionRPC_PACT);
 
@@ -125,7 +153,7 @@ void OmtfDigiCompare::analyze(const edm::Event &ev, const edm::EventSetup& es)
 
   bool hasError = false;
   for (const auto & omtf : myOmtf ) {
-     if (omtf.bx >= 4) continue;
+//     if (omtf.bx >= 4) continue;
      if (omtf.bx != 0) continue;
      omtfDigis++;     
      std::vector<MyDigi>::const_iterator itRpc = find(myPact.begin(), myPact.end(), omtf);
