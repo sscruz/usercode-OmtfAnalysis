@@ -7,7 +7,7 @@ import os
 
 process = cms.Process('OmtfTree')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
 
 #
 # For processing single files insert lines with 'file:/PATH/FILE.root'
@@ -17,9 +17,10 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 #
 process.source = cms.Source("PoolSource", 
 fileNames = cms.untracked.vstring(
-  'file:/afs/cern.ch/work/k/konec/data/runs/run281214-Cosmics_E0D61D8B-E27F-E611-AF32-FA163E368DD1.root',
+#  'file:/afs/cern.ch/work/k/konec/data/runs/run281214-Cosmics_E0D61D8B-E27F-E611-AF32-FA163E368DD1.root',
+   'file:/afs/cern.ch/work/k/konec/data/runs/run283999-Cosmics_14208324-0A9B-E611-B786-02163E01437C.root',
                                   ),
-#skipEvents =  cms.untracked.uint32(9)
+skipEvents =  cms.untracked.uint32(45)
 )
 
 #
@@ -63,8 +64,8 @@ process.omtfStage2Digis = cms.EDProducer("OmtfUnpacker",
 )
 
 
-process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis+process.omtfStage2Digis)
-#process.raw2digi_step = cms.Path(process.omtfStage2Digis)
+#process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis+process.omtfStage2Digis)
+process.raw2digi_step = cms.Path(process.omtfStage2Digis)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.raw2digi_step, process.endjob_step)
 

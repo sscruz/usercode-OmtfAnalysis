@@ -55,6 +55,24 @@
 
 typedef uint64_t Word64;
 
+namespace DataWord64 {
+  enum Type { csc=0xC, dt= 0xD, rpc=0xE, omtf=0xF };
+  template <typename T> Type type(const T&);
+  template <> Type type<Word64>(const Word64 & data) { return static_cast<Type> (data>>60); }
+  template <> Type type<unsigned int>(const unsigned int & intType) { return static_cast<Type> (intType); }
+  std::ostream & operator<< (std::ostream &out, const DataWord64::Type &o) {
+    switch(o) {
+      case(csc)  : out <<"csc "; break;
+      case(rpc)  : out <<"rpc "; break;
+      case(dt)   : out <<"dt  "; break;
+      case(omtf) : out <<"omtf"; break;
+      default    : out <<"unkn"; break; 
+    }
+    out<<"(0x"<<std::hex<<static_cast<int>(o)<<std::dec<<")";
+    return out;
+  }
+};
+
 class RPCDataWord64 {
 public: 
   RPCDataWord64(Word64 data=0) : rawData(data) {}
@@ -92,10 +110,10 @@ private:
   };
 };
 
-class CSCDataWord64 {
+class CscDataWord64 {
 public:
-  static const unsigned int BITS_CNT = 64;
-  CSCDataWord64(Word64 data=0) : rawData(data) {}
+  CscDataWord64(const Word64 & data=0) : rawData(data) {}  
+
   unsigned int type() const { return type_;}
   unsigned int bxNum() const { return bxNum_; }
   unsigned int hitNum() const { return hitNum_; }
@@ -107,9 +125,10 @@ public:
   unsigned int linkNum() const { return linkNum_;}
   unsigned int station() const { return station_; }
 
-  friend std::ostream & operator<< (std::ostream &out, const CSCDataWord64 &o) {
-    out << "CSCDataWord64: "
-        <<" type: "<< std::bitset<4>(o.type())
+  friend std::ostream & operator<< (std::ostream &out, const CscDataWord64 &o) {
+    out << "CscDataWord64: "
+        //<<" type: "<< std::bitset<4>(o.type())
+        <<" type: "<< DataWord64::type(o.type())
         << " bx: "<<o.bxNum()
         << " lnk: "<< o.linkNum() 
         << " stat: "<<o.station()
@@ -478,39 +497,54 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
       for (unsigned int iWord= 1; iWord<= amc.size(); iWord++, word++) {
         if (iWord<=2 ) continue; // two header words for each AMC
         if (iWord==amc.size() ) continue; // trailer for each AMC 
+
         LogTrace("") <<" payload: " <<  *reinterpret_cast<const std::bitset<64>*>(word);
-        RPCDataWord64 data(*word);
-        LogTrace("") <<" DATA : " << data;
+        DataWord64::Type recordType = DataWord64::type(*word); 
 
-        OmtfEleIndex omtfEle(fedHeader.sourceID(), bh.getAMCNumber()/2+1, data.linkNum());
-//        std::cout << " OmtfEleIndex is: " << omtfEle << std::endl;
-        LinkBoardElectronicIndex rpcEle = omtf2rpc_.at(omtfEle);
-//        std::cout <<" rpcEle FED: " << rpcEle.dccId << std::endl; 
-        RPCRecordFormatter formater(rpcEle.dccId, theCabling);
+        //
+        // CSC data
+        //
+        if (DataWord64::csc==recordType) {
+          CscDataWord64   data(*word);
+          LogTrace("") << data << std::endl;
+        } 
 
-
-        rpcrawtodigi::EventRecords records(triggerBX);
-        rpcrawtodigi::RecordBX recordBX(triggerBX+data.bxNum()-2);
-        records.add(recordBX);   // warning: event records must be added in right order
-        rpcrawtodigi::RecordSLD recordSLD(rpcEle.tbLinkInputNum, rpcEle.dccInputChannelNum);
-        records.add(recordSLD); // warning: event records must be added in right order
-
-        for (unsigned int iframe=1; iframe <=3; iframe++) {
-
-          uint16_t frame = (iframe==1) ?  data.frame1() : ( (iframe==2) ?  data.frame2() : data.frame3() );
-          if (frame==0) continue;
-          rpcrawtodigi::RecordCD recordCD(frame);
-          records.add(recordCD);
-
-          LogTrace("") <<"OMTF->RPC Event isComplete: "<<records.complete() <<records.print(rpcrawtodigi::DataRecord::StartOfBXData); // << std::endl; 
-          LogTrace("") <<"OMTF->RPC Event:             "<<records.print(rpcrawtodigi::DataRecord::StartOfTbLinkInputNumberData) << std::endl; 
-          LogTrace("") <<"OMTF->RPC Event:             "<<records.print(rpcrawtodigi::DataRecord::ChamberData)
-                    <<" lb:"<< recordCD.lbInLink() 
-                    <<" part: "<< recordCD.partitionNumber() 
-                    <<" partData: "<<recordCD.partitionData() 
-                    << std::endl;
-
-          if (records.complete()) formater.recordUnpack( records,  producedRPCDigis.get(), 0,0);
+        //
+        // RPC data
+        // 
+        if (DataWord64::rpc==recordType) {
+          continue;
+          RPCDataWord64 data(*word);
+          LogTrace("") << data;
+  
+          OmtfEleIndex omtfEle(fedHeader.sourceID(), bh.getAMCNumber()/2+1, data.linkNum());
+          LinkBoardElectronicIndex rpcEle = omtf2rpc_.at(omtfEle);
+          RPCRecordFormatter formater(rpcEle.dccId, theCabling);
+  
+  
+          rpcrawtodigi::EventRecords records(triggerBX);
+          rpcrawtodigi::RecordBX recordBX(triggerBX+data.bxNum()-2);
+          records.add(recordBX);   // warning: event records must be added in right order
+          rpcrawtodigi::RecordSLD recordSLD(rpcEle.tbLinkInputNum, rpcEle.dccInputChannelNum);
+          records.add(recordSLD); // warning: event records must be added in right order
+  
+          for (unsigned int iframe=1; iframe <=3; iframe++) {
+  
+            uint16_t frame = (iframe==1) ?  data.frame1() : ( (iframe==2) ?  data.frame2() : data.frame3() );
+            if (frame==0) continue;
+            rpcrawtodigi::RecordCD recordCD(frame);
+            records.add(recordCD);
+  
+            LogTrace("") <<"OMTF->RPC Event isComplete: "<<records.complete() <<records.print(rpcrawtodigi::DataRecord::StartOfBXData); // << std::endl; 
+            LogTrace("") <<"OMTF->RPC Event:             "<<records.print(rpcrawtodigi::DataRecord::StartOfTbLinkInputNumberData) << std::endl; 
+            LogTrace("") <<"OMTF->RPC Event:             "<<records.print(rpcrawtodigi::DataRecord::ChamberData)
+                      <<" lb:"<< recordCD.lbInLink() 
+                      <<" part: "<< recordCD.partitionNumber() 
+                      <<" partData: "<<recordCD.partitionData() 
+                      << std::endl;
+  
+            if (records.complete()) formater.recordUnpack( records,  producedRPCDigis.get(), 0,0);
+          }
         }
       }
     }         
