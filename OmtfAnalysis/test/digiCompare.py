@@ -7,7 +7,7 @@ import os
 
 process = cms.Process('OmtfTree')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 #
 # For processing single files insert lines with 'file:/PATH/FILE.root'
@@ -56,7 +56,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(10)
 process.MessageLogger.cerr.threshold = cms.untracked.string('DEBUG')
 process.MessageLogger.debugModules = cms.untracked.vstring()
 #process.MessageLogger.debugModules.append('muonRPCDigis')
-process.MessageLogger.debugModules.append('omtfStage2Digis')
+#process.MessageLogger.debugModules.append('omtfStage2Digis')
 process.options = cms.untracked.PSet( wantSummary=cms.untracked.bool(False))
 
 process.omtfStage2Digis = cms.EDProducer("OmtfUnpacker",
@@ -64,15 +64,61 @@ process.omtfStage2Digis = cms.EDProducer("OmtfUnpacker",
 )
 
 process.digiComapre = cms.EDAnalyzer("OmtfDigiCompare",
-  srcRPC_PACT = cms.InputTag('muonRPCDigis'),
   srcRPC_OMTF = cms.InputTag('omtfStage2Digis','OMTF'),
+  srcRPC_PACT = cms.InputTag('muonRPCDigis'),
+  srcCSC_OMTF = cms.InputTag('omtfStage2Digis','OMTF'),
   srcCSC_CSC = cms.InputTag('csctfDigis'),
 )
 
+##OMTF ESProducer. Fills CondFormats from XML files.
+#process.omtfParamsSource = cms.ESSource( "EmptyESSource",
+#     recordName = cms.string('L1TMuonOverlapParamsRcd'),
+#    iovIsRunNotTime = cms.bool(True),
+#    firstValid = cms.vuint32(1)
+#)
+#
+#process.omtfParams = cms.ESProducer( "L1TMuonOverlapParamsESProducer",
+#     patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x0003.xml")),),
+#     configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x0004.xml"),
+#)
+#
+####OMTF emulator configuration
+#process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
+##  srcDTPh =  cms.InputTag('simTwinMuxDigis'),
+##  srcDTTh =  cms.InputTag('simTwinMuxDigis'),
+##  srcDTPh =  cms.InputTag('twinMuxStage2Digis'),
+##  srcDTTh =  cms.InputTag('twinMuxStage2Digis'),
+#  srcDTPh =  cms.InputTag('bmtfDigis'),
+#  srcDTTh =  cms.InputTag('bmtfDigis'),
+##  srcDTPh =  cms.InputTag('bmtfDigis:PhiDigis'),
+##  srcDTTh =  cms.InputTag('bmtfDigis:TheDigis'),
+##  srcDTPh = cms.InputTag('simDtTriggerPrimitiveDigis'),
+##  srcDTTh = cms.InputTag('simDtTriggerPrimitiveDigis'),
+#   srcCSC = cms.InputTag('csctfDigis'),
+##  srcCSC = cms.InputTag('emtfStage2Digis'),
+##  srcCSC = cms.InputTag('muonCSCDigis','MuonCSCCorrelatedLCTDigi'),
+##  srcCSC = cms.InputTag('simCscTriggerPrimitiveDigis','MPCSORTED'),
+#  srcRPC = cms.InputTag('muonRPCDigis'),
+##  srcRPC = cms.InputTag('simMuonRPCDigis'),
+#  dumpResultToXML = cms.bool(True),
+##  dumpResultToXML = cms.bool(False),
+#  dumpDetailedResultToXML = cms.bool(False),
+#  XMLDumpFileName = cms.string("TestEvents.xml"),
+#  dumpGPToXML = cms.bool(True),
+#  readEventsFromXML = cms.bool(False),
+#  eventsXMLFiles = cms.vstring("TestEvents.xml"),
+#  dropRPCPrimitives = cms.bool(False),
+#  dropDTPrimitives = cms.bool(False),
+#  dropCSCPrimitives = cms.bool(False),
+#)
+
+
 process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis+process.omtfStage2Digis+process.digiComapre)
+#process.omtf_step = cms.Path(process.omtfEmulator)
 #process.raw2digi_step = cms.Path(process.omtfStage2Digis)
 process.endjob_step = cms.EndPath(process.endOfProcess)
-process.schedule = cms.Schedule(process.raw2digi_step, process.endjob_step)
+#process.schedule = cms.Schedule(process.raw2digi_step,  process.omtf_step, process.endjob_step)
+process.schedule = cms.Schedule(process.raw2digi_step,  process.endjob_step)
 
 #print process.dumpPython();
 print process.schedule

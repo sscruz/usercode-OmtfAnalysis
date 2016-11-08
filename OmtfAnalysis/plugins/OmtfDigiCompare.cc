@@ -65,6 +65,10 @@
          if (this->bx < o.bx) return true;
          return false;
        }
+       friend std::ostream & operator<< (std::ostream &out, const MyDigi &o) {
+         out<<"MyDigi det: "<<o.det<<", strip: "<<o.strip<<", bx: "<<o.bx; 
+         return out;
+       }
     };
 
 
@@ -75,15 +79,15 @@ public:
   virtual ~OmtfDigiCompare(){}
 
   virtual void analyze(const edm::Event &ev, const edm::EventSetup& es) {
+//    analyzeCSC(ev,es);
     analyzeRPC(ev,es);
-    analyzeCSC(ev,es);
   }
   void analyzeCSC(const edm::Event&, const edm::EventSetup& es);
   void analyzeRPC(const edm::Event&, const edm::EventSetup& es);
 
 private:
     edm::EDGetTokenT<RPCDigiCollection> inputRPC_PACT, inputRPC_OMTF;
-    edm::EDGetTokenT<CSCCorrelatedLCTDigiCollection> inputCSC_CSC;
+    edm::EDGetTokenT<CSCCorrelatedLCTDigiCollection> inputCSC_CSC, inputCSC_OMTF;
 
     unsigned int omtfDigis, omtfDigisError; 
 };
@@ -93,27 +97,12 @@ OmtfDigiCompare::OmtfDigiCompare(const edm::ParameterSet & cfg) : omtfDigis(0), 
   inputRPC_PACT = consumes<RPCDigiCollection>(cfg.getParameter<edm::InputTag>("srcRPC_PACT"));
   inputRPC_OMTF = consumes<RPCDigiCollection>(cfg.getParameter<edm::InputTag>("srcRPC_OMTF"));
   inputCSC_CSC = consumes<CSCCorrelatedLCTDigiCollection>(cfg.getParameter<edm::InputTag>("srcCSC_CSC"));
+  inputCSC_OMTF = consumes<CSCCorrelatedLCTDigiCollection>(cfg.getParameter<edm::InputTag>("srcCSC_OMTF"));
 }
 
-void OmtfDigiCompare::analyzeCSC(const edm::Event &ev, const edm::EventSetup& es) {
-  std::cout << "-------- HERE OMTF DIGI COMPARE CSC---------" << std::endl;
-  edm::Handle<CSCCorrelatedLCTDigiCollection> digiCollectionCSC_CSC;
-  ev.getByToken(inputCSC_CSC,digiCollectionCSC_CSC);
-  const CSCCorrelatedLCTDigiCollection & cscDigis = *digiCollectionCSC_CSC.product();
-  for (const auto & chDigis : cscDigis) {
-    auto rawId = chDigis.first;
-    CSCDetId cscDetId(rawId);
-    std::cout <<"CSC DET ID: "<< cscDetId << std::endl; 
-    for (auto digi = chDigis.second.first; digi != chDigis.second.second; digi++) {
-      std::cout << " HERE " << std::endl;
-      std::cout << *digi << std::endl;
-    }
-  } 
-  
-}
 void OmtfDigiCompare::analyzeRPC(const edm::Event &ev, const edm::EventSetup& es)
 {
-  std::cout << "-------- HERE OMTF DIGI COMPARE CSC---------" << std::endl;
+  std::cout << "-------- HERE OMTF DIGI COMPARE RPC---------" << std::endl;
   edm::Handle< RPCDigiCollection > digiCollectionRPC_PACT;
   ev.getByToken(inputRPC_PACT,digiCollectionRPC_PACT);
 
@@ -123,21 +112,9 @@ void OmtfDigiCompare::analyzeRPC(const edm::Event &ev, const edm::EventSetup& es
 
   typedef  DigiContainerIterator<RPCDetId, RPCDigi> DigiRangeIterator;
 
-  std::vector<MyDigi> myPact;
-  for (DigiRangeIterator it=digiCollectionRPC_PACT->begin(); it != digiCollectionRPC_PACT->end(); it++) {
-    RPCDetId rpcDetId = (*it).first;
-    uint32_t rawDetId = rpcDetId.rawId();
-    RPCDigiCollection::Range range = digiCollectionRPC_PACT->get(rpcDetId);
-    for (std::vector<RPCDigi>::const_iterator  id = range.first; id != range.second; id++) {
-      const RPCDigi & digi = (*id);
-      MyDigi myDigi = { rawDetId, digi.strip(), digi.bx() };
-      if (myPact.end() == std::find(myPact.begin(), myPact.end(), myDigi)) myPact.push_back(myDigi);
-    } 
-  }
-  std::sort(myPact.begin(),myPact.end());
-  std::cout <<" myPact size is: " << myPact.size() << std::endl;
 
   std::vector<MyDigi> myOmtf;
+  std::cout <<" RPC digis from OMTF"<<std::endl;
   for (DigiRangeIterator it=digiCollectionRPC_OMTF->begin(); it != digiCollectionRPC_OMTF->end(); it++) {
     RPCDetId rpcDetId = (*it).first;
     uint32_t rawDetId = rpcDetId.rawId();
@@ -146,19 +123,52 @@ void OmtfDigiCompare::analyzeRPC(const edm::Event &ev, const edm::EventSetup& es
       const RPCDigi & digi = (*id);
       MyDigi myDigi = { rawDetId, digi.strip(), digi.bx() };
       if (myOmtf.end() == std::find(myOmtf.begin(), myOmtf.end(), myDigi)) myOmtf.push_back(myDigi);
+//      std::cout <<rpcDetId<< " myDigi:"<<myDigi<<std::endl;
     } 
   }
   std::sort(myOmtf.begin(),myOmtf.end());
   std::cout <<" myOmtf size is: " << myOmtf.size() << std::endl;
 
+  std::vector<MyDigi> myPact;
+  std::cout <<" RPC digis from PACT"<<std::endl;
+  for (DigiRangeIterator it=digiCollectionRPC_PACT->begin(); it != digiCollectionRPC_PACT->end(); it++) {
+    RPCDetId rpcDetId = (*it).first;
+    if (rpcDetId.region()==0 && abs(rpcDetId.ring())!=2 ) continue;
+    if (rpcDetId.region()==0 && abs(rpcDetId.ring())==2 && rpcDetId.station()==4 && rpcDetId.roll()==1 ) continue;
+    if (rpcDetId.region()==0 && abs(rpcDetId.ring())==2 && rpcDetId.station()==3 && rpcDetId.roll()==1 ) continue;
+    if (abs(rpcDetId.region())==1 && rpcDetId.station()==4) continue;
+    if (abs(rpcDetId.region())==1 && rpcDetId.station()!=1 && rpcDetId.ring()!=3) continue;
+    if (abs(rpcDetId.region())==1 && rpcDetId.station()==1 && rpcDetId.ring()<2) continue;
+    uint32_t rawDetId = rpcDetId.rawId();
+    RPCDigiCollection::Range range = digiCollectionRPC_PACT->get(rpcDetId);
+    for (std::vector<RPCDigi>::const_iterator  id = range.first; id != range.second; id++) {
+      const RPCDigi & digi = (*id);
+      MyDigi myDigi = { rawDetId, digi.strip(), digi.bx() };
+      if (myPact.end() == std::find(myPact.begin(), myPact.end(), myDigi)) myPact.push_back(myDigi);
+//      std::cout <<rpcDetId<< " myDigi:"<<myDigi<<std::endl;
+      
+    } 
+  }
+  std::sort(myPact.begin(),myPact.end());
+  std::cout <<" myPact size is: " << myPact.size() << std::endl;
+
   bool hasError = false;
   for (const auto & omtf : myOmtf ) {
-//     if (omtf.bx >= 4) continue;
      if (omtf.bx != 0) continue;
      omtfDigis++;     
      std::vector<MyDigi>::const_iterator itRpc = find(myPact.begin(), myPact.end(), omtf);
      if (itRpc == myPact.end() ) {
-       std::cout << "HERE PROBLEM!!! ----- RPC DIGI corresponding to OMTF (det:"<<omtf.det<<") NOT FOUND! " << std::endl;
+       std::cout << "HERE PROBLEM!!! ----- RPC DIGI corresponding to OMTF ("<<RPCDetId(omtf.det)<<" digi:"<<omtf<<") NOT FOUND! " << std::endl;
+       hasError = true;
+       omtfDigisError++; 
+     }
+  }
+  for (const auto & pact : myPact) {
+     if (pact.bx != 0) continue;
+     omtfDigis++;     
+     std::vector<MyDigi>::const_iterator it = find(myOmtf.begin(), myOmtf.end(), pact);
+     if (it == myOmtf.end() ) {
+       std::cout << "HERE PROBLEM!!! ----- OMTF DIGI corresponding to PACT ("<<RPCDetId(pact.det)<<" digi:"<<pact<<") NOT FOUND! " << std::endl;
        hasError = true;
        omtfDigisError++; 
      }
@@ -173,4 +183,72 @@ void OmtfDigiCompare::analyzeRPC(const edm::Event &ev, const edm::EventSetup& es
   
 }
 
+void OmtfDigiCompare::analyzeCSC(const edm::Event &ev, const edm::EventSetup& es) {
+  std::cout << "-------- HERE OMTF DIGI COMPARE CSC---------" << std::endl;
+
+  edm::Handle<CSCCorrelatedLCTDigiCollection> digiCollectionCSC_OMTF;
+  ev.getByToken(inputCSC_OMTF,digiCollectionCSC_OMTF);
+  const CSCCorrelatedLCTDigiCollection & cscDigisOmtf = *digiCollectionCSC_OMTF.product();
+  std::cout <<" CSC digis from OMTF" << std::endl;
+  std::vector<MyDigi> myOmtf;
+  for (const auto & chDigis : cscDigisOmtf) {
+    auto rawId = chDigis.first;
+    CSCDetId cscDetId(rawId);
+    std::cout <<"--------------"<< std::endl;
+    std::cout <<"CSC DET ID: "<< cscDetId << std::endl; 
+    for (auto digi = chDigis.second.first; digi != chDigis.second.second; digi++) {
+      std::cout << *digi << std::endl;
+      MyDigi myDigi = { rawId, digi->getStrip(), digi->getBX()-3 };
+      std::cout <<" MyDigi (OMTF): " << myDigi << std::endl;
+      if (myOmtf.end() == std::find(myOmtf.begin(), myOmtf.end(), myDigi)) myOmtf.push_back(myDigi);
+      else std::cout <<" DUPLICATE: " << std::endl;
+    }
+  } 
+  std::sort(myOmtf.begin(),myOmtf.end());
+  std::cout <<" myOmtf size is: " << myOmtf.size() << std::endl;
+  
+  std::vector<MyDigi> myCsc;
+  edm::Handle<CSCCorrelatedLCTDigiCollection> digiCollectionCSC_CSC;
+  ev.getByToken(inputCSC_CSC,digiCollectionCSC_CSC);
+  const CSCCorrelatedLCTDigiCollection & cscDigisCSC = *digiCollectionCSC_CSC.product();
+  std::cout <<" CSC digis from CSC" << std::endl;
+  for (const auto & chDigis : cscDigisCSC) {
+    auto rawId = chDigis.first;
+    CSCDetId cscDetId(rawId);
+    if (cscDetId.ring()==1)continue;
+    std::cout <<"--------------"<< std::endl;
+    std::cout <<"CSC DET ID: "<< cscDetId << std::endl; 
+    for (auto digi = chDigis.second.first; digi != chDigis.second.second; digi++) {
+      std::cout << *digi << std::endl;
+      MyDigi myDigi = { rawId, digi->getStrip(), digi->getBX() };
+      if (myCsc.end() == std::find(myCsc.begin(), myCsc.end(), myDigi)) myCsc.push_back(myDigi);
+    }
+  } 
+  std::sort(myCsc.begin(),myCsc.end());
+  std::cout <<" myCsc size is: " << myCsc.size() << std::endl;
+
+  bool hasError = false;
+  for (const auto & omtf : myOmtf ) {
+     if (omtf.bx != 3) continue;
+     omtfDigis++;     
+     std::vector<MyDigi>::const_iterator itCsc = find(myCsc.begin(), myCsc.end(), omtf);
+     if (itCsc == myCsc.end() ) {
+       std::cout << "HERE PROBLEM!!! ----- CSC DIGI corresponding to OMTF ("<<omtf<<") NOT FOUND! " << std::endl;
+       hasError = true;
+       omtfDigisError++; 
+     }
+  }
+  for (const auto & csctf : myCsc ) {
+     if (csctf.bx != 3) continue;
+     omtfDigis++;     
+     std::vector<MyDigi>::const_iterator it = find(myOmtf.begin(), myOmtf.end(), csctf);
+     if (it == myOmtf.end() ) {
+       std::cout << "HERE PROBLEM!!! ----- OMTF DIGI corresponding to CSCTF ("<<csctf<<") NOT FOUND! " << std::endl;
+       hasError = true;
+       omtfDigisError++; 
+     }
+  }
+  std::cout <<" All OMTF: " << omtfDigis <<", with Error: "<< omtfDigisError <<" has Error: " << hasError << std::endl;
+
+}
 DEFINE_FWK_MODULE(OmtfDigiCompare);
