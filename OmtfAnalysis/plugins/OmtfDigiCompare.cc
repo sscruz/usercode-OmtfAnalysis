@@ -48,6 +48,10 @@
 #include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigi.h"
 #include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigiCollection.h"
 
+//#include "DataFormats/MuonDetId/interface/DtDetId.h"
+#include "DataFormats/L1DTTrackFinder/interface/L1MuDTChambPhContainer.h"
+#include "DataFormats/L1DTTrackFinder/interface/L1MuDTChambThContainer.h"
+
 
 #include "FWCore/PluginManager/interface/ModuleDef.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -79,15 +83,19 @@ public:
   virtual ~OmtfDigiCompare(){}
 
   virtual void analyze(const edm::Event &ev, const edm::EventSetup& es) {
+    analyzeDT(ev,es);
 //    analyzeCSC(ev,es);
-    analyzeRPC(ev,es);
+//    analyzeRPC(ev,es);
   }
+  void analyzeDT(const edm::Event&, const edm::EventSetup& es);
   void analyzeCSC(const edm::Event&, const edm::EventSetup& es);
   void analyzeRPC(const edm::Event&, const edm::EventSetup& es);
 
 private:
     edm::EDGetTokenT<RPCDigiCollection> inputRPC_PACT, inputRPC_OMTF;
     edm::EDGetTokenT<CSCCorrelatedLCTDigiCollection> inputCSC_CSC, inputCSC_OMTF;
+    edm::EDGetTokenT<L1MuDTChambPhContainer> inputDTPh_BMTF;
+    edm::EDGetTokenT<L1MuDTChambThContainer> inputDTTh_BMTF;
 
     unsigned int omtfDigis, omtfDigisError; 
 };
@@ -98,11 +106,13 @@ OmtfDigiCompare::OmtfDigiCompare(const edm::ParameterSet & cfg) : omtfDigis(0), 
   inputRPC_OMTF = consumes<RPCDigiCollection>(cfg.getParameter<edm::InputTag>("srcRPC_OMTF"));
   inputCSC_CSC = consumes<CSCCorrelatedLCTDigiCollection>(cfg.getParameter<edm::InputTag>("srcCSC_CSC"));
   inputCSC_OMTF = consumes<CSCCorrelatedLCTDigiCollection>(cfg.getParameter<edm::InputTag>("srcCSC_OMTF"));
+  inputDTPh_BMTF = consumes<L1MuDTChambPhContainer>(cfg.getParameter<edm::InputTag>("srcDTPh_BMTF"));
+  inputDTTh_BMTF = consumes<L1MuDTChambThContainer>(cfg.getParameter<edm::InputTag>("srcDTTh_BMTF"));
 }
 
 void OmtfDigiCompare::analyzeRPC(const edm::Event &ev, const edm::EventSetup& es)
 {
-  std::cout << "-------- HERE OMTF DIGI COMPARE RPC---------" << std::endl;
+  std::cout << "-------- HERE DIGI COMPARE RPC---------" << std::endl;
   edm::Handle< RPCDigiCollection > digiCollectionRPC_PACT;
   ev.getByToken(inputRPC_PACT,digiCollectionRPC_PACT);
 
@@ -182,9 +192,50 @@ void OmtfDigiCompare::analyzeRPC(const edm::Event &ev, const edm::EventSetup& es
   std::cout <<" All OMTF: " << omtfDigis <<", with Error: "<< omtfDigisError << std::endl;
   
 }
+void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es) {
+  std::cout << "-------- HERE DIGI COMPARE DT ---------" << std::endl;
+  edm::Handle<L1MuDTChambPhContainer> digiCollectionDTPh_BMTF;
+  ev.getByToken(inputDTPh_BMTF, digiCollectionDTPh_BMTF);
+  const L1MuDTChambPhContainer& dtphDigisBMTF = *digiCollectionDTPh_BMTF.product();
+  std::cout <<" DTPh digis from BMTF " << dtphDigisBMTF.getContainer()->size()<< std::endl;
+  for (const auto &  chDigi : *dtphDigisBMTF.getContainer() ) {
+    std::cout <<"HERE DtDataWord64 BMTF " 
+        <<" bxNum: "<<chDigi.bxNum()
+        <<" whNum: "<<chDigi.whNum()
+        <<" station: "<< chDigi.stNum()
+        <<" sector: "<< chDigi.scNum()
+        <<" code(q): "<< chDigi.code()
+        <<" phi:   "<<chDigi.phi()
+        << std::endl;
+
+  }
+  edm::Handle<L1MuDTChambThContainer> digiCollectionDTTh_BMTF;
+  ev.getByToken(inputDTTh_BMTF, digiCollectionDTTh_BMTF);
+  const L1MuDTChambThContainer& dtthDigisBMTF = *digiCollectionDTTh_BMTF.product();
+  for (const auto &  chDigi : *dtthDigisBMTF.getContainer() ) {
+
+/*
+    unsigned int eta = 0;
+    unsigned int etaQ = 0;
+    for (unsigned int ipos=0; ipos <7; ipos++) {
+     if (
+    }
+*/
+    
+    std::cout <<"HERE DtDataWord64 BMTF TH " 
+        <<" bxNum: "<<chDigi.bxNum()
+        <<" whNum: "<<chDigi.whNum()
+        <<" station: "<< chDigi.stNum()
+        <<" sector: "<< chDigi.scNum()
+        << std::endl;
+
+  }
+
+  
+}
 
 void OmtfDigiCompare::analyzeCSC(const edm::Event &ev, const edm::EventSetup& es) {
-  std::cout << "-------- HERE OMTF DIGI COMPARE CSC---------" << std::endl;
+  std::cout << "-------- HERE DIGI COMPARE CSC---------" << std::endl;
 
   edm::Handle<CSCCorrelatedLCTDigiCollection> digiCollectionCSC_OMTF;
   ev.getByToken(inputCSC_OMTF,digiCollectionCSC_OMTF);
