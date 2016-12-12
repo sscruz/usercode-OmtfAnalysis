@@ -112,6 +112,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   //
   // fill algoBits info
   //
+/*
   static edm::RunNumber_t lastRun = 0;
   if (ev.run() != lastRun) {
     lastRun = ev.run();
@@ -125,6 +126,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   // associate HLT info to muonColl objs
   //
   theMenuInspector.associateHLT(ev,es,muonColl);
+*/
 
 
 /*

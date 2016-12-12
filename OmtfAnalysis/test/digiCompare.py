@@ -7,7 +7,7 @@ import os
 
 process = cms.Process('OmtfTree')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 #
 # For processing single files insert lines with 'file:/PATH/FILE.root'
@@ -19,7 +19,8 @@ process.source = cms.Source("PoolSource",
 fileNames = cms.untracked.vstring(
 #  'file:/afs/cern.ch/work/k/konec/data/runs/run281214-Cosmics_E0D61D8B-E27F-E611-AF32-FA163E368DD1.root',
 #   'file:/afs/cern.ch/work/k/konec/data/runs/run283999-Cosmics_14208324-0A9B-E611-B786-02163E01437C.root',
-'/store/express/PARun2016C/ExpressCosmics/FEVT/Express-v1/000/286/026/00000/02E95F89-29B5-E611-8A83-02163E0141AF.root',
+'/store/express/PARun2016C/ExpressCosmics/FEVT/Express-v1/000/286/180/00000/5A22E4C8-D7B6-E611-AA6A-FA163EFEB709.root',
+#'/store/express/PARun2016C/ExpressCosmics/FEVT/Express-v1/000/286/026/00000/02E95F89-29B5-E611-8A83-02163E0141AF.root',
 #285915
 #'/store/express/PARun2016C/ExpressCosmics/FEVT/Express-v1/000/285/915/00000/469656FF-7CB3-E611-9F00-FA163E0F1BFC.root',
 #'/store/express/PARun2016C/ExpressCosmics/FEVT/Express-v1/000/285/915/00000/7274B4B6-7BB3-E611-8999-02163E0119D7.root',
@@ -28,7 +29,7 @@ fileNames = cms.untracked.vstring(
 #'/store/express/PARun2016C/ExpressCosmics/FEVT/Express-v1/000/285/915/00000/E8BDEAFB-7CB3-E611-8790-FA163E6337E8.root',
 #  'file:/afs/cern.ch/work/k/konec/data/runs/run285915-CosmicsPA-C057B6C6-7EB3-E611-8B51-02163E0133A2.root',
                                   ),
-skipEvents =  cms.untracked.uint32(441)
+#skipEvents =  cms.untracked.uint32(441)
 )
 
 #
@@ -60,11 +61,11 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 # message logger
 #
 process.load('FWCore.MessageService.MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(10)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1)
 process.MessageLogger.cerr.threshold = cms.untracked.string('DEBUG')
 process.MessageLogger.debugModules = cms.untracked.vstring()
 #process.MessageLogger.debugModules.append('muonRPCDigis')
-process.MessageLogger.debugModules.append('omtfStage2Digis')
+#process.MessageLogger.debugModules.append('omtfStage2Digis')
 process.options = cms.untracked.PSet( wantSummary=cms.untracked.bool(False))
 
 process.omtfStage2Digis = cms.EDProducer("OmtfUnpacker",
@@ -72,12 +73,17 @@ process.omtfStage2Digis = cms.EDProducer("OmtfUnpacker",
 )
 
 process.digiComapre = cms.EDAnalyzer("OmtfDigiCompare",
-  srcRPC_OMTF = cms.InputTag('omtfStage2Digis','OMTF'),
+  srcRPC_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
   srcRPC_PACT = cms.InputTag('muonRPCDigis'),
-  srcCSC_OMTF = cms.InputTag('omtfStage2Digis','OMTF'),
+  srcCSC_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
   srcCSC_CSC = cms.InputTag('csctfDigis'),
+  srcOMTF_DATA = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
+#  srcOMTF_EMUL = cms.InputTag('omtfEmulator','OMTF'),
+  srcOMTF_EMUL = cms.InputTag('gmtStage2Digis','OMTF'),
   srcDTPh_BMTF = cms.InputTag('bmtfDigis'),
   srcDTTh_BMTF = cms.InputTag('bmtfDigis'),
+  srcDTPh_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
+  srcDTTh_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
 )
 
 #OMTF ESProducer. Fills CondFormats from XML files.
@@ -123,12 +129,10 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
 )
 
 
-process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis+process.omtfStage2Digis+process.digiComapre)
-process.omtf_step = cms.Path(process.omtfEmulator)
-#process.raw2digi_step = cms.Path(process.omtfStage2Digis)
+process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis+process.omtfStage2Digis)
+process.omtf_step = cms.Path(process.omtfEmulator+process.digiComapre)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.raw2digi_step,  process.omtf_step, process.endjob_step)
-#process.schedule = cms.Schedule(process.raw2digi_step,  process.endjob_step)
 
 #print process.dumpPython();
 print process.schedule

@@ -57,6 +57,13 @@
 #include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigi.h"
 #include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigiCollection.h"
 
+#include "DataFormats/L1TMuon/interface/RegionalMuonCand.h"
+#include "DataFormats/L1TMuon/interface/RegionalMuonCandFwd.h"
+
+#include "DataFormats/L1DTTrackFinder/interface/L1MuDTChambPhContainer.h"
+#include "DataFormats/L1DTTrackFinder/interface/L1MuDTChambThContainer.h"
+
+
 typedef uint64_t Word64;
 
 namespace DataWord64 {
@@ -77,9 +84,9 @@ namespace DataWord64 {
   }
 };
 
-class RPCDataWord64 {
+class RpcDataWord64 {
 public: 
-  RPCDataWord64(Word64 data=0) : rawData(data) {}
+  RpcDataWord64(Word64 data=0) : rawData(data) {}
   unsigned int frame1() const { return frame1_;}
   unsigned int frame2() const { return frame2_;}
   unsigned int frame3() const { return frame3_;}
@@ -87,8 +94,8 @@ public:
   unsigned int linkNum() const { return linkNum_;}
   unsigned int bxNum() const { return bxNum_; }
   unsigned int type() const { return type_;}
-  friend std::ostream & operator<< (std::ostream &out, const RPCDataWord64 &o) {
-    out << "RPCDataWord64: "
+  friend std::ostream & operator<< (std::ostream &out, const RpcDataWord64 &o) {
+    out << "RpcDataWord64: "
         <<" type: "<< std::bitset<4>(o.type_) 
         << " bx: "<<o.bxNum_
         << " lnk: "<< o.linkNum_;
@@ -120,8 +127,9 @@ public:
   unsigned int weight_lowBits() const { return weight_; } 
   unsigned int layers() const { return layers_; }
   unsigned int ch() const { return ch_; } 
-  unsigned int phi() const { return phi_; }
-  unsigned int eta() const { return eta_; }
+  unsigned int vch() const { return vch_; } 
+           int phi() const { return phi_; }
+           int eta() const { return eta_; }
   unsigned int pT() const { return pT_; }
   unsigned int quality() const { return quality_; }
   unsigned int bxNum() const { return bxNum_; }
@@ -144,9 +152,9 @@ private:
     struct {
       uint64_t pT_ : 9;
       uint64_t quality_ : 4;
-      uint64_t eta_ : 9;
+       int64_t eta_ : 9;
       uint64_t empty_   : 1; //not used, orig h/f
-      uint64_t phi_ : 8;
+       int64_t phi_ : 8;
       uint64_t bc0_  : 1;
       uint64_t ch_ : 1;
       uint64_t vch_ : 1;
@@ -364,49 +372,6 @@ private:
 
 };
 
-/*
-class CscLinkMap {
-public: 
-  CscLinkMap() {}
-  
-  void init( const std::string& file, std::string path ) {
-    std::ifstream inFile;
-    std::string fName = path + "/" + file;
-    inFile.open(fName);
-    if (inFile) {
-      LogTrace("")<<" reading csc connections from: "<<fName;
-    } else {
-      LogTrace("")<<" Unable to open file "<<fName;
-
-     throw std::runtime_error("Unable to open csc connections file " + fName);
-    }
-
-    std::string line;
-    while (std::getline(inFile, line)) {
-      line.erase(0, line.find_first_not_of(" \t\r\n"));      //cut first character
-      if (line.empty() || !line.compare(0,2,"--")) continue; // empty or comment line
-      std::stringstream ss(line);
-      std::cout <<"READ Line:" << ss.str() << std::endl;
-//      std::string processorName, lbName;
-//      unsigned int link, dbId;
-//      if (ss >> processorName >> link >> lbName >> dbId) {
-//          std::map< unsigned int, std::string > & li2lb = link2lbName[processorName];
-//          std::map< std::string, unsigned int > & lb2li = lbName2link[processorName];
-//          li2lb[link] = lbName;
-//          lb2li[lbName] = link;
-//          OmtfEleIndex ele(processorName, link);
-//          lbName2OmtfIndex[lbName].push_back(ele);
-////          std::cout <<"read: " <<processorName<<" "<<link<<" "<<lbName<<" Ele: "<< ele <<" map Size: "<< lbName2OmtfIndex.size() <<std::endl;
-//      }
-//
-    }
-    inFile.close();
-  }
-private:
-
-};
-*/
-
 
 class OmtfUnpacker: public edm::stream::EDProducer<> {
 public:
@@ -440,9 +405,14 @@ private:
 
 OmtfUnpacker::OmtfUnpacker(const edm::ParameterSet& pset)
 {
-  produces<RPCDigiCollection>("OMTF");
-  produces<CSCCorrelatedLCTDigiCollection>("OMTF");
+  produces<RPCDigiCollection>("OmtfUnpack");
+  produces<CSCCorrelatedLCTDigiCollection>("OmtfUnpack");
+  produces<l1t::RegionalMuonCandBxCollection >("OmtfUnpack");
+  produces<L1MuDTChambPhContainer>("OmtfUnpack");
+  produces<L1MuDTChambThContainer>("OmtfUnpack");
+
   fedToken_ = consumes<FEDRawDataCollection>(pset.getParameter<edm::InputTag>("InputLabel"));
+
 }
 
 void OmtfUnpacker::beginRun(const edm::Run &run, const edm::EventSetup& es) {
@@ -479,7 +449,10 @@ void OmtfUnpacker::beginRun(const edm::Run &run, const edm::EventSetup& es) {
   }
   std::cout << " SIZE OF OMTF to RPC map  is: " << omtf2rpc_.size() << std::endl;
 
-  // init CSC map
+
+  //
+  // init CSC Link map
+  //
   omtf2csc_.clear();
   for (unsigned int fed=1380; fed<=1381; fed++) {
     //Endcap label. 1=forward (+Z); 2=backward (-Z)
@@ -528,8 +501,10 @@ void OmtfUnpacker::beginRun(const edm::Run &run, const edm::EventSetup& es) {
           default   : { stat=0; ring=0; cham=0; break;}
         }
         if (ring !=0) {
-          CSCDetId cscDetId(endcap, stat, ring, (cham+(amc-1)*6)%36);
-          std::cout <<" INIT CSC DET ID: "<< cscDetId << std::endl;
+          int chamber = cham+(amc-1)*6; 
+          if (chamber > 36) chamber -= 36;
+          CSCDetId cscDetId(endcap, stat, ring, chamber);
+//          std::cout <<" INIT CSC DET ID: "<< cscDetId << std::endl;
           OmtfEleIndex omtfEle(fed, amc, link);
           omtf2csc_[omtfEle]=cscDetId;
         }
@@ -558,6 +533,12 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
 
   std::auto_ptr<RPCDigiCollection> producedRPCDigis(new RPCDigiCollection);
   std::auto_ptr<CSCCorrelatedLCTDigiCollection> producedCscLctDigis ( new CSCCorrelatedLCTDigiCollection);
+  std::auto_ptr<l1t::RegionalMuonCandBxCollection > producedMuonDigis (new l1t::RegionalMuonCandBxCollection); 
+  producedMuonDigis->setBXRange(-3,3);
+  std::auto_ptr<L1MuDTChambPhContainer> producedDTPhDigis(new L1MuDTChambPhContainer);
+  std::auto_ptr<L1MuDTChambThContainer> producedDTThDigis(new L1MuDTChambThContainer);
+  std::vector<L1MuDTChambPhDigi> phi_Container;
+  std::vector<L1MuDTChambThDigi> the_Container;
 
   for (int fedId= 1380; fedId<= 1381; ++fedId){
 
@@ -631,6 +612,9 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
       LogTrace("") << str.str();
     }
 
+    //
+    // AMC13 header
+    //
     const Word64* headerAmc13raw = header+1;
     amc13::Header headerAmc13(headerAmc13raw);
     if (debug) {
@@ -640,7 +624,7 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
       str <<" amc13 format: "<< headerAmc13.getFormatVersion() << std::endl;
       str <<" amc13 nAMCs:  "<< headerAmc13.getNumberOfAMCs() << std::endl;
       str <<" amc13 orbit:  "<< headerAmc13.getOrbitNumber() << std::endl;
-//      LogTrace("") << str.str();
+      LogTrace("") << str.str();
     }
 
 
@@ -649,6 +633,10 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
     // const Word64* raw = header+1 +(iAMC+1);
     //}
    
+
+    //
+    // AMC13 trailer
+    //
     const Word64* trailerAmc13raw = trailer-1;
     amc13::Trailer trailerAmc13(trailerAmc13raw);
     if (debug) {
@@ -658,7 +646,7 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
       str <<" block: "<< trailerAmc13.getBlock() << std::endl;
       str <<" LV1ID:  "<< trailerAmc13.getLV1ID() << std::endl;
       str <<" BX:  "<< trailerAmc13.getBX() << std::endl;
-//      LogTrace("") << str.str();
+      LogTrace("") << str.str();
     }
 
     amc13::Packet packetAmc13;
@@ -667,16 +655,18 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
       return;
     } 
 //    std::cout <<"AMC13 Packet: "<< packetAmc13.blocks() << " size "<<packetAmc13.size() << std::endl;  
+    unsigned int blockNum=0;
     for (auto amc: packetAmc13.payload()) {
 //      amc.finalize(fedHeader.lvl1ID(), fedHeader.bxID(), true, false);
       amc::BlockHeader bh =  amc.blockHeader(); 
       if (debug) {
         std::ostringstream str;
+        str <<" ----------- #"<<blockNum++ << std::endl;
         str <<" blockheader:  "<<  std::bitset<64>(bh.raw()) << std::endl;
         str <<" boardID:  "<< bh.getBoardID() << std::endl;
         str <<" amcNumber:  "<< bh.getAMCNumber() << std::endl;
-        str <<" size:  "<< bh.getSize() << std::endl;
-//        LogTrace("") << str.str();
+        str <<" size:  "<< bh.getSize(); // << std::endl;
+        LogTrace("") << str.str();
       }
 
       //
@@ -687,23 +677,27 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
         std::ostringstream str;
         str <<" AMC header[0]:  "<<  std::bitset<64>(headerAmc.raw()[0]) << std::endl;
         str <<" AMC header[1]:  "<<  std::bitset<64>(headerAmc.raw()[1]) << std::endl;
-        str <<" AMC number:     "<< headerAmc.getAMCNumber() << std::endl;
-//        LogTrace("") << str.str();
+        str <<" AMC number:     "<< headerAmc.getAMCNumber(); // << std::endl;
+        LogTrace("") << str.str();
       }
 
 
       //
+      // AMC trailer
       //
-      //
-      //amc::Trailer trailerAmc = amc.trailer(); //this is the expected way bud does not work 
+      //amc::Trailer trailerAmc = amc.trailer(); //this is the expected way but does not work 
       amc::Trailer trailerAmc(amc.data().get()+amc.size()-1); //FIXME: the above is prefered
       if (debug) {
         std::ostringstream str;
         str <<" AMC trailer:  "<<  std::bitset<64>(trailerAmc.raw()) << std::endl;
         str <<" getLV1ID:     "<< trailerAmc.getLV1ID() << std::endl;
-        str <<" size:         "<< trailerAmc.getSize() << std::endl;
-//        LogTrace("") << str.str();
+        str <<" size:         "<< trailerAmc.getSize()  << std::endl;
+        LogTrace("") << str.str();
       }
+
+      //
+      // AMC payload
+      //
       auto payload64 = amc.data();
       const Word64* word = payload64.get();
       for (unsigned int iWord= 1; iWord<= amc.size(); iWord++, word++) {
@@ -712,14 +706,13 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
 
         LogTrace("") <<" payload: " <<  *reinterpret_cast<const std::bitset<64>*>(word);
         DataWord64::Type recordType = DataWord64::type(*word); 
-        std::cout << " RECORD TYPE: " <<recordType << std::endl; 
 
 
         //
         // RPC data
         // 
         if (DataWord64::rpc==recordType) {
-          RPCDataWord64 data(*word);
+          RpcDataWord64 data(*word);
           LogTrace("") << data;
   
           OmtfEleIndex omtfEle(fedHeader.sourceID(), bh.getAMCNumber()/2+1, data.linkNum());
@@ -746,7 +739,7 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
                       <<" lb:"<< recordCD.lbInLink() 
                       <<" part: "<< recordCD.partitionNumber() 
                       <<" partData: "<<recordCD.partitionData() 
-                      << std::endl;
+                      << std::endl << std::endl;
   
             if (records.complete()) formater.recordUnpack( records,  producedRPCDigis.get(), 0,0);
           }
@@ -765,8 +758,7 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
             continue;
           }
           CSCDetId cscId = omtf2csc_[omtfEle];
-          LogTrace("") <<"--------------"<<std::endl;
-          LogTrace("") <<"CSC "<<cscId << std::endl; 
+          LogTrace("") <<"OMTF->CSC "<<cscId << std::endl; 
           LogTrace("") << data << std::endl;
           CSCCorrelatedLCTDigi digi(data.hitNum(), //trknmb
                                     data.valid(), 
@@ -775,7 +767,7 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
                                     data.halfStrip(),
                                     data.clctPattern(),
                                     data.bend(),
-                                    data.bxNum()) ;
+                                    data.bxNum()+3) ;
           LogTrace("") << digi << std::endl;
           producedCscLctDigis->insertDigi( cscId, digi); 
 
@@ -786,11 +778,26 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
         //
         if (DataWord64::omtf==recordType) {
           OmtfDataWord64   data(*word);
-          LogTrace("") <<"--------------"<<std::endl;
-          LogTrace("") <<"OMTF " << std::endl;
+          LogTrace("") <<"OMTF->MUON " << std::endl;
           LogTrace("") << data << std::endl;
-          // LogTrace("") << digi << std::endl;
-          // producedCscLctDigis->insertDigi( cscId, digi);
+          l1t::tftype  overlap = (fedId==1380) ? l1t::tftype::omtf_neg :  l1t::tftype::omtf_pos;
+          unsigned int iProcessor = bh.getAMCNumber()/2;   //0-5 
+          l1t::RegionalMuonCand digi;
+          digi.setHwPt(data.pT());
+          digi.setHwEta(data.eta());
+          digi.setHwPhi(data.phi());
+          digi.setHwSign(data.ch());
+          digi.setHwSignValid(data.vch());
+          digi.setHwQual(data.quality());
+          std::map<int, int> trackAddr;
+          trackAddr[0]=data.layers();
+          trackAddr[1]=0;
+          trackAddr[2]=data.weight_lowBits();
+          digi.setTrackAddress(trackAddr);
+          digi.setTFIdentifiers(iProcessor, overlap);
+          int bx = data.bxNum()-3;
+          LogTrace("")  <<"OMTF Muon, BX="<<bx<<", hwPt="<<digi.hwPt()<< std::endl;
+          if(std::abs(bx) <= 3) producedMuonDigis->push_back(bx,digi);
         }
 
 
@@ -799,21 +806,38 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
         //
         if (DataWord64::dt==recordType) {
           DtDataWord64   data(*word);
-          LogTrace("") <<"--------------"<<std::endl;
-          LogTrace("") <<"DT " << std::endl;
+          LogTrace("") <<"OMTF->DT " << std::endl;
           LogTrace("") << data << std::endl;
-          // LogTrace("") << digi << std::endl;
-          // producedCscLctDigis->insertDigi( cscId, digi);
+          int bx = data.bxNum()-3;
+          int whNum = (fedId==1380) ? -2 : 2;
+          int sector =   (bh.getAMCNumber()/2)*2 + data.sector();
+          if (sector==12) sector=0;
+          int station =  data.station()+1;
+//  unsigned int valid() const { return valid_; }
+//  unsigned int fiber() const { return fiber_; }
+//          if(data.valid())
+           phi_Container.push_back( L1MuDTChambPhDigi( bx, whNum, sector, station,
+                                    data.phi(), data.phiB(), data.quality(), 
+                                    0,                // utag/Ts2Tag 
+                                    data.bcnt_st())); //ucnt/BxCnt  
+          int pos[7];
+          int posQual[7];
+          for (unsigned int i=0; i<7; i++) { pos[i] = (data.eta() >> i & 1); posQual[i] = (data.etaQuality() >> i & 1); }
+            if(data.etaQuality() && data.eta())the_Container.push_back(L1MuDTChambThDigi(bx,whNum, sector, station, pos, posQual)); 
         }
-
-
 
       }
     }         
 
   } 
-  event.put(producedRPCDigis,"OMTF");
-  event.put(producedCscLctDigis,"OMTF");
+  event.put(producedRPCDigis,"OmtfUnpack");
+  event.put(producedCscLctDigis,"OmtfUnpack");
+  event.put(producedMuonDigis,"OmtfUnpack"); 
+  producedDTPhDigis->setContainer(phi_Container);
+  event.put(producedDTPhDigis,"OmtfUnpack");
+  producedDTThDigis->setContainer(the_Container);
+  event.put(producedDTThDigis,"OmtfUnpack");
+
 
 
 }
