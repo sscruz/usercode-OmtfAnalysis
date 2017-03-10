@@ -39,7 +39,9 @@ std::ostream & operator<< (std::ostream &out, const L1Obj &o)
   out <<o.phi <<" (V: "<<std::setprecision(4)<<o.phiValue()<<std::setprecision(6)<<")";
   out <<", q: "<<o.q<<", bx: "<<o.bx;
   if (o.type ==  L1Obj::OMTF || o. type== L1Obj::OMTF_emu) {
-      out <<" track: "<< std::bitset<29>(o.hits) <<", "<< OmtfName(o.iProcessor, o.position);
+      out <<" track: "<< std::bitset<29>(o.hits) 
+          <<" disc: "<< std::bitset<12>(o.disc)
+          <<", "<< OmtfName(o.iProcessor, o.position);
   }
   return out;
 }

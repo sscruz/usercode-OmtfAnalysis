@@ -213,12 +213,16 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
   if (!dt &&  csc && !rpc) layerComb = 6;
   if (!dt && !csc &&  rpc) layerComb = 7;
   hDataEmulCompareComb->Fill(diff, layerComb); 
+  std::cout <<" Unique: " << unique << "  diff: "<<diff << std::endl;
+//  if (diff==DIFF::agree && unique && emul->eta != data->eta) {
+//    std::cout <<"PROBLEM WITH ETA ONLY, event  "<<*event<<std::endl << *data << std::endl << *emul << std::endl;
+//  }
   if(unique && !(diff==agree) ) {
      hDataEmulNotAgreeEta->Fill( OmtfName(emul->iProcessor, emul->position), code2HistoBin(abs(emul->eta)) ); 
      hDataEmulNotAgreePhi->Fill( OmtfName(emul->iProcessor, emul->position), emul->phi ); 
   }
 
-  if (debug && diff!=agree ) std::cout << "NOT agree("<<diffName(diff)<<"), dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl; 
+  if (debug && diff!=agree ) std::cout << "NOT agree("<<diffName(diff)<<"), dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl <<*coll << std::endl; 
 
   if (unique) {
     hDataEmulPt->Fill( code2pt(data->pt), code2pt(emul->pt) );
@@ -231,7 +235,7 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
     if ( data->charge !=  emul->charge)   hDataEmulIssue->Fill(6);
     if ( (data->q >>2) != (emul->q >>2) )  hDataEmulIssue->Fill(7);
   }
-  if(diff==agree) { hDataEmulEta->Fill(code2HistoBin(abs(data->eta)), code2HistoBin(abs(emul->eta)) ); }
+  if(unique) { hDataEmulEta->Fill(code2HistoBin(abs(data->eta)), code2HistoBin(abs(emul->eta)) ); }
     
 }
 
@@ -250,6 +254,7 @@ AnaDataEmul::DIFF AnaDataEmul::compare(const L1Obj * data, const L1Obj * emul)
     if (    (hitsEmul == hitsData) 
             && (data->pt == emul->pt) 
             && (data->phi == emul->phi) 
+            && (data->eta == emul->eta) 
             && data->charge == emul->charge
            ) diff = agree; 
     else if (    abs(data->pt-emul->pt) <= 2 

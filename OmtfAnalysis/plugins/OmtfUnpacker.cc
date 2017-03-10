@@ -191,8 +191,9 @@ public:
         << " sector: " << o.sector()
         << " fiber: " << o.fiber()
         << " phi: "<<o.phi()
-        << " eta: "<<o.eta()
         << " quality: "<<o.quality()
+        << " eta: "<<o.eta()
+        << " etaQ: "<<o.etaQuality()
         << " bcnt: "<<o.bcnt_st()<<"_"<<o.bcnt_e0()<<"_"<<o.bcnt_e1()
         << "";
     return out;
@@ -205,8 +206,8 @@ private:
       int64_t st_phib_ : 10;
       uint64_t st_q_     : 5;
       uint64_t st_cal_   : 1;
-      uint64_t eta_hit_ : 7;
       uint64_t eta_qbit_ : 7;
+      uint64_t eta_hit_ : 7;
       uint64_t dummy1_  : 1;
       uint64_t bcnt_st_ : 2;
       uint64_t bcnt_e0_ : 2;
@@ -823,7 +824,7 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
           int pos[7];
           int posQual[7];
           for (unsigned int i=0; i<7; i++) { pos[i] = (data.eta() >> i & 1); posQual[i] = (data.etaQuality() >> i & 1); }
-            if(data.etaQuality() && data.eta())the_Container.push_back(L1MuDTChambThDigi(bx,whNum, sector, station, pos, posQual)); 
+            if(data.eta())the_Container.push_back(L1MuDTChambThDigi(bx,whNum, sector, station, pos, posQual)); 
         }
 
       }

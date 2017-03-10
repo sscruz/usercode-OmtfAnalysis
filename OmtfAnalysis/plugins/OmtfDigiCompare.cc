@@ -89,11 +89,17 @@ public:
 
   virtual void analyze(const edm::Event &ev, const edm::EventSetup& es) {
     static int nEvents = 0;
-    std::cout <<"======> Analyze #"<<++nEvents<<std::endl;
-//    analyzeDT(ev,es);
-    analyzeCSC(ev,es);
+/*
+    if (    ev.id().event() != 483248 
+        &&  ev.id().event() != 480262
+        &&  ev.id().event() != 471470
+        &&  ev.id().event() != 472951 ) return; 
+*/
+    std::cout <<"======> Analyze #"<<++nEvents<<", ev: "<<ev.id().event()<<std::endl;
+    analyzeDT(ev,es);
+//    analyzeCSC(ev,es);
 //    analyzeRPC(ev,es);
-    analyzeOMTF(ev,es);
+//    analyzeOMTF(ev,es);
   }
   void analyzeCSC(const edm::Event&, const edm::EventSetup& es);
   void analyzeDT(const edm::Event&, const edm::EventSetup& es);
@@ -218,6 +224,7 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
     if (abs(chDigi.whNum()) != 2) continue;
     if (chDigi.stNum() ==4) continue;
     if (chDigi.bxNum() != 0) continue;
+    if (chDigi.code()==7) continue;
     MyDigi myDigi = { DTChamberId(chDigi.whNum(),chDigi.stNum(),chDigi.scNum()+1).rawId(), chDigi.phi()+chDigi.phiB()+chDigi.code(), chDigi.bxNum() };
     if (myBmtfPh.end() == std::find(myBmtfPh.begin(), myBmtfPh.end(), myDigi)) myBmtfPh.push_back(myDigi);
     std::cout <<"DtDataWord64 BMTF    " 
@@ -333,8 +340,8 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
 */
   for (const auto & omtf : myOmtfTh ) {
      omtfDigis++;     
-     std::vector<MyDigi>::const_iterator itCsc = find(myBmtfTh.begin(), myBmtfTh.end(), omtf);
-     if (itCsc == myBmtfTh.end() ) {
+     std::vector<MyDigi>::const_iterator itOth = find(myBmtfTh.begin(), myBmtfTh.end(), omtf);
+     if (itOth == myBmtfTh.end() ) {
        std::cout << "HERE PROBLEM!!! ----- BMTF_TH DIGI corresponding to OMTF ("<<omtf<<") NOT FOUND! " << std::endl;
        hasError = true;
        omtfDigisError++; 

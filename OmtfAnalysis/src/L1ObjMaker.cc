@@ -118,6 +118,7 @@ bool L1ObjMaker::makeRegCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, 
     obj.q   = it->hwQual();
     obj.hits   = hwAddrMap[0];
     obj.bx = bxNumber;
+    obj.disc = hwAddrMap[2];
     result.push_back(obj);
   }
   return true;

@@ -78,7 +78,6 @@ OmtfTreeMaker::~OmtfTreeMaker()
 
 void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
 {
-
   //
   // initial filter. Optionally do not further use events without muon
   //

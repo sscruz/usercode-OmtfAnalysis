@@ -19,7 +19,7 @@ process.source = cms.Source("PoolSource",
 fileNames = cms.untracked.vstring(
 #  'file:/afs/cern.ch/work/k/konec/data/runs/run281214-Cosmics_E0D61D8B-E27F-E611-AF32-FA163E368DD1.root',
 #   'file:/afs/cern.ch/work/k/konec/data/runs/run283999-Cosmics_14208324-0A9B-E611-B786-02163E01437C.root',
-'/store/express/PARun2016C/ExpressCosmics/FEVT/Express-v1/000/286/180/00000/5A22E4C8-D7B6-E611-AA6A-FA163EFEB709.root',
+#'/store/express/PARun2016C/ExpressCosmics/FEVT/Express-v1/000/286/180/00000/5A22E4C8-D7B6-E611-AA6A-FA163EFEB709.root',
 #'/store/express/PARun2016C/ExpressCosmics/FEVT/Express-v1/000/286/026/00000/02E95F89-29B5-E611-8A83-02163E0141AF.root',
 #285915
 #'/store/express/PARun2016C/ExpressCosmics/FEVT/Express-v1/000/285/915/00000/469656FF-7CB3-E611-9F00-FA163E0F1BFC.root',
@@ -28,8 +28,9 @@ fileNames = cms.untracked.vstring(
 #'/store/express/PARun2016C/ExpressCosmics/FEVT/Express-v1/000/285/915/00000/B830A0AF-7BB3-E611-8CA0-FA163E99DA7B.root',
 #'/store/express/PARun2016C/ExpressCosmics/FEVT/Express-v1/000/285/915/00000/E8BDEAFB-7CB3-E611-8790-FA163E6337E8.root',
 #  'file:/afs/cern.ch/work/k/konec/data/runs/run285915-CosmicsPA-C057B6C6-7EB3-E611-8B51-02163E0133A2.root',
+'file:/afs/cern.ch/work/k/konec/data/runs/run286180-CosmicsPA-2481BCC7-D7B6-E611-9A30-FA163EB8B34E.root',
                                   ),
-#skipEvents =  cms.untracked.uint32(441)
+#skipEvents =  cms.untracked.uint32(5463)
 )
 
 #
@@ -82,6 +83,8 @@ process.digiComapre = cms.EDAnalyzer("OmtfDigiCompare",
   srcOMTF_EMUL = cms.InputTag('gmtStage2Digis','OMTF'),
   srcDTPh_BMTF = cms.InputTag('bmtfDigis'),
   srcDTTh_BMTF = cms.InputTag('bmtfDigis'),
+#  srcDTPh_BMTF =  cms.InputTag('twinMuxStage2Digis'),
+#  srcDTTh_BMTF =  cms.InputTag('twinMuxStage2Digis'),
   srcDTPh_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
   srcDTTh_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
 )
@@ -102,10 +105,10 @@ process.omtfParams = cms.ESProducer( "L1TMuonOverlapParamsESProducer",
 process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
 #  srcDTPh =  cms.InputTag('simTwinMuxDigis'),
 #  srcDTTh =  cms.InputTag('simTwinMuxDigis'),
-#  srcDTPh =  cms.InputTag('twinMuxStage2Digis'),
-#  srcDTTh =  cms.InputTag('twinMuxStage2Digis'),
-  srcDTPh =  cms.InputTag('bmtfDigis'),
-  srcDTTh =  cms.InputTag('bmtfDigis'),
+  srcDTPh =  cms.InputTag('twinMuxStage2Digis'),
+  srcDTTh =  cms.InputTag('twinMuxStage2Digis'),
+#  srcDTPh =  cms.InputTag('bmtfDigis'),
+#  srcDTTh =  cms.InputTag('bmtfDigis'),
 #  srcDTPh =  cms.InputTag('bmtfDigis:PhiDigis'),
 #  srcDTTh =  cms.InputTag('bmtfDigis:TheDigis'),
 #  srcDTPh = cms.InputTag('simDtTriggerPrimitiveDigis'),
