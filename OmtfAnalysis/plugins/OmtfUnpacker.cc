@@ -13,6 +13,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/ParameterSet/interface/FileInPath.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -47,6 +48,11 @@
 #include "DataFormats/RPCDigi/interface/RPCRawSynchro.h"
 #include "EventFilter/RPCRawToDigi/interface/EventRecords.h"
 #include "EventFilter/RPCRawToDigi/interface/DebugDigisPrintout.h"
+
+#include "CondFormats/DataRecord/interface/RPCOMTFLinkMapRcd.h"
+#include "CondFormats/RPCObjects/interface/RPCAMCLinkMap.h"
+#include "CondFormats/RPCObjects/interface/RPCAMCLink.h"
+#include "CondFormats/RPCObjects/interface/RPCLBLink.h"
 
 #include "DataFormats/RPCDigi/interface/DataRecord.h"
 #include "DataFormats/RPCDigi/interface/RecordBX.h"
@@ -321,16 +327,38 @@ private:
 class RpcLinkMap {
 public:
   RpcLinkMap() { }
-  void init( const std::string& file, std::string path ) {
+
+  void init(const RPCAMCLinkMap::map_type & amcMap) {
+
+    for (const auto & item : amcMap ) {
+      unsigned int fedId = item.first.getFED();
+      unsigned int amcSlot = item.first.getAMCNumber();
+      unsigned int link = item.first.getAMCInput();
+      std::string lbName =  item.second.getName();
+
+      std::ostringstream processorNameStr; processorNameStr<<"OMTF";;
+      if (fedId==1380) processorNameStr<< "n"; else processorNameStr<< "p";
+      processorNameStr<< amcSlot/2+1;
+      std::string processorName(processorNameStr.str());
+
+      std::map< unsigned int, std::string > & li2lb = link2lbName[processorName];
+      std::map< std::string, unsigned int > & lb2li = lbName2link[processorName];
+      li2lb[link] = lbName;
+      lb2li[lbName] = link;
+      OmtfEleIndex ele(processorName, link);
+      lbName2OmtfIndex[lbName].push_back(ele);
+    } 
+  }
+
+  void init( const std::string& fName) {
     std::ifstream inFile;
-    std::string fName = path + "/" + file;
     inFile.open(fName);
     if (inFile) {
       LogTrace("")<<" reading OmtfRpcLinksMap from: "<<fName;
     } else {
       LogTrace("")<<" Unable to open file "<<fName;
 
-     throw std::runtime_error("Unable to open OmtfRpcLinksMap file " + fName);
+      throw std::runtime_error("Unable to open OmtfRpcLinksMap file " + fName);
     }
 
     std::string line;
@@ -347,10 +375,8 @@ public:
           lb2li[lbName] = link;
           OmtfEleIndex ele(processorName, link);
           lbName2OmtfIndex[lbName].push_back(ele);
-//          std::cout <<"read: " <<processorName<<" "<<link<<" "<<lbName<<" Ele: "<< ele <<" map Size: "<< lbName2OmtfIndex.size() <<std::endl;
       }
     }
-//    std::cout <<" size: " << link2lbName.size() <<" "<<lbName2link.size() << " " << lbName2OmtfIndex.size()<< std::endl;
     inFile.close();
   }
 
@@ -400,12 +426,11 @@ private:
   
   const RPCReadOutMapping* theCabling;
 
-
+  edm::ParameterSet theConfig;
 
 };
 
-OmtfUnpacker::OmtfUnpacker(const edm::ParameterSet& pset)
-{
+OmtfUnpacker::OmtfUnpacker(const edm::ParameterSet& pset) : theConfig(pset) {
   produces<RPCDigiCollection>("OmtfUnpack");
   produces<CSCCorrelatedLCTDigiCollection>("OmtfUnpack");
   produces<l1t::RegionalMuonCandBxCollection >("OmtfUnpack");
@@ -413,7 +438,6 @@ OmtfUnpacker::OmtfUnpacker(const edm::ParameterSet& pset)
   produces<L1MuDTChambThContainer>("OmtfUnpack");
 
   fedToken_ = consumes<FEDRawDataCollection>(pset.getParameter<edm::InputTag>("InputLabel"));
-
 }
 
 void OmtfUnpacker::beginRun(const edm::Run &run, const edm::EventSetup& es) {
@@ -421,10 +445,19 @@ void OmtfUnpacker::beginRun(const edm::Run &run, const edm::EventSetup& es) {
   es.get<RPCEMapRcd>().get(readoutMapping);
   const RPCReadOutMapping * cabling= readoutMapping->convert();
   theCabling = cabling;
-  std::cout <<" Has readout map, VERSION: " << cabling->version() << std::endl;
+  LogDebug("OmtfUnpacker") <<" Has readout map, VERSION: " << cabling->version() << std::endl;
+
 
   RpcLinkMap omtfLink2Ele;
-  omtfLink2Ele.init("OmtfRpcLinksMap.txt",".");
+
+  if (theConfig.getParameter<bool>("useRpcConnectionFile")) {
+    edm::FileInPath fip(theConfig.getParameter<string>("rpcConnectionFile"));
+    omtfLink2Ele.init(fip.fullPath());
+  } else {
+    edm::ESHandle<RPCAMCLinkMap> amcMapping;
+    es.get<RPCOMTFLinkMapRcd>().get(amcMapping);
+    omtfLink2Ele.init(amcMapping->getMap());
+  }
 
   std::vector<const DccSpec*> dccs = cabling->dccList();
   for (std::vector<const DccSpec*>::const_iterator it1= dccs.begin(); it1!= dccs.end(); ++it1) {
@@ -439,7 +472,7 @@ void OmtfUnpacker::beginRun(const edm::Run &run, const edm::EventSetup& es) {
             std::string lbNameCH = it4->linkBoardName();
             std::string lbName = lbNameCH.substr(0,lbNameCH.size()-4);
             const std::vector<OmtfEleIndex> & omtfEles = omtfLink2Ele.omtfEleIndex(lbName); 
-//            std::cout <<"  isOK ! " <<  it4->linkBoardName() <<" has: " << omtfEles.size() << " first: "<< omtfEles[0] << std::endl;
+//          std::cout <<"  isOK ! " <<  it4->linkBoardName() <<" has: " << omtfEles.size() << " first: "<< omtfEles[0] << std::endl;
             LinkBoardElectronicIndex rpcEle = { (*it1)->id(), it2->dccInputChannelNum(), it3->triggerBoardInputNumber(), it4->linkBoardNumInLink()};
             for ( const auto & omtfEle : omtfEles ) omtf2rpc_[omtfEle]= rpcEle; 
           } 
@@ -448,7 +481,7 @@ void OmtfUnpacker::beginRun(const edm::Run &run, const edm::EventSetup& es) {
       }
     }
   }
-  std::cout << " SIZE OF OMTF to RPC map  is: " << omtf2rpc_.size() << std::endl;
+  LogTrace(" ") << " SIZE OF OMTF to RPC map  is: " << omtf2rpc_.size() << std::endl;
 
 
   //
@@ -512,19 +545,20 @@ void OmtfUnpacker::beginRun(const edm::Run &run, const edm::EventSetup& es) {
       }
     }
   }
-  std::cout << " SIZE OF OMTF to CSC map  is: " << omtf2csc_.size() << std::endl;
+  LogTrace(" ") << " SIZE OF OMTF to CSC map  is: " << omtf2csc_.size() << std::endl;
 
 }
 
 void OmtfUnpacker::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("InputLabel",edm::InputTag("rawDataCollector"));
+  desc.add<bool>("useRpcConnectionFile",bool(false));
+  desc.add<std::string>("rpcConnectionFile",std::string("EventFilter/L1TRawToDigi/data/OmtfRpcLinksMap.txt"));
   descriptions.add("omtfUnpacker",desc);
 }
 
 void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
 {
-//  std::cout << " HERE PRODUCE!" << std::endl;
   bool debug = edm::MessageDrop::instance()->debugEnabled;
   eventCounter_++;
   if (debug) LogDebug ("OmtfUnpacker::produce") <<"Beginning To Unpack Event: "<<eventCounter_;
@@ -532,17 +566,16 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<FEDRawDataCollection> allFEDRawData;
   event.getByToken(fedToken_,allFEDRawData);
 
-  std::auto_ptr<RPCDigiCollection> producedRPCDigis(new RPCDigiCollection);
-  std::auto_ptr<CSCCorrelatedLCTDigiCollection> producedCscLctDigis ( new CSCCorrelatedLCTDigiCollection);
-  std::auto_ptr<l1t::RegionalMuonCandBxCollection > producedMuonDigis (new l1t::RegionalMuonCandBxCollection); 
+  auto producedRPCDigis = std::make_unique<RPCDigiCollection>();
+  auto producedCscLctDigis = std::make_unique<CSCCorrelatedLCTDigiCollection>();
+  auto producedMuonDigis = std::make_unique<l1t::RegionalMuonCandBxCollection>(); 
   producedMuonDigis->setBXRange(-3,3);
-  std::auto_ptr<L1MuDTChambPhContainer> producedDTPhDigis(new L1MuDTChambPhContainer);
-  std::auto_ptr<L1MuDTChambThContainer> producedDTThDigis(new L1MuDTChambThContainer);
+  auto producedDTPhDigis = std::make_unique<L1MuDTChambPhContainer>();
+  auto producedDTThDigis = std::make_unique<L1MuDTChambThContainer>();
   std::vector<L1MuDTChambPhDigi> phi_Container;
   std::vector<L1MuDTChambThDigi> the_Container;
 
-  for (int fedId= 1380; fedId<= 1381; ++fedId){
-
+  for (int fedId= 1380; fedId<= 1381; ++fedId) {
 
     const FEDRawData & rawData = allFEDRawData->FEDData(fedId);
     int nWords = rawData.size()/sizeof(Word64);
@@ -686,8 +719,8 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
       //
       // AMC trailer
       //
-      //amc::Trailer trailerAmc = amc.trailer(); //this is the expected way but does not work 
-      amc::Trailer trailerAmc(amc.data().get()+amc.size()-1); //FIXME: the above is prefered
+      //amc::Trailer trailerAmc = amc.trailer();              //this is the expected way but does not work 
+      amc::Trailer trailerAmc(amc.data().get()+amc.size()-1); //FIXME: the above is prefered but this works (CMSSW900)
       if (debug) {
         std::ostringstream str;
         str <<" AMC trailer:  "<<  std::bitset<64>(trailerAmc.raw()) << std::endl;
@@ -699,7 +732,7 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
       //
       // AMC payload
       //
-      auto payload64 = amc.data();
+      const auto & payload64 = amc.data();
       const Word64* word = payload64.get();
       for (unsigned int iWord= 1; iWord<= amc.size(); iWord++, word++) {
         if (iWord<=2 ) continue; // two header words for each AMC
@@ -755,9 +788,7 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
           CscDataWord64   data(*word);
           OmtfEleIndex omtfEle(fedHeader.sourceID(), bh.getAMCNumber()/2+1, data.linkNum());
           std::map<OmtfEleIndex,CSCDetId>::const_iterator icsc = omtf2csc_.find(omtfEle);
-          if (icsc==omtf2csc_.end()) {std::cout <<" CANNOT FIND key: " << omtfEle << std::endl;
-            continue;
-          }
+          if (icsc==omtf2csc_.end()) {LogTrace(" ") <<" CANNOT FIND key: " << omtfEle << std::endl; continue; }
           CSCDetId cscId = omtf2csc_[omtfEle];
           LogTrace("") <<"OMTF->CSC "<<cscId << std::endl; 
           LogTrace("") << data << std::endl;
@@ -831,14 +862,13 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
     }         
 
   } 
-  event.put(producedRPCDigis,"OmtfUnpack");
-  event.put(producedCscLctDigis,"OmtfUnpack");
-  event.put(producedMuonDigis,"OmtfUnpack"); 
+  event.put(std::move(producedRPCDigis),"OmtfUnpack");
+  event.put(std::move(producedCscLctDigis),"OmtfUnpack");
+  event.put(std::move(producedMuonDigis),"OmtfUnpack"); 
   producedDTPhDigis->setContainer(phi_Container);
-  event.put(producedDTPhDigis,"OmtfUnpack");
+  event.put(std::move(producedDTPhDigis),"OmtfUnpack");
   producedDTThDigis->setContainer(the_Container);
-  event.put(producedDTThDigis,"OmtfUnpack");
-
+  event.put(std::move(producedDTThDigis),"OmtfUnpack");
 
 
 }

@@ -27,7 +27,9 @@ def cDataEmulCompare(canvas):
   nEvnts = h.GetEntries()
   h.Scale(1/nEvnts)
   h.SetStats(1)
-  gStyle.SetOptStat(10) 
+  print 'HELLO - ',nEvnts 
+#  gStyle.SetOptStat(10) 
+  print 'HELLO - ',nEvnts 
   h.Print("all") 
   h.DrawCopy()
   pad2 = c.cd(2)

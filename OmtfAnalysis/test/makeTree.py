@@ -58,9 +58,8 @@ process.load('EventFilter.L1TRawToDigi.bmtfDigis_cfi')
 process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
 process.load('EventFilter.L1TRawToDigi.gmtStage2Digis_cfi')
 process.load('EventFilter.L1TXRawToDigi.twinMuxStage2Digis_cfi')
-process.omtfStage2Digis = cms.EDProducer("OmtfUnpacker",
-  InputLabel = cms.InputTag('rawDataCollector'),
-)
+process.load('EventFilter.L1TRawToDigi.omtfDigis_cfi')
+process.load("CondTools/RPC/RPCLinkMap_sqlite_cff")
 
 
 #
@@ -86,22 +85,24 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 # message logger
 #
 process.load('FWCore.MessageService.MessageLogger_cfi')
-process.MessageLogger.debugModules.append('rpcunpacker')
+#process.MessageLogger.cerr.threshold = cms.untracked.string('DEBUG')
+#process.MessageLogger.debugModules.append('muonRPCDigis')
+process.MessageLogger.debugModules.append('omtfDigis')
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(500)
 process.MessageLogger.suppressWarning  = cms.untracked.vstring('Geometry', 'AfterSource','L1T','L1GlobalTriggerRawToDigi')
 process.options = cms.untracked.PSet( wantSummary=cms.untracked.bool(False))
 
 process.digiComapre = cms.EDAnalyzer("OmtfDigiCompare",
-  srcRPC_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
+  srcRPC_OMTF = cms.InputTag('omtfDigis','OmtfUnpack'),
   srcRPC_PACT = cms.InputTag('muonRPCDigis'),
-  srcCSC_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
+  srcCSC_OMTF = cms.InputTag('omtfDigis','OmtfUnpack'),
   srcCSC_CSC = cms.InputTag('csctfDigis'),
-  srcOMTF_DATA = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
+  srcOMTF_DATA = cms.InputTag('omtfDigis','OmtfUnpack'),
   srcOMTF_EMUL = cms.InputTag('gmtStage2Digis','OMTF'),
   srcDTPh_BMTF = cms.InputTag('bmtfDigis'),
   srcDTTh_BMTF = cms.InputTag('bmtfDigis'),
-  srcDTPh_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
-  srcDTTh_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
+  srcDTPh_OMTF = cms.InputTag('omtfDigis','OmtfUnpack'),
+  srcDTTh_OMTF = cms.InputTag('omtfDigis','OmtfUnpack'),
 )
 
 
@@ -127,16 +128,16 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
 #   srcDTTh =  cms.InputTag('twinMuxStage2Digis'),
 #  srcDTPh =  cms.InputTag('bmtfDigis'),
 #  srcDTTh =  cms.InputTag('bmtfDigis'),
-  srcDTPh = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
-  srcDTTh = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
-#   srcCSC = cms.InputTag('csctfDigis'),
-  srcCSC = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
+  srcDTPh = cms.InputTag('omtfDigis','OmtfUnpack'),
+  srcDTTh = cms.InputTag('omtfDigis','OmtfUnpack'),
+#  srcCSC = cms.InputTag('csctfDigis'),
+  srcCSC = cms.InputTag('omtfDigis','OmtfUnpack'),
 #  srcCSC = cms.InputTag('emtfStage2Digis'),
 #  srcCSC = cms.InputTag('muonCSCDigis','MuonCSCCorrelatedLCTDigi'),
 #  srcCSC = cms.InputTag('simCscTriggerPrimitiveDigis','MPCSORTED'),
 #  srcRPC = cms.InputTag('simMuonRPCDigis'),
 #  srcRPC = cms.InputTag('muonRPCDigis'),
-  srcRPC = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
+  srcRPC = cms.InputTag('omtfDigis','OmtfUnpack'),
 #  dumpResultToXML = cms.bool(True),
   dumpResultToXML = cms.bool(False),
   dumpDetailedResultToXML = cms.bool(False),
@@ -150,8 +151,8 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
 )
 
 process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis)
-#process.omtf_step = cms.Path(process.omtfStage2Digis+process.digiComapre+process.omtfEmulator)
-process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfEmulator)
+#process.omtf_step = cms.Path(process.omtfDigis+process.digiComapre+process.omtfEmulator)
+process.omtf_step = cms.Path(process.omtfDigis+process.omtfEmulator)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, process.endjob_step)
 
