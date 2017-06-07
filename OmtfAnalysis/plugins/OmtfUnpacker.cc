@@ -400,13 +400,13 @@ private:
 };
 
 
-class OmtfUnpacker: public edm::stream::EDProducer<> {
+class OmtfUnpackerPriv: public edm::stream::EDProducer<> {
 public:
 
     ///Constructor
-    OmtfUnpacker(const edm::ParameterSet& pset);
+    OmtfUnpackerPriv(const edm::ParameterSet& pset);
 
-    ~OmtfUnpacker() {}
+    ~OmtfUnpackerPriv() {}
 
     static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -430,7 +430,7 @@ private:
 
 };
 
-OmtfUnpacker::OmtfUnpacker(const edm::ParameterSet& pset) : theConfig(pset) {
+OmtfUnpackerPriv::OmtfUnpackerPriv(const edm::ParameterSet& pset) : theConfig(pset) {
   produces<RPCDigiCollection>("OmtfUnpack");
   produces<CSCCorrelatedLCTDigiCollection>("OmtfUnpack");
   produces<l1t::RegionalMuonCandBxCollection >("OmtfUnpack");
@@ -440,12 +440,12 @@ OmtfUnpacker::OmtfUnpacker(const edm::ParameterSet& pset) : theConfig(pset) {
   fedToken_ = consumes<FEDRawDataCollection>(pset.getParameter<edm::InputTag>("InputLabel"));
 }
 
-void OmtfUnpacker::beginRun(const edm::Run &run, const edm::EventSetup& es) {
+void OmtfUnpackerPriv::beginRun(const edm::Run &run, const edm::EventSetup& es) {
   edm::ESTransientHandle<RPCEMap> readoutMapping;
   es.get<RPCEMapRcd>().get(readoutMapping);
   const RPCReadOutMapping * cabling= readoutMapping->convert();
   theCabling = cabling;
-  LogDebug("OmtfUnpacker") <<" Has readout map, VERSION: " << cabling->version() << std::endl;
+  LogDebug("OmtfUnpackerPriv") <<" Has readout map, VERSION: " << cabling->version() << std::endl;
 
 
   RpcLinkMap omtfLink2Ele;
@@ -549,19 +549,19 @@ void OmtfUnpacker::beginRun(const edm::Run &run, const edm::EventSetup& es) {
 
 }
 
-void OmtfUnpacker::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void OmtfUnpackerPriv::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("InputLabel",edm::InputTag("rawDataCollector"));
   desc.add<bool>("useRpcConnectionFile",bool(false));
   desc.add<std::string>("rpcConnectionFile",std::string("EventFilter/L1TRawToDigi/data/OmtfRpcLinksMap.txt"));
-  descriptions.add("omtfUnpacker",desc);
+  descriptions.add("OmtfUnpackerPriv",desc);
 }
 
-void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
+void OmtfUnpackerPriv::produce(edm::Event& event, const edm::EventSetup& setup)
 {
   bool debug = edm::MessageDrop::instance()->debugEnabled;
   eventCounter_++;
-  if (debug) LogDebug ("OmtfUnpacker::produce") <<"Beginning To Unpack Event: "<<eventCounter_;
+  if (debug) LogDebug ("OmtfUnpackerPriv::produce") <<"Beginning To Unpack Event: "<<eventCounter_;
 
   edm::Handle<FEDRawDataCollection> allFEDRawData;
   event.getByToken(fedToken_,allFEDRawData);
@@ -862,15 +862,15 @@ void OmtfUnpacker::produce(edm::Event& event, const edm::EventSetup& setup)
     }         
 
   } 
-  event.put(std::move(producedRPCDigis),"OmtfUnpack");
-  event.put(std::move(producedCscLctDigis),"OmtfUnpack");
-  event.put(std::move(producedMuonDigis),"OmtfUnpack"); 
+  event.put(std::move(producedRPCDigis),"OmtfUnpackerPriv");
+  event.put(std::move(producedCscLctDigis),"OmtfUnpackerPriv");
+  event.put(std::move(producedMuonDigis),"OmtfUnpackerPriv"); 
   producedDTPhDigis->setContainer(phi_Container);
-  event.put(std::move(producedDTPhDigis),"OmtfUnpack");
+  event.put(std::move(producedDTPhDigis),"OmtfUnpackerPriv");
   producedDTThDigis->setContainer(the_Container);
-  event.put(std::move(producedDTThDigis),"OmtfUnpack");
+  event.put(std::move(producedDTThDigis),"OmtfUnpackerPriv");
 
 
 }
 
-DEFINE_FWK_MODULE(OmtfUnpacker);
+DEFINE_FWK_MODULE(OmtfUnpackerPriv);
