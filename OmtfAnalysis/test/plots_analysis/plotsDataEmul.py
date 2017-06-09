@@ -111,11 +111,11 @@ def cDataEmulHistory(canvas):
   return
 
 def plotAll(canvas) :
-  cDataEmulCompare(canvas)
   cDataEmulPhi(canvas)
   cDataEmulEta(canvas)
   cDataEmulNotAgree(canvas)
   cDataEmulIssue(canvas)
   cDataEmulHistory(canvas)
   cDataEmulPt(canvas)
+  cDataEmulCompare(canvas)
   return

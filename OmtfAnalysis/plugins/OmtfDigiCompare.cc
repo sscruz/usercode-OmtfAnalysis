@@ -96,10 +96,10 @@ public:
         &&  ev.id().event() != 472951 ) return; 
 */
     std::cout<<std::dec <<"======> Analyze #"<<nEvents++<<", ev: "<<ev.id().event()<<std::endl;
-//    analyzeDT(ev,es);
+    analyzeDT(ev,es);
 //    analyzeCSC(ev,es);
 //    analyzeRPC(ev,es);
-    analyzeOMTF(ev,es);
+//    analyzeOMTF(ev,es);
   }
   void analyzeCSC(const edm::Event&, const edm::EventSetup& es);
   void analyzeDT(const edm::Event&, const edm::EventSetup& es);
@@ -224,6 +224,7 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
     if (abs(chDigi.whNum()) != 2) continue;
     if (chDigi.stNum() ==4) continue;
     if (chDigi.bxNum() != 0) continue;
+//    if (abs(chDigi.bxNum()) >2) continue;
     if (chDigi.code()==7) continue;
     MyDigi myDigi = { DTChamberId(chDigi.whNum(),chDigi.stNum(),chDigi.scNum()+1).rawId(), chDigi.phi()+chDigi.phiB()+chDigi.code(), chDigi.bxNum() };
     if (myBmtfPh.end() == std::find(myBmtfPh.begin(), myBmtfPh.end(), myDigi)) myBmtfPh.push_back(myDigi);
@@ -253,7 +254,8 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
      if (chDigi.quality(ipos)==1) etaQ |= (1 <<ipos);
     }
     if (chDigi.bxNum() != 0) continue;
-    if (!etaQ) continue;
+//    if (abs(chDigi.bxNum()) >2) continue;
+    if (eta==0 || etaQ==0) continue;
     if (abs(chDigi.whNum()) != 2) continue;
     MyDigi myDigi = { DTChamberId(chDigi.whNum(),chDigi.stNum(),chDigi.scNum()+1).rawId(), (int)(eta+etaQ), chDigi.bxNum() };
     if (myBmtfTh.end() == std::find(myBmtfTh.begin(), myBmtfTh.end(), myDigi)) myBmtfTh.push_back(myDigi);
@@ -276,6 +278,7 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
   std::vector<MyDigi> myOmtfPh;
   for (const auto &  chDigi : *dtphDigisOMTF.getContainer() ) {
     if (chDigi.bxNum() != 0) continue;
+//    if (abs(chDigi.bxNum()) >2) continue;
     MyDigi myDigi = { DTChamberId(chDigi.whNum(),chDigi.stNum(),chDigi.scNum()+1).rawId(), chDigi.phi()+chDigi.phiB()+chDigi.code(), chDigi.bxNum() };
     if (myOmtfPh.end() == std::find(myOmtfPh.begin(), myOmtfPh.end(), myDigi)) myOmtfPh.push_back(myDigi);
     std::cout <<"DtDataWord64 OMTF    " 
@@ -284,6 +287,7 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
         <<" station: "<< chDigi.stNum()
         <<" sector: "<< chDigi.scNum()
         <<" phi:   "<<chDigi.phi()
+        <<" phiB:   "<<chDigi.phiB()
         <<" code(q): "<< chDigi.code()
         << std::endl;
   }
@@ -296,12 +300,14 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
   std::vector<MyDigi> myOmtfTh;
   for (const auto &  chDigi : *dtthDigisOMTF.getContainer() ) {
     if (chDigi.bxNum() != 0) continue;
+//    if (abs(chDigi.bxNum()) >2) continue;
     unsigned int eta = 0;
     unsigned int etaQ = 0;
     for (unsigned int ipos=0; ipos <7; ipos++) {
      if (chDigi.position(ipos)==1) eta |= (1 <<ipos);
      if (chDigi.quality(ipos)==1) etaQ |= (1 <<ipos);
     }
+    if (eta==0 || etaQ==0) continue;
     MyDigi myDigi = { DTChamberId(chDigi.whNum(),chDigi.stNum(),chDigi.scNum()+1).rawId(), (int)(eta+etaQ), chDigi.bxNum() };
     if (myOmtfTh.end() == std::find(myOmtfTh.begin(), myOmtfTh.end(), myDigi)) myOmtfTh.push_back(myDigi);
 
@@ -321,8 +327,8 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
 /*
   for (const auto & omtf : myOmtfPh ) {
      omtfDigis++;     
-     std::vector<MyDigi>::const_iterator itCsc = find(myBmtfPh.begin(), myBmtfPh.end(), omtf);
-     if (itCsc == myBmtfPh.end() ) {
+     std::vector<MyDigi>::const_iterator it = find(myBmtfPh.begin(), myBmtfPh.end(), omtf);
+     if (it == myBmtfPh.end() ) {
        std::cout << "HERE PROBLEM!!! ----- BMTF_PH DIGI corresponding to OMTF ("<<omtf<<") NOT FOUND! " << std::endl;
        hasError = true;
        omtfDigisError++; 
@@ -340,8 +346,8 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
 */
   for (const auto & omtf : myOmtfTh ) {
      omtfDigis++;     
-     std::vector<MyDigi>::const_iterator itOth = find(myBmtfTh.begin(), myBmtfTh.end(), omtf);
-     if (itOth == myBmtfTh.end() ) {
+     std::vector<MyDigi>::const_iterator it = find(myBmtfTh.begin(), myBmtfTh.end(), omtf);
+     if (it == myBmtfTh.end() ) {
        std::cout << "HERE PROBLEM!!! ----- BMTF_TH DIGI corresponding to OMTF ("<<omtf<<") NOT FOUND! " << std::endl;
        hasError = true;
        omtfDigisError++; 
@@ -356,7 +362,7 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
        omtfDigisError++; 
      }
   }
-  std::cout <<" All OMTF: " << omtfDigis <<", with Error: "<< omtfDigisError <<" has Error: " << hasError << std::endl;
+  std::cout <<" All DT: " << omtfDigis <<", with Error: "<< omtfDigisError <<" has Error: " << hasError << std::endl;
   
 }
 

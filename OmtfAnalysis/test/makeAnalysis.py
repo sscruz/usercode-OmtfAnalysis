@@ -44,7 +44,7 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
 #    ),
 #  ), 
 
-  filterByAnaMuonDistribution = cms.bool(True),
+  filterByAnaMuonDistribution = cms.bool(False),
   anaMuonDistribution = cms.PSet (
     requireUnique  = cms.bool(True),
     requireGlobal  = cms.bool(True),
@@ -65,7 +65,7 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
     minNumberRpcDtCscHits = cms.uint32(2),
   ),
 
-  filterByAnaMenu = cms.bool(True),
+  filterByAnaMenu = cms.bool(False),
   anaMenu = cms.PSet( #OR of conditions for L1 and separately for HLT
     acceptL1_OtherThanMu             = cms.bool(False),
     acceptL1_Mu                      = cms.bool(False),

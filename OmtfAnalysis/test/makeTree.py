@@ -86,8 +86,8 @@ process.load("CondTools/RPC/RPCLinkMap_sqlite_cff")
 from Configuration.AlCa.GlobalTag import GlobalTag
 #from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
-#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
-process.GlobalTag.globaltag  = '92X_dataRun2_Prompt_v4'
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+#process.GlobalTag.globaltag  = '92X_dataRun2_Prompt_v4'
 
 #
 # message logger
@@ -145,8 +145,8 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
 #  srcDTTh = cms.InputTag('simDtTriggerPrimitiveDigis'),
 #  srcDTPh =  cms.InputTag('simTwinMuxDigis'),
 #  srcDTTh =  cms.InputTag('simTwinMuxDigis'),
-#   srcDTPh =  cms.InputTag('twinMuxStage2Digis'),
-#   srcDTTh =  cms.InputTag('twinMuxStage2Digis'),
+#  srcDTPh =  cms.InputTag('twinMuxStage2Digis','PhIn'),
+#  srcDTTh =  cms.InputTag('twinMuxStage2Digis','ThIn'),
 #  srcDTPh =  cms.InputTag('bmtfDigis'),
 #  srcDTTh =  cms.InputTag('bmtfDigis'),
   srcDTPh = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
@@ -172,9 +172,7 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
 )
 
 process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis)
-#process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfEmulator)
-process.omtf_step = cms.Path(process.omtfStage2Digis+process.digiComapre+process.omtfEmulator)
-#process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfEmulator+process.omtfStage2Raws)
+process.omtf_step = cms.Path(process.omtfStage2Digis+process.digiComapre+process.omtfEmulator+process.omtfStage2Raws)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, process.endjob_step)
 

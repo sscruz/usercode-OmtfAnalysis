@@ -79,7 +79,7 @@ bool MenuInspector::checkRun(const edm::Run& run, const edm::EventSetup & es)
   es.get<L1TUtmTriggerMenuRcd>().get(menu);
   theNamesAlgoL1.clear();
   theNamesAlgoL1.resize(menu->getAlgorithmMap().size(),"");
-  std::cout <<" size of indexes: "<< menu->getAlgorithmMap().size() << std::endl;
+//  std::cout <<" size of indexes: "<< menu->getAlgorithmMap().size() << std::endl;
   for (auto const & keyval: menu->getAlgorithmMap()) {
     std::string const & name  = keyval.second.getName();
     unsigned int        index = keyval.second.getIndex();
@@ -107,7 +107,7 @@ bool MenuInspector::checkRun(const edm::Run& run, const edm::EventSetup & es)
       //for goes up to .size()-1, since the last is "Final" decision.
       for (unsigned int idx =0;  idx < theHltConfig.size()-1; idx++) {
         std::string name = theHltConfig.triggerName(idx);
-        std::cout <<" HLT index: "<< idx << "name: "<< name << std::endl;
+//        std::cout <<" HLT index: "<< idx << "name: "<< name << std::endl;
         theNamesAlgoHLT.push_back( name );
         for (auto & im : theNamesCheckHltMuMatchIdx) if (name.find(im.first) != std::string::npos) im.second = idx; 
       }

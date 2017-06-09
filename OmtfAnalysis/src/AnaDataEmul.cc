@@ -167,7 +167,7 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
   if ( !*coll ) return;
 
   const L1Obj * data = 0;
-  L1ObjColl dataColl =  coll->selectByType(L1Obj::OMTF);
+  L1ObjColl dataColl =  coll->selectByType(L1Obj::OMTF).selectByBx();
   if (dataColl.getL1Objs().size()!=0) data = &(dataColl.getL1Objs().front());
 
   const L1Obj * emul = 0;
