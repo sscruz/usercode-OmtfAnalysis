@@ -4,18 +4,32 @@ import sys
 import math
 from ROOT import *
 
-def cTimeOmtf(canvas):
-  c = TCanvas("cTimeOmtf","cTimeOmtf",800,800)
-  c.SetLogy()
+def cTimeMtfs(canvas):
+  c = TCanvas("cTimeMtfs","cTimeMTFs",1200,500)
   canvas.Add(c)
+  c.Divide(3)
+  pad1 = c.cd(1)
+  pad1.SetLogy()
+  hTimeBmtf= gROOT.FindObject("hTimeBmtf")
+  hTimeBmtf.Print('All')
+  hTimeBmtf.SetMinimum(0.5)
+  hTimeBmtf.DrawCopy()
+  pad2 = c.cd(2)
+  pad2.SetLogy()
   hTimeOmtf= gROOT.FindObject("hTimeOmtf")
-  hTimeOmtf.DrawCopy()
   hTimeOmtf.Print('All')
-  hTimeOmtf.SetMinimum(1.e-4)
+  hTimeOmtf.SetMinimum(0.5)
+  hTimeOmtf.DrawCopy()
+  pad3 = c.cd(3)
+  pad3.SetLogy()
+  hTimeEmtf= gROOT.FindObject("hTimeEmtf")
+  hTimeEmtf.Print('All')
+  hTimeEmtf.SetMinimum(0.5)
+  hTimeEmtf.DrawCopy()
   return
 
 def plotAll(canvas) :
-  cTimeOmtf(canvas)
+  cTimeMtfs(canvas)
   return
 
 
