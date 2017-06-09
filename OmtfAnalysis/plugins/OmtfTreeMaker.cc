@@ -29,7 +29,6 @@ OmtfTreeMaker::OmtfTreeMaker(const edm::ParameterSet& cfg)
   : theConfig(cfg), theCounter(0), theFile(0), theTree(0), 
     bitsL1(0), bitsHLT(0),
     event(0), 
-//  muon(0), 
     muonColl(0), l1ObjColl(0), 
     theMenuInspector(cfg.getParameter<edm::ParameterSet>("menuInspector"), consumesCollector()),
     theBestMuonFinder(cfg.getParameter<edm::ParameterSet>("bestMuonFinder"), consumesCollector()),
@@ -49,7 +48,6 @@ void OmtfTreeMaker::beginJob()
   theTree = new TTree("tOmtf","OmtfTree");
 
   theTree->Branch("event","EventObj",&event,32000,99);
-//  theTree->Branch("muon","MuonObj",&muon,32000,99);
   theTree->Branch("muonColl", "MuonObjColl", &muonColl, 32000,99);
   theTree->Branch("l1ObjColl","L1ObjColl",&l1ObjColl,32000,99);
 
@@ -102,7 +100,6 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   //
   muonColl = new MuonObjColl (theBestMuonFinder.muons(ev,es));
   l1ObjColl = new L1ObjColl;
-//  muon = new MuonObj();
 
   bitsL1 = new TriggerMenuResultObj();
   bitsHLT = new TriggerMenuResultObj();
@@ -111,7 +108,6 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   //
   // fill algoBits info
   //
-/*
   static edm::RunNumber_t lastRun = 0;
   if (ev.run() != lastRun) {
     lastRun = ev.run();
@@ -125,28 +121,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   // associate HLT info to muonColl objs
   //
   theMenuInspector.associateHLT(ev,es,muonColl);
-*/
 
-
-/*
-  //
-  // fill muon info
-  //
-  muon->isUnique = theBestMuonFinder.isUnique(ev,es);
-  muon->nAllMuons = theBestMuonFinder.numberOfAllMuons(ev,es);
-  muon->nRPCHits = theBestMuonFinder.numberOfValidMuonRPCHits();
-  muon->nDTHits  = theBestMuonFinder.numberOfValidMuonDTHits();
-  muon->nCSCHits = theBestMuonFinder.numberOfValidMuonCSCHits();
-  muon->isLoose = theBestMuonFinder.isLoose();
-  muon->isMedium = theBestMuonFinder.isMedium();
-  muon->isTight = theBestMuonFinder.isTight();
-  muon->nTrackerHits = theBestMuonFinder.numberOfValidTrackerHits();
-  if (theMuon) {
-    muon->setKine(theMuon->bestTrack()->pt(), theMuon->bestTrack()->eta(), theMuon->bestTrack()->phi(), theMuon->bestTrack()->charge());
-    muon->setBits(theMuon->isGlobalMuon(), theMuon->isTrackerMuon(), theMuon->isStandAloneMuon(), theMuon->isCaloMuon(), theMuon->isMatchesValid());
-    muon->nMatchedStations = theMuon->numberOfMatchedStations();
-  }
-*/
 
   // get L1 candidates
   std::vector<L1Obj> l1Objs = theL1ObjMaker(ev);
@@ -171,7 +146,6 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   //if (omtfResult,size()) 
   theTree->Fill();
   delete event; event = 0;
-//  delete muon;  muon = 0;
   delete muonColl; muonColl = 0;
   delete bitsL1;  bitsL1= 0;
   delete bitsHLT;  bitsHLT= 0;

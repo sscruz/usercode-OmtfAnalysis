@@ -79,13 +79,15 @@ bool MenuInspector::checkRun(const edm::Run& run, const edm::EventSetup & es)
   es.get<L1TUtmTriggerMenuRcd>().get(menu);
   theNamesAlgoL1.clear();
   theNamesAlgoL1.resize(menu->getAlgorithmMap().size(),"");
+  std::cout <<" size of indexes: "<< menu->getAlgorithmMap().size() << std::endl;
   for (auto const & keyval: menu->getAlgorithmMap()) {
     std::string const & name  = keyval.second.getName();
     unsigned int        index = keyval.second.getIndex();
-//    std::cout << " Index: " << index << " name: " << name << std::endl;
+//    std::cout << " L1  Index: " << index << " name: " << name << std::endl;
     if (index >= theNamesAlgoL1.size() ) theNamesAlgoL1.resize( index+1,"");  
     theNamesAlgoL1[index]=name;
   }
+//  std::cout <<" size of indexes: "<< theNamesAlgoL1.size() << std::endl;
 
   //
   // HLT
@@ -105,6 +107,7 @@ bool MenuInspector::checkRun(const edm::Run& run, const edm::EventSetup & es)
       //for goes up to .size()-1, since the last is "Final" decision.
       for (unsigned int idx =0;  idx < theHltConfig.size()-1; idx++) {
         std::string name = theHltConfig.triggerName(idx);
+        std::cout <<" HLT index: "<< idx << "name: "<< name << std::endl;
         theNamesAlgoHLT.push_back( name );
         for (auto & im : theNamesCheckHltMuMatchIdx) if (name.find(im.first) != std::string::npos) im.second = idx; 
       }
@@ -251,112 +254,3 @@ std::vector<unsigned int> MenuInspector::runFiredAlgosHLT(const edm::Event&ev, c
  
   return result;
 }
-
-
-
-/*
-
-bool MenuInspector::filterL1(edm::Event&ev, const edm::EventSetup&es)
-{
-//  bool result = false;
-  bool result = true;
-
-  // reinitialiast Gt Menu,
-  // not clear why it needs ev.
-  int errorCode = 0;
-  int  l1ConfCode = 0;
-  static edm::RunNumber_t lastRun = 0; 
-  theL1GtUtils.getL1GtRunCache(ev,es, false, true);
-
-  if (ev.run() != lastRun) {
-    lastRun = ev.run();
-//    edm::InputTag tag("l1GtTriggerMenuLite");
-//    theL1GtUtils.retrieveL1GtTriggerMenuLite(ev.getRun(), tag);
-    bool status = theL1GtUtils.availableL1Configuration(errorCode,l1ConfCode);
-    std::cout <<" GOT status: " <<status<<  " errorCode: " << errorCode<<" l1ConfCode: " << l1ConfCode<<std::endl;
-    const L1GtTriggerMenuLite* menu = theL1GtUtils.ptrL1GtTriggerMenuLite(errorCode);
-    if (errorCode) std::cout <<" ******Error CODE "<<errorCode<<std::endl;
-    std::cout <<"NAME: " << menu->gtTriggerMenuName() << std::endl;
-    //  for (L1GtTriggerMenuLite::CItL1Trig algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) 
-    //      std::cout << "Id: " << algo->first << " Name: " << algo->second << std::endl;
-    std::cout << *menu << std::endl;
-  }
-
-
-  //std::cout <<"Fired L1 Algorithms: " << std::endl;
-  const L1GtTriggerMenuLite* menu = theL1GtUtils.ptrL1GtTriggerMenuLite(errorCode);
-//  bool hasMuSeed = false;
-  unsigned int ntrig = 0;
-  for (unsigned int  i= 0; i<128; ++i) {
-    const std::string * pname = menu->gtAlgorithmName(i,errorCode);
-    if (errorCode) continue; // {std::cout<<"idx: "<<i<<" ERROR code(1) not 0, skip"<<std::endl; continue; }
-    bool decision = theL1GtUtils.decisionAfterMask(ev, *pname, errorCode);
-    if (errorCode) continue; //{std::cout<<"idx: "<<i<<" ERROR code(2) not 0, skip"<<std::endl; continue; }
-    if (decision) {
-     ntrig++;
-     bool isMu = ( (*pname).find("Mu") != std::string::npos);
-      std::cout<<"L1 idx: "<<i<<" "<<*pname; //<<" decision: "<<gtDecisionWord[i];
-      if (!isMu) ;
- //     if (isMu) hasMuSeed = true;
-      if (!isMu) result = true;
-      //int triggerMask,prescaleFactor;
-      //bool decisionBeforeMask, decisionAfterMask;
-      //theL1GtUtils.l1Results(ev, *pname, decisionBeforeMask, decisionAfterMask, prescaleFactor, triggerMask);
-      //theL1GtUtils.prescaleFactorSetIndex(ev, L1GtUtils::AlgorithmTrigger, errorCode);;
-      std::cout <<std::endl;
-    }
-  }
-  std::cout <<" total number of L1 triggers: "<<ntrig<<std::endl;
-  //std::cout << "TRIGGER MENU NAME: "<<  l1GtUtils.l1TriggerMenu() << std::endl;
-  //result = !hasMuSeed;
-  //result=true;
-
-  
-  return result;
-}
-*/
-
-/*
-bool MenuInspector::filterHLT(edm::Event&ev, const edm::EventSetup&es)
-{
-  //bool result = false;
-  bool result = true;
-
-  // get event products
-  edm::Handle<edm::TriggerResults>   triggerResultsHandle;
-  ev.getByLabel(edm::InputTag("TriggerResults","","HLT"), triggerResultsHandle);
-  if (!triggerResultsHandle.isValid()) {
-    std::cout << "HLTEventAnalyzerAOD::analyze: Error in getting TriggerResults product from Event!" << std::endl;
-    return 0;
-  }
-  assert(triggerResultsHandle->size()==theHltConfig.size());
-
-//  bool hasMuSeed = false;
-  std::cout <<"Number of HLT algorithms: "<<theHltConfig.size() << std::endl;
-  unsigned int ntrig = 0;
-  for (unsigned int triggerIndex =0; triggerIndex < theHltConfig.size()-1; ++triggerIndex) {   //skip "Final" decision indes
-    std::string triggerName = theHltConfig.triggerName(triggerIndex);
-    unsigned int triggerIndexTmp = theHltConfig.triggerIndex(triggerName);
-    assert(triggerIndexTmp==triggerIndex);
-    //AK assert(triggerIndex==ev.triggerNames(*triggerResultsHandle).triggerIndex(triggerName));
-    bool isAccept = triggerResultsHandle->accept(triggerIndex);
-//    if (true) {
-    if (isAccept) {
-      ntrig++;
-      bool isMu = ( (triggerName.find("Mu") != std::string::npos) && (triggerName.find("Multi") == std::string::npos) );
-//      std::cout <<triggerName;  if (!isMu) std::cout <<" <---- "; std::cout << std::endl;
-//      if (isMu)  hasMuSeed = true;
-      if (!isMu)  result = true;
-       std::cout <<" HLT idx: "<<triggerIndex <<" "<<triggerName<< " Trigger path status:" 
-              //<< " WasRun=" << triggerResultsHandle->wasrun(triggerIndex)
-              << " Accept=" << triggerResultsHandle->accept(triggerIndex);
-//              << " Error =" << triggerResultsHandle->error(triggerIndex)
-//      if (isAccept) std::cout <<" <--";
-      std::cout << std::endl;
-    }
-  }
-  std::cout <<" total number of HLT triggers: "<<ntrig<<std::endl;
-  return result;
-}
-*/
-

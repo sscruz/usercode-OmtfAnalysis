@@ -28,6 +28,7 @@
 #include "UserCode/OmtfAnalysis/interface/AnaEff.h"
 #include "UserCode/OmtfAnalysis/interface/AnaDataEmul.h"
 #include "UserCode/OmtfAnalysis/interface/AnaSecMuSelector.h"
+#include "UserCode/OmtfAnalysis/interface/AnaTime.h"
 
 OmtfTreeAnalysis::OmtfTreeAnalysis(const edm::ParameterSet & cfg)
   : theConfig(cfg),
@@ -36,7 +37,8 @@ OmtfTreeAnalysis::OmtfTreeAnalysis(const edm::ParameterSet & cfg)
     theAnaMenu(0), 
     theAnaDataEmul(0), 
     theAnaEff(0),
-    theAnaSecMu(0) 
+    theAnaSecMu(0), 
+    theAnaTime(0)
 { 
   if (theConfig.exists("anaEvent")) theAnaEvent = new   AnaEvent(cfg.getParameter<edm::ParameterSet>("anaEvent") );
   if (theConfig.exists("anaMuonDistribution")) theAnaMuonDistribution = new AnaMuonDistribution( cfg.getParameter<edm::ParameterSet>("anaMuonDistribution"));
@@ -44,6 +46,7 @@ OmtfTreeAnalysis::OmtfTreeAnalysis(const edm::ParameterSet & cfg)
   if (theConfig.exists("anaEff")) theAnaEff = new   AnaEff(cfg.getParameter<edm::ParameterSet>("anaEff") );
   if (theConfig.exists("anaDataEmul")) theAnaDataEmul = new AnaDataEmul(cfg.getParameter<edm::ParameterSet>("anaDataEmul"));
   if (theConfig.exists("anaSecMuSel")) theAnaSecMu = new AnaSecMuSelector(cfg.getParameter<edm::ParameterSet>("anaSecMuSel"));
+  if (theConfig.exists("anaTime")) theAnaTime = new AnaTime(cfg.getParameter<edm::ParameterSet>("anaTime"));
 }
 
 void OmtfTreeAnalysis::beginJob()
@@ -55,6 +58,7 @@ void OmtfTreeAnalysis::beginJob()
   if (theAnaMenu)             theAnaMenu->init(theHistos);
   if (theAnaDataEmul)         theAnaDataEmul->init(theHistos);
   if (theAnaEff)              theAnaEff->init(theHistos);
+  if (theAnaTime)             theAnaTime->init(theHistos);
 
 }
 
@@ -113,8 +117,9 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
   unsigned int lastRun = 0;
   for (int ev=0; ev<nentries; ev++) {
 
-
     chain.GetEntry(ev);
+    std::cout <<"---------------------------------------#"<<ev<<", event: "<< *event << std::endl;
+
     if (theAnaMenu) theAnaMenu->updateMenu(bitsL1->names, bitsHLT->names);
 
     if ( (lastRun != (*event).run) || (ev%(std::max(nentries/10,1))==0)) { 
@@ -146,14 +151,17 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
     // ANALYSE AND FILTER TRIGGER MENU
     if ( theAnaMenu && !theAnaMenu->filter(event, &muon, bitsL1, bitsHLT) && theConfig.getParameter<bool>("filterByAnaMenu") ) continue;
 
-    std::cout <<"---------------------------------------#"<<ev<<", event: "<< *event << std::endl;
-    theAnaDataEmul->debug = true; 
-/*
+
+//
+// debug
+//
+    if ( muon.isValid() ) std::cout <<" muon: " << muon << std::endl; 
     if (l1ObjColl)  std::cout << *l1ObjColl << std::endl; 
+/*
+    theAnaDataEmul->debug = true; 
     if (!muon.isValid()) continue;
     if (!muon.isValid() ||  muon.pt() < 300 || muon.pt() > 400 ) continue;
     if (muonColl) std::cout << *muonColl << std::endl;
-    if ( muon.isValid() ) std::cout <<" muon: " << muon << std::endl; 
 //    theAnaMenu->debug=true;
 //    theAnaEff->debug=true;
 //    theAnaMenu->filter(event, &muon, bitsL1, bitsHLT);
@@ -161,15 +169,14 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
     theAnaEff->debug=false;
 */
 
-
     //
     // Analyses
     //
     if (theAnaMuonDistribution) theAnaMuonDistribution->run(&muon);
     if (theAnaEff)      theAnaEff->run ( event, &muon, l1ObjColl); 
     if (theAnaDataEmul) theAnaDataEmul->run(event, l1ObjColl); 
+    if (theAnaTime)     theAnaTime->run( event, &muon, l1ObjColl);
     theAnaDataEmul->debug = false; 
-     
 
   }
 }
@@ -192,5 +199,6 @@ void OmtfTreeAnalysis::endJob()
   delete theAnaMuonDistribution;
   delete theAnaEff;
   delete theAnaMenu;
+  delete theAnaTime;
 
 }

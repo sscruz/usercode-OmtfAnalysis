@@ -63,13 +63,14 @@ void L1ObjMaker::run(const edm::Event &ev)
 
 bool L1ObjMaker::makeGmtCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, std::vector<L1Obj> &result)
 {
-  int bxNumber = 0;
   edm::Handle<l1t::MuonBxCollection> candidates;
   switch (type) {
     case  L1Obj::uGMT    : { iEvent.getByToken(theGmtDataToken, candidates); break; }
     default: { std::cout <<"Invalid type : " << type << std::endl; abort(); }
   }
 
+//  int bxNumber = 0;
+  for (int bxNumber=-2; bxNumber<=2; bxNumber++) {
   for (l1t::MuonBxCollection::const_iterator it = candidates.product()->begin(bxNumber);
       it != candidates.product()->end(bxNumber);
       ++it) {
@@ -84,12 +85,12 @@ bool L1ObjMaker::makeGmtCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, 
     obj.charge = it->charge();
     result.push_back(obj);
   }
+  }
   return true; 
 }
 
 bool L1ObjMaker::makeRegCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, std::vector<L1Obj> &result)
 {
-  int bxNumber = 0;
   edm::Handle<l1t::RegionalMuonCandBxCollection> candidates;
   switch (type) {
     case  L1Obj::OMTF_emu: { iEvent.getByToken(theOmtfEmulToken, candidates); break; }
@@ -98,6 +99,9 @@ bool L1ObjMaker::makeRegCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, 
     case  L1Obj::EMTF    : { iEvent.getByToken(theEmtfDataToken, candidates); break; }
     default: { std::cout <<"Invalid type : " << type << std::endl; abort(); }
   }
+  //int bxNumber = 0;
+  for (int bxNumber=-2; bxNumber<=2; bxNumber++) {
+  if (bxNumber!=0 && type==L1Obj::OMTF_emu) continue;
   for (l1t::RegionalMuonCandBxCollection::const_iterator it = candidates.product()->begin(bxNumber);
        it != candidates.product()->end(bxNumber);
        ++it) {
@@ -120,6 +124,7 @@ bool L1ObjMaker::makeRegCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, 
     obj.bx = bxNumber;
     obj.disc = hwAddrMap[2];
     result.push_back(obj);
+  }
   }
   return true;
 }

@@ -10,10 +10,11 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
   treeFileNames = cms.vstring("omtfTree.root"),
 #  treeFileNames = cms.vstring("../jobs/ZMuC/omtfTree.root","../jobs/ZMuD/omtfTree.root"),
 #   treeFileNames = cms.vstring( "../jobs/ExD/omtfTree.root", "../jobs/ExE/omtfTree.root"),
+
   filterByAnaEvent = cms.bool(True),
   anaEvent = cms.PSet(
     skipRuns = cms.vuint32(),
-#    onlyRuns = cms.vuint32(276870),
+#   onlyRuns = cms.vuint32(276870),
   ),
 
 #  anaSecMuSel = cms.PSet(
@@ -43,15 +44,15 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
 #    ),
 #  ), 
 
-  filterByAnaMuonDistribution = cms.bool(False),
+  filterByAnaMuonDistribution = cms.bool(True),
   anaMuonDistribution = cms.PSet (
     requireUnique  = cms.bool(True),
-    requireGlobal  = cms.bool(False),
+    requireGlobal  = cms.bool(True),
     requireInner   = cms.bool(False),
     requireOuter   = cms.bool(False),
     requireLoose   = cms.bool(True),
     requireMedium  = cms.bool(True),
-    requireTight   = cms.bool(False),
+    requireTight   = cms.bool(True),
     requireTkIso   = cms.bool(False),
     requirePFIso   = cms.bool(False),
     chi2Norm  = cms.double(2.),
@@ -64,11 +65,12 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
     minNumberRpcDtCscHits = cms.uint32(2),
   ),
 
-  filterByAnaMenu = cms.bool(False),
+  filterByAnaMenu = cms.bool(True),
   anaMenu = cms.PSet( #OR of conditions for L1 and separately for HLT
-    acceptL1_OtherThanMu             = cms.bool(True),
+    acceptL1_OtherThanMu             = cms.bool(False),
     acceptL1_Mu                      = cms.bool(False),
-    acceptL1_Names                   = cms.vstring("L1_ZeroBias","L1_ZeroBias_copy"),
+    acceptL1_Names                   = cms.vstring("L1_ZeroBias","L1_ZeroBias_copy",
+                                                   "L1_IsolatedBunch","L1_FirstCollisionInOrbit"),
     acceptHLT_OtherThanMuPhysics     = cms.bool(False),
     acceptHLT_L1                     = cms.bool(False),
     acceptHLT_Physics                = cms.bool(False),
@@ -85,6 +87,7 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
 
   anaDataEmul =  cms.PSet(),
   anaEff =  cms.PSet(),     
+  anaTime = cms.PSet(),
 )
 
 process.p = cms.Path(process.omtfAnalysis)

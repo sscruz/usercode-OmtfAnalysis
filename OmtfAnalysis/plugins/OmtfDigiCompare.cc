@@ -95,11 +95,11 @@ public:
         &&  ev.id().event() != 471470
         &&  ev.id().event() != 472951 ) return; 
 */
-    std::cout <<"======> Analyze #"<<++nEvents<<", ev: "<<ev.id().event()<<std::endl;
-    analyzeDT(ev,es);
+    std::cout<<std::dec <<"======> Analyze #"<<nEvents++<<", ev: "<<ev.id().event()<<std::endl;
+//    analyzeDT(ev,es);
 //    analyzeCSC(ev,es);
 //    analyzeRPC(ev,es);
-//    analyzeOMTF(ev,es);
+    analyzeOMTF(ev,es);
   }
   void analyzeCSC(const edm::Event&, const edm::EventSetup& es);
   void analyzeDT(const edm::Event&, const edm::EventSetup& es);
@@ -318,6 +318,7 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
   std::cout <<" myOmtfTh size is: " << myOmtfTh.size() << std::endl;
 
   bool hasError = false;
+/*
   for (const auto & omtf : myOmtfPh ) {
      omtfDigis++;     
      std::vector<MyDigi>::const_iterator itCsc = find(myBmtfPh.begin(), myBmtfPh.end(), omtf);
@@ -336,7 +337,7 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
        omtfDigisError++; 
      }
   }
-/*
+*/
   for (const auto & omtf : myOmtfTh ) {
      omtfDigis++;     
      std::vector<MyDigi>::const_iterator itOth = find(myBmtfTh.begin(), myBmtfTh.end(), omtf);
@@ -355,7 +356,6 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
        omtfDigisError++; 
      }
   }
-*/
   std::cout <<" All OMTF: " << omtfDigis <<", with Error: "<< omtfDigisError <<" has Error: " << hasError << std::endl;
   
 }

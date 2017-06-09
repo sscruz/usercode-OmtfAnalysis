@@ -32,7 +32,7 @@ bool AnaMenu::filter( const EventObj* ev, const MuonObj* muon,
 
   bool okL1 = false;
   
-//  debug = true;
+  debug = true;
   if (debug) std::cout << "================== L1 names: "<< std::endl;
   std::vector<std::string> acceptL1_Names = theConfig.exists("acceptL1_Names") ?  theConfig.getParameter<std::vector<std::string> >("acceptL1_Names") : std::vector<std::string>();
   for (CIT it=algosL1.begin(); it != algosL1.end(); ++it) {
@@ -75,7 +75,7 @@ bool AnaMenu::filter( const EventObj* ev, const MuonObj* muon,
     if (aokHLT) okHLT=true;
   }
 
-  if (okL1  && okHLT) {
+  if (okL1 && okHLT) {
     for (CIT it=algosL1.begin();  it != algosL1.end();  ++it)  theAlgosL1[ theMenuL1[*it] ]++; 
     for (CIT it=algosHLT.begin(); it != algosHLT.end(); ++it) theAlgosHLT[ theMenuHLT[*it] ]++;
     return true; 

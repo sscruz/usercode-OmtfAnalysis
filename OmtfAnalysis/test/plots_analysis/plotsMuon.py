@@ -10,6 +10,7 @@ def cMuonDIS(canvas):
   c.Divide(3)
   pad1 = c.cd(1)
   pad1.SetLogy()
+  pad1.SetLogx()
   h = gROOT.FindObject('hMuonPt_DIS')
   h.SetStats(0)
   h.SetMinimum(0.9)

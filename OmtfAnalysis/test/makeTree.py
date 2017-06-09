@@ -7,7 +7,7 @@ import os
 
 process = cms.Process('OmtfTree')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 #
 # For processing single files insert lines with 'file:/PATH/FILE.root'
@@ -37,6 +37,12 @@ fileNames = cms.untracked.vstring(
 #'file:/afs/cern.ch/work/k/konec/data/runs/run284036-SM_ZMu_Prompt-14EE7A3D-639F-E611-81EE-02163E013441.root'
 #'file:/afs/cern.ch/work/k/konec/data/runs/run286180-CosmicsPA-2481BCC7-D7B6-E611-9A30-FA163EB8B34E.root',
 '/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/023CF9D4-4745-E711-A8E1-02163E0146FE.root',
+'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/085FEBB5-4645-E711-AB5E-02163E013902.root',
+'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/08D7F942-4745-E711-86A8-02163E011825.root',
+'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/08FA4A0C-4645-E711-B797-02163E01A295.root',
+'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0A59B107-4745-E711-B578-02163E01A46D.root',
+'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0C154D59-4645-E711-A5EB-02163E019C9F.root',
+'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0CA922D7-4545-E711-9C67-02163E01A364.root'
                                   ),
 #skipEvents =  cms.untracked.uint32(1390)
 #skipEvents =  cms.untracked.uint32(2454)
@@ -77,10 +83,11 @@ process.load("CondTools/RPC/RPCLinkMap_sqlite_cff")
 #process.GlobalTag.globaltag  = '74X_dataRun2_Express_v0'
 #process.GlobalTag.globaltag  = 'auto:run2_data'
 #process.GlobalTag.globaltag  = '80X_dataRun2_Prompt_v8'
-#from Configuration.AlCa.GlobalTag import GlobalTag
-from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
+from Configuration.AlCa.GlobalTag import GlobalTag
+#from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+process.GlobalTag.globaltag  = '92X_dataRun2_Prompt_v4'
 
 #
 # message logger
@@ -98,11 +105,14 @@ process.digiComapre = cms.EDAnalyzer("OmtfDigiCompare",
   srcRPC_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
   srcRPC_PACT = cms.InputTag('muonRPCDigis'),
   srcCSC_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
-  srcCSC_CSC = cms.InputTag('csctfDigis'),
+#  srcCSC_CSC = cms.InputTag('csctfDigis'),
+  srcCSC_CSC = cms.InputTag('emtfStage2Digis'),
   srcOMTF_DATA = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
   srcOMTF_EMUL = cms.InputTag('gmtStage2Digis','OMTF'),
-  srcDTPh_BMTF = cms.InputTag('bmtfDigis'),
-  srcDTTh_BMTF = cms.InputTag('bmtfDigis'),
+#  srcDTPh_BMTF = cms.InputTag('bmtfDigis'),
+#  srcDTTh_BMTF = cms.InputTag('bmtfDigis'),
+  srcDTPh_BMTF = cms.InputTag('twinMuxStage2Digis','PhIn'),
+  srcDTTh_BMTF = cms.InputTag('twinMuxStage2Digis','ThIn'),
   srcDTPh_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
   srcDTTh_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
 )
@@ -187,11 +197,19 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
   histoFileName = cms.string("omtfHelper.root"),
   treeFileName = cms.string("omtfTree.root"),
 
-  menuInspector = cms.PSet( namesCheckHltMuMatch = cms.vstring("HLT_IsoMu22_v","HLT_IsoTkMu22_v","HLT_Mu50_v","HLT_TkMu50_v","HLT_Mu45_eta2p1_v"),),
+  menuInspector = cms.PSet( 
+    namesCheckHltMuMatch = cms.vstring(
+      "HLT_IsoMu22_v","HLT_IsoTkMu22_v","HLT_Mu50_v","HLT_TkMu50_v","HLT_Mu45_eta2p1_v",
+      "HLT_IsoMu22_eta2p1_v", "HLT_IsoMu24_v", "HLT_IsoMu27_v",
+      "HLT_IsoTkMu22_eta2p1_v", "HLT_IsoTkMu24_v", "HLT_IsoTkMu27_v",
+      "HLT_Mu55_v", "HLT_IsoMu24_eta2p1_v", "HLT_IsoTkMu24_eta2p1_v"
+    ),
+  ),
   
   l1ObjMaker = cms.PSet(
     omtfEmulSrc = cms.InputTag('omtfEmulator','OMTF'),
-    omtfDataSrc = cms.InputTag('gmtStage2Digis','OMTF'),
+#    omtfDataSrc = cms.InputTag('gmtStage2Digis','OMTF'),
+    omtfDataSrc = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
     emtfDataSrc = cms.InputTag('gmtStage2Digis','EMTF'),
     bmtfDataSrc = cms.InputTag('gmtStage2Digis','BMTF'),
      gmtDataSrc = cms.InputTag('gmtStage2Digis','Muon'),
