@@ -35,6 +35,10 @@ MuonObj AnaSecMuSelector::run(
     imuon++;
     if (   theCfgTrg.exists("requireCharge")
         && theCfgTrg.getParameter<int>("requireCharge") != muon.charge() ) continue;
+    if (   theCfgTrg.exists("requireEtaSign")
+        && theCfgTrg.getParameter<int>("requireEtaSign") != ((muon.eta() > 0) - (muon.eta() < 0)) ) continue;
+    if (   theCfgTrg.exists("requireOutsideOMTF")
+        && theCfgTrg.getParameter<bool>("requireOutsideOMTF") && !(fabs(muon.eta()) < 0.6 || fabs(muon.eta())> 1.5) ) continue;
 
     if (theCfgTrg.getParameter<bool>("requireTight") && !muon.isTight) continue;
     if (theCfgTrg.getParameter<bool>("requireUnique") && !muon.isUnique) continue;
@@ -66,6 +70,10 @@ MuonObj AnaSecMuSelector::run(
   for (const auto & probe : muons) {
     if (   theCfgProbe.exists("requireCharge")
         && theCfgProbe.getParameter<int>("requireCharge") != probe.charge() ) continue;
+    if (   theCfgProbe.exists("requireEtaSign")
+        && theCfgProbe.getParameter<int>("requireEtaSign") != ((probe.eta() > 0) - (probe.eta() < 0)) ) continue;
+    if (   theCfgProbe.exists("requireInsideOMTF")
+        && theCfgProbe.getParameter<bool>("requireInsideOMTF") && !( fabs(probe.eta()) > 0.6 && fabs(probe.eta())< 1.5) ) continue;
     if (theCfgProbe.getParameter<bool>("requireUnique") && !probe.isUnique) continue;
     if (theCfgProbe.getParameter<bool>("requireLoose") && !probe.isLoose) continue;
     if (theCfgProbe.getParameter<bool>("requireMedium") && !probe.isMedium) continue;

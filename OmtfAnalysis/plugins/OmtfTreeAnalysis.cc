@@ -118,7 +118,7 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
   for (int ev=0; ev<nentries; ev++) {
 
     chain.GetEntry(ev);
-    std::cout <<"---------------------------------------#"<<ev<<", event: "<< *event << std::endl;
+//    std::cout <<"---------------------------------------#"<<ev<<", event: "<< *event << std::endl;
 
     if (theAnaMenu) theAnaMenu->updateMenu(bitsL1->names, bitsHLT->names);
 
@@ -155,9 +155,9 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
 //
 // debug
 //
+/*
     if ( muon.isValid() ) std::cout <<" muon: " << muon << std::endl; 
     if (l1ObjColl)  std::cout << *l1ObjColl << std::endl; 
-/*
     theAnaDataEmul->debug = true; 
     if (!muon.isValid()) continue;
     if (!muon.isValid() ||  muon.pt() < 300 || muon.pt() > 400 ) continue;
@@ -176,7 +176,7 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
     if (theAnaEff)      theAnaEff->run ( event, &muon, l1ObjColl); 
     if (theAnaDataEmul) theAnaDataEmul->run(event, l1ObjColl); 
     if (theAnaTime)     theAnaTime->run( event, &muon, l1ObjColl);
-    theAnaDataEmul->debug = false; 
+    if (theAnaDataEmul)    theAnaDataEmul->debug = false; 
 
   }
 }

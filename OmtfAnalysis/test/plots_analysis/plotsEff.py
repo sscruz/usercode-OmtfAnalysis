@@ -182,12 +182,12 @@ def cEffDelta(canvas):
   return
 
 def plotAll(canvas) :
-  cEffHistory(canvas)
+#  cEffHistory(canvas)
   cEffEtaOMTF(canvas)
   cEffDelta(canvas)
   cEffEtaAll(canvas)
   cEffPt(canvas)
-  cEffEta(canvas)
-  cEffRunAver(canvas)
+#  cEffEta(canvas)
+#  cEffRunAver(canvas)
   return
 
