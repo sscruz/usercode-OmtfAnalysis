@@ -96,9 +96,9 @@ public:
         &&  ev.id().event() != 472951 ) return; 
 */
     std::cout<<std::dec <<"======> Analyze #"<<nEvents++<<", ev: "<<ev.id().event()<<std::endl;
-    analyzeDT(ev,es);
+//    analyzeDT(ev,es);
 //    analyzeCSC(ev,es);
-//    analyzeRPC(ev,es);
+    analyzeRPC(ev,es);
 //    analyzeOMTF(ev,es);
   }
   void analyzeCSC(const edm::Event&, const edm::EventSetup& es);
@@ -245,6 +245,7 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
   edm::Handle<L1MuDTChambThContainer> digiCollectionDTTh_BMTF;
   ev.getByToken(inputDTTh_BMTF, digiCollectionDTTh_BMTF);
   const L1MuDTChambThContainer& dtthDigisBMTF = *digiCollectionDTTh_BMTF.product();
+  std::cout <<" DTTh digis from BMTF " << dtthDigisBMTF.getContainer()->size()<< std::endl;
   for (const auto &  chDigi : *dtthDigisBMTF.getContainer() ) {
     unsigned int eta = 0;
     unsigned int etaQ = 0;
@@ -253,7 +254,7 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
      if (chDigi.position(ipos)==1) eta |= (1 <<ipos);
      if (chDigi.quality(ipos)==1) etaQ |= (1 <<ipos);
     }
-    if (chDigi.bxNum() != 0) continue;
+//    if (chDigi.bxNum() != 0) continue;
 //    if (abs(chDigi.bxNum()) >2) continue;
     if (eta==0 || etaQ==0) continue;
     if (abs(chDigi.whNum()) != 2) continue;
@@ -297,9 +298,10 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
   edm::Handle<L1MuDTChambThContainer> digiCollectionDTTh_OMTF;
   ev.getByToken(inputDTTh_OMTF, digiCollectionDTTh_OMTF);
   const L1MuDTChambThContainer& dtthDigisOMTF = *digiCollectionDTTh_OMTF.product();
+  std::cout <<" DTTh digis from OMTF " << dtthDigisOMTF.getContainer()->size()<< std::endl;
   std::vector<MyDigi> myOmtfTh;
   for (const auto &  chDigi : *dtthDigisOMTF.getContainer() ) {
-    if (chDigi.bxNum() != 0) continue;
+//    if (chDigi.bxNum() != 0) continue;
 //    if (abs(chDigi.bxNum()) >2) continue;
     unsigned int eta = 0;
     unsigned int etaQ = 0;

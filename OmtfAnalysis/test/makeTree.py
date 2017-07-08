@@ -7,7 +7,7 @@ import os
 
 process = cms.Process('OmtfTree')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 #
 # For processing single files insert lines with 'file:/PATH/FILE.root'
@@ -45,7 +45,7 @@ fileNames = cms.untracked.vstring(
 #'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0CA922D7-4545-E711-9C67-02163E01A364.root',
 'file:/afs/cern.ch/work/k/konec/data/runs/run295606-Express-46C6640F-4745-E711-A67B-02163E0145A9.root',
                                   ),
-skipEvents =  cms.untracked.uint32(12)
+skipEvents =  cms.untracked.uint32(264)
 #skipEvents =  cms.untracked.uint32(1390)
 #skipEvents =  cms.untracked.uint32(2454)
 #skipEvents =  cms.untracked.uint32(5859)
@@ -100,24 +100,31 @@ process.MessageLogger.cerr.threshold = cms.untracked.string('DEBUG')
 process.MessageLogger.debugModules.append('omtfStage2Digis')
 process.MessageLogger.debugModules.append('omtfStage2Raws')
 process.MessageLogger.debugModules.append('omtfStage2Digis2')
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(500)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1)
 process.MessageLogger.suppressWarning  = cms.untracked.vstring('Geometry', 'AfterSource','L1T','L1GlobalTriggerRawToDigi')
 process.options = cms.untracked.PSet( wantSummary=cms.untracked.bool(False))
 
 process.digiComapre = cms.EDAnalyzer("OmtfDigiCompare",
-  srcRPC_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
-  srcRPC_PACT = cms.InputTag('muonRPCDigis'),
-  srcCSC_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
+  srcRPC_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpacker'),
+  srcRPC_PACT = cms.InputTag('omtfStage2Digis2','OmtfUnpacker2'),
+#  srcRPC_PACT = cms.InputTag('muonRPCDigis'),
+
+  srcCSC_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpacker'),
+  srcCSC_CSC  = cms.InputTag('omtfStage2Digis2','OmtfUnpacker2'),
 #  srcCSC_CSC = cms.InputTag('csctfDigis'),
-  srcCSC_CSC = cms.InputTag('emtfStage2Digis'),
+#  srcCSC_CSC = cms.InputTag('emtfStage2Digis'),
+
   srcOMTF_DATA = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
   srcOMTF_EMUL = cms.InputTag('gmtStage2Digis','OMTF'),
+
 #  srcDTPh_BMTF = cms.InputTag('bmtfDigis'),
 #  srcDTTh_BMTF = cms.InputTag('bmtfDigis'),
-  srcDTPh_BMTF = cms.InputTag('twinMuxStage2Digis','PhIn'),
-  srcDTTh_BMTF = cms.InputTag('twinMuxStage2Digis','ThIn'),
-  srcDTPh_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
-  srcDTTh_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpack'),
+#  srcDTPh_BMTF = cms.InputTag('twinMuxStage2Digis','PhIn'),
+#  srcDTTh_BMTF = cms.InputTag('twinMuxStage2Digis','ThIn'),
+  srcDTPh_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpacker'),
+  srcDTTh_OMTF = cms.InputTag('omtfStage2Digis','OmtfUnpacker'),
+  srcDTPh_BMTF = cms.InputTag('omtfStage2Digis2','OmtfUnpacker2'),
+  srcDTTh_BMTF = cms.InputTag('omtfStage2Digis2','OmtfUnpacker2'),
 )
 
 process.omtfStage2Raws = cms.EDProducer("OmtfPacker",
@@ -186,7 +193,8 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
 process.raw2digi_step = cms.Path()
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfEmulator)
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.digiComapre+process.omtfEmulator+process.omtfStage2Raws)
-process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raws+process.omtfStage2Digis2)
+process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raws+process.omtfStage2Digis2+process.digiComapre)
+#process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raws)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, process.endjob_step)
 
