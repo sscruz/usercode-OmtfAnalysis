@@ -20,11 +20,11 @@ f.ls();
 #--------- HERE plots
 
 canvas = TObjArray()
-#plotsEvent.plotAll(canvas)
-#plotsMuon.plotAll(canvas)
+plotsEvent.plotAll(canvas)
+plotsMuon.plotAll(canvas)
 plotsEff.plotAll(canvas)
-#plotsDataEmul.plotAll(canvas)
-#plotsTime.plotAll(canvas)
+plotsDataEmul.plotAll(canvas)
+plotsTime.plotAll(canvas)
 
 #--------- HERE pause 
 raw_input('press enter to exit')

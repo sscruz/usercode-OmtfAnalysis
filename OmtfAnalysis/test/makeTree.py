@@ -7,7 +7,7 @@ import os
 
 process = cms.Process('OmtfTree')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 #
 # For processing single files insert lines with 'file:/PATH/FILE.root'
@@ -42,9 +42,11 @@ fileNames = cms.untracked.vstring(
 #'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0A59B107-4745-E711-B578-02163E01A46D.root',
 #'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0C154D59-4645-E711-A5EB-02163E019C9F.root',
 #'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0CA922D7-4545-E711-9C67-02163E01A364.root',
-'file:/afs/cern.ch/work/k/konec/data/runs/run295606-Express-46C6640F-4745-E711-A67B-02163E0145A9.root',
+#'file:/afs/cern.ch/work/k/konec/data/runs/run295606-Express-46C6640F-4745-E711-A67B-02163E0145A9.root',
+#'file:/afs/cern.ch/user/m/molszews/public/fevt.root',
+'root://cms-xrd-global.cern.ch//store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/298/853/00000/08861D5E-C966-E711-9E99-02163E019DA2.root'
                                   ),
-skipEvents =  cms.untracked.uint32(1341)
+#skipEvents =  cms.untracked.uint32(1341)
 #skipEvents =  cms.untracked.uint32(264)
 )
 
@@ -95,7 +97,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.cerr.threshold = cms.untracked.string('DEBUG')
 #process.MessageLogger.debugModules.append('muonRPCDigis')
-process.MessageLogger.debugModules.append('omtfStage2Digis')
+#process.MessageLogger.debugModules.append('omtfStage2Digis')
 #process.MessageLogger.debugModules.append('omtfStage2Raw')
 #process.MessageLogger.debugModules.append('omtfStage2Digis2')
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
@@ -131,7 +133,6 @@ process.omtfStage2Digis2 = cms.EDProducer("OmtfUnpacker",
   rpcConnectionFile = cms.string("CondTools/RPC/data/RPCOMTFLinkMapInput.txt"),
   outputTag = cms.string("OmtfUnpacker2"),
 )
-
 
 #
 ###OMTF emulator configuration
@@ -179,29 +180,17 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
 
 process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis)
 #process.raw2digi_step = cms.Path()
-#process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfEmulator)
+process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfEmulator)
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.digiComapre+process.omtfEmulator+process.omtfStage2Raw)
-process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw+process.omtfStage2Digis2+process.digiComapre)
+#process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw+process.omtfStage2Digis2+process.digiComapre+process.omtfEmulator)
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw+process.omtfStage2Digis2)
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, process.endjob_step)
 
 #
-# re-emulate L1T
+# OMTF tree 
 #
-#from L1Trigger.Configuration.customiseReEmul import L1TReEmulFromRAW
-#process = L1TReEmulFromRAW(process)
-#process.L1TReEmul.remove(process.simCaloStage2Digis)
-#process.L1TReEmul.remove(process.simCaloStage2Layer1Digis)
-#process.L1TReEmul.remove(process.simGmtCaloSumDigis)
-#process.L1TReEmul.remove(process.simGmtStage2Digis)
-#process.L1TReEmul.remove(process.simEcalTriggerPrimitiveDigis)
-
-#process.simOmtfDigis.srcDTPh = cms.InputTag('BMTFStage2Digis')
-#process.simOmtfDigis.srcDTTh = cms.InputTag('BMTFStage2Digis')
-#process.simOmtfDigis.dumpResultToXML = cms.bool(True)
-
 process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
   histoFileName = cms.string("omtfHelper.root"),
   treeFileName = cms.string("omtfTree.root"),
@@ -249,7 +238,7 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
 )
 
 process.OmtfTree = cms.Path(process.omtfTree)
-#process.schedule.append(process.OmtfTree)
+process.schedule.append(process.OmtfTree)
 
 #print process.dumpPython();
 print process.schedule

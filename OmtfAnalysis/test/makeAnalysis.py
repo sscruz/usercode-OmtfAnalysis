@@ -9,7 +9,7 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
   histoFileName = cms.string("omtfAnalysis.root"),
   treeFileNames = cms.vstring("omtfTree.root"),
 #  treeFileNames = cms.vstring("../jobs/ZMuC/omtfTree.root","../jobs/ZMuD/omtfTree.root"),
-#   treeFileNames = cms.vstring( "../jobs/ExD/omtfTree.root", "../jobs/ExE/omtfTree.root"),
+#  treeFileNames = cms.vstring( "../jobs/ExD/omtfTree.root", "../jobs/ExE/omtfTree.root"),
 
   filterByAnaEvent = cms.bool(True),
   anaEvent = cms.PSet(
@@ -69,10 +69,10 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
     minNumberRpcDtCscHits = cms.uint32(2),
   ),
 
-  filterByAnaMenu = cms.bool(False),
+  filterByAnaMenu = cms.bool(True),
   anaMenu = cms.PSet( #OR of conditions for L1 and separately for HLT
-    acceptL1_OtherThanMu             = cms.bool(False),
-    acceptL1_Mu                      = cms.bool(False),
+    acceptL1_OtherThanMu             = cms.bool(True),
+    acceptL1_Mu                      = cms.bool(True),
     acceptL1_Names                   = cms.vstring("L1_ZeroBias","L1_ZeroBias_copy",
                                                    "L1_IsolatedBunch","L1_FirstCollisionInOrbit"),
     acceptHLT_OtherThanMuPhysics     = cms.bool(False),
@@ -90,8 +90,8 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
   ),
 
   anaDataEmul =  cms.PSet(),
-#  anaEff =  cms.PSet(),     
-#  anaTime = cms.PSet(),
+  anaEff =  cms.PSet(),     
+  anaTime = cms.PSet(),
 )
 
 process.p = cms.Path(process.omtfAnalysis)

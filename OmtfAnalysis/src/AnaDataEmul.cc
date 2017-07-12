@@ -213,7 +213,7 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
   if (!dt &&  csc && !rpc) layerComb = 6;
   if (!dt && !csc &&  rpc) layerComb = 7;
   hDataEmulCompareComb->Fill(diff, layerComb); 
-  std::cout <<" Unique: " << unique << "  diff: "<<diff << std::endl;
+//  std::cout <<" Unique: " << unique << "  diff: "<<diff << std::endl;
 //  if (diff==DIFF::agree && unique && emul->eta != data->eta) {
 //    std::cout <<"PROBLEM WITH ETA ONLY, event  "<<*event<<std::endl << *data << std::endl << *emul << std::endl;
 //  }

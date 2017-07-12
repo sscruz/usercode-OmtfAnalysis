@@ -17,28 +17,6 @@ def cDataEmulNotAgree(canvas):
   hP.DrawCopy('box text' )
   return
 
-def cDataEmulCompare(canvas):
-  c = TCanvas('cDataEmulCompare','cDataEmulCompare',1200,600)
-  canvas.Add(c)
-  c.Divide(2)
-  pad1 = c.cd(1)
-  pad1.SetRightMargin(0.01)
-  h = gROOT.FindObject('hDataEmulCompare')
-  nEvnts = h.GetEntries()
-  h.Scale(1/nEvnts)
-  h.SetStats(1)
-  print 'HELLO - ',nEvnts 
-#  gStyle.SetOptStat(10) 
-  print 'HELLO - ',nEvnts 
-  h.Print("all") 
-  h.DrawCopy()
-  pad2 = c.cd(2)
-  pad2.SetLeftMargin(0.14)
-  h = gROOT.FindObject('hDataEmulCompareComb')
-  h.SetStats(0)
-  h.DrawCopy('text')
-  return
-
 def cDataEmulPt(canvas):
   c = TCanvas('cDataEmulPt','cDataEmulPt',900,900)
   canvas.Add(c)
@@ -109,6 +87,27 @@ def cDataEmulHistory(canvas):
   fillHistoFromGraph(h,gr)
   h.DrawCopy()
   return
+
+def cDataEmulCompare(canvas):
+  c = TCanvas('cDataEmulCompare','cDataEmulCompare',1200,600)
+  canvas.Add(c)
+  c.Divide(2)
+  pad1 = c.cd(1)
+  pad1.SetRightMargin(0.01)
+  h = gROOT.FindObject('hDataEmulCompare')
+  nEvnts = h.GetEntries()
+  h.Scale(1/nEvnts)
+  h.SetMinimum(1.e-4)
+  h.SetStats(1)
+  h.Print("all") 
+  h.DrawCopy()
+  pad2 = c.cd(2)
+  pad2.SetLeftMargin(0.14)
+  h = gROOT.FindObject('hDataEmulCompareComb')
+  h.SetStats(0)
+  h.DrawCopy('text')
+  return
+
 
 def plotAll(canvas) :
   cDataEmulPhi(canvas)
