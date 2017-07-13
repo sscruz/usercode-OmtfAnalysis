@@ -8,6 +8,7 @@ import plotsEff
 import plotsEvent
 import plotsMuon
 import plotsTime
+import plotsMenu
 
 print "Hello ROOT"
 fileName = "../omtfAnalysis.root"
@@ -25,6 +26,7 @@ plotsMuon.plotAll(canvas)
 plotsEff.plotAll(canvas)
 plotsDataEmul.plotAll(canvas)
 plotsTime.plotAll(canvas)
+plotsMenu.plotAll(canvas)
 
 #--------- HERE pause 
 raw_input('press enter to exit')

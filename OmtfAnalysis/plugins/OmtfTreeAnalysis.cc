@@ -98,7 +98,6 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
   
 
   chain.SetBranchAddress("event",&event);
-//  chain.SetBranchAddress("muon",&muon);
   chain.SetBranchAddress("muonColl",&muonColl);
   chain.SetBranchAddress("l1ObjColl",&l1ObjColl);
   chain.SetBranchAddress("bitsL1",&bitsL1);

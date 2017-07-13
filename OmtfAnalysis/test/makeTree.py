@@ -43,7 +43,6 @@ fileNames = cms.untracked.vstring(
 #'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0C154D59-4645-E711-A5EB-02163E019C9F.root',
 #'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0CA922D7-4545-E711-9C67-02163E01A364.root',
 #'file:/afs/cern.ch/work/k/konec/data/runs/run295606-Express-46C6640F-4745-E711-A67B-02163E0145A9.root',
-#'file:/afs/cern.ch/user/m/molszews/public/fevt.root',
 'root://cms-xrd-global.cern.ch//store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/298/853/00000/08861D5E-C966-E711-9E99-02163E019DA2.root'
                                   ),
 #skipEvents =  cms.untracked.uint32(1341)
@@ -88,8 +87,8 @@ process.load("CondTools/RPC/RPCLinkMap_sqlite_cff")
 from Configuration.AlCa.GlobalTag import GlobalTag
 #from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
-#process.GlobalTag.globaltag  = '92X_dataRun2_Prompt_v4'
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+process.GlobalTag.globaltag  = '92X_dataRun2_Prompt_v4'
 
 #
 # message logger

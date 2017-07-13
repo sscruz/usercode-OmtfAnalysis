@@ -87,7 +87,8 @@ bool MenuInspector::checkRun(const edm::Run& run, const edm::EventSetup & es)
     if (index >= theNamesAlgoL1.size() ) theNamesAlgoL1.resize( index+1,"");  
     theNamesAlgoL1[index]=name;
   }
-//  std::cout <<" size of indexes: "<< theNamesAlgoL1.size() << std::endl;
+  std::cout <<" size of indexes: "<< theNamesAlgoL1.size() << std::endl;
+  for (unsigned int i=0; i< theNamesAlgoL1.size(); ++i) std::cout <<" L1 indes: " << i << " algo: "<<theNamesAlgoL1[i] << std::endl;
 
   //
   // HLT
@@ -97,7 +98,7 @@ bool MenuInspector::checkRun(const edm::Run& run, const edm::EventSetup & es)
   if (theHltConfig.init(run,es,"HLT",changed)) {
     if (changed) {
 //      theHltConfig.dump("Streams");
-//      theHltConfig.dump("Datasets");
+      theHltConfig.dump("Datasets");
 //      theHltConfig.dump("Triggers");
 //      theHltConfig.dump("PrescaleTable");
 //      theHltConfig.dump("ProcessPSet");
@@ -107,7 +108,7 @@ bool MenuInspector::checkRun(const edm::Run& run, const edm::EventSetup & es)
       //for goes up to .size()-1, since the last is "Final" decision.
       for (unsigned int idx =0;  idx < theHltConfig.size()-1; idx++) {
         std::string name = theHltConfig.triggerName(idx);
-//        std::cout <<" HLT index: "<< idx << "name: "<< name << std::endl;
+        std::cout <<" HLT index: "<< idx << "name: "<< name << std::endl;
         theNamesAlgoHLT.push_back( name );
         for (auto & im : theNamesCheckHltMuMatchIdx) if (name.find(im.first) != std::string::npos) im.second = idx; 
       }

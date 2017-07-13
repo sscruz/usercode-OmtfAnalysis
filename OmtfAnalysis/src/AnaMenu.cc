@@ -91,6 +91,7 @@ void AnaMenu::resume(TObjArray& histos)
   TH1D *hMenuAlgosHLT = new TH1D("hMenuAlgosHLT","hMenuAlgosHLT",sizeHLT, 1., 1.+sizeHLT); histos.Add(hMenuAlgosHLT); 
   unsigned int ibin = 0;
   typedef std::map< std::string, unsigned int>::const_iterator CIM;
+//  std::cout <<" SIZE OF L1 ALGOS: " << sizeL1 << std::endl;
   for (CIM it=theAlgosL1.begin(); it != theAlgosL1.end(); ++it) {
     ibin++;
     hMenuAlgosL1->GetXaxis()->SetBinLabel(ibin, (*it).first.c_str());
@@ -98,6 +99,7 @@ void AnaMenu::resume(TObjArray& histos)
 //    std::cout <<" BIN "<<ibin<<" LABEL: "<<(*it).first.c_str()<<" ENTRIES:"<<(*it).second<<std::endl;
   }
   ibin = 0;
+  std::cout <<" SIZE OF HLT ALGOS: " << sizeL1 << std::endl;
   for (CIM it=theAlgosHLT.begin(); it != theAlgosHLT.end(); ++it) {
     ibin++;
     hMenuAlgosHLT->GetXaxis()->SetBinLabel(ibin, (*it).first.c_str());
