@@ -36,5 +36,13 @@
     <version ClassVersion="1" checksum="2779745102"/>
    </class>
 
+   <class name="SynchroCountsObj" ClassVersion="1">
+    <version ClassVersion="1" checksum="2561675781"/>
+   </class>
+
+   <class name="SynchroCountsObjVect" ClassVersion="1">
+    <version ClassVersion="1" checksum="2760590853"/>
+   </class>
+
  </selection>
 </lcgdict>

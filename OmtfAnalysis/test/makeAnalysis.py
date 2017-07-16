@@ -1,9 +1,19 @@
-import os
 import FWCore.ParameterSet.Config as cms
+import os
+import sys
+import commands
 
 process = cms.Process("Analysis")
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1))
+
+process.load('Configuration.StandardSequences.Services_cff')
+process.load('Configuration.Geometry.GeometryExtended2017Reco_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+
+
 
 process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
   histoFileName = cms.string("omtfAnalysis.root"),
@@ -88,6 +98,7 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
   anaDataEmul =  cms.PSet(),
   anaEff =  cms.PSet(),     
   anaTime = cms.PSet(),
+  anaSynch = cms.PSet(),
 )
 
 process.p = cms.Path(process.omtfAnalysis)

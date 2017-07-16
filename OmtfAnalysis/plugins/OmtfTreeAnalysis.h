@@ -13,6 +13,7 @@ class AnaDataEmul;
 class AnaMenu;
 class AnaSecMuSelector;
 class AnaTime;
+class AnaSynch;
 
 namespace edm { class Event; class EventSetup; }
 
@@ -36,6 +37,7 @@ private:
   AnaEff              *theAnaEff;
   AnaSecMuSelector    *theAnaSecMu;
   AnaTime             *theAnaTime;
+  AnaSynch            *theAnaSynch;
 
 
 }; 

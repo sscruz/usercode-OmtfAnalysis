@@ -8,6 +8,7 @@
 <use   name="DataFormats/L1GlobalMuonTrigger"/>
 <use   name="DataFormats/L1GlobalTrigger"/>
 <use   name="DataFormats/MuonReco"/>
+<use   name="DataFormats/TrackReco"/>
 <use   name="CondFormats/L1TObjects"/>
 <use   name="CondFormats/RPCObjects"/>
 <use   name="L1Trigger/CSCTrackFinder"/>
@@ -23,6 +24,15 @@
 <use   name="EventFilter/L1TRawToDigi"/>
 <use   name="CommonTools/UtilAlgos"/>
 <use   name="PhysicsTools/UtilAlgos"/>
+
+<use   name="TrackingTools/Records"/>
+<use   name="TrackingTools/TrajectoryState"/>
+<use   name="TrackingTools/GeomPropagators"/>
+<use   name="TrackingTools/PatternTools"/>
+<use   name="SimTracker/TrackerHitAssociation"/>
+<use   name="SimDataFormats/TrackerDigiSimLink"/>
+
+
 <use   name="FWCore/PluginManager"/>
 <use   name="UserCode/OmtfDataFormats"/>
 <use   name="xerces-c"/>

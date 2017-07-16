@@ -45,7 +45,7 @@ fileNames = cms.untracked.vstring(
 #'file:/afs/cern.ch/work/k/konec/data/runs/run295606-Express-46C6640F-4745-E711-A67B-02163E0145A9.root',
 'root://cms-xrd-global.cern.ch//store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/298/853/00000/08861D5E-C966-E711-9E99-02163E019DA2.root'
                                   ),
-#skipEvents =  cms.untracked.uint32(1341)
+#skipEvents =  cms.untracked.uint32(29)
 #skipEvents =  cms.untracked.uint32(264)
 )
 
@@ -55,7 +55,9 @@ fileNames = cms.untracked.vstring(
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 #process.load('Configuration.EventContent.EventContent_cff')
-process.load('Configuration.Geometry.GeometryExtended2016Reco_cff')
+#process.load('Configuration.Geometry.GeometryExtended2016Reco_cff')
+#process.load('Configuration.Geometry.GeometryDB_cff')
+process.load('Configuration.Geometry.GeometryExtended2017Reco_cff')
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
@@ -104,12 +106,12 @@ process.MessageLogger.suppressWarning  = cms.untracked.vstring('Geometry', 'Afte
 process.options = cms.untracked.PSet( wantSummary=cms.untracked.bool(False))
 
 process.digiComapre = cms.EDAnalyzer("OmtfDigiCompare",
-#  srcRPC_OMTF = cms.InputTag('omtfStage2Digis'),
-  srcRPC_OMTF = cms.InputTag('omtfStage2Digis2','OmtfUnpacker2'),
+  srcRPC_OMTF = cms.InputTag('omtfStage2Digis'),
+#  srcRPC_OMTF = cms.InputTag('omtfStage2Digis2','OmtfUnpacker2'),
   srcRPC_PACT = cms.InputTag('muonRPCDigis'),
 
-#  srcCSC_OMTF = cms.InputTag('omtfStage2Digis'),
-  srcCSC_OMTF  = cms.InputTag('omtfStage2Digis2','OmtfUnpacker2'),
+  srcCSC_OMTF = cms.InputTag('omtfStage2Digis'),
+#  srcCSC_OMTF  = cms.InputTag('omtfStage2Digis2','OmtfUnpacker2'),
 #  srcCSC_CSC = cms.InputTag('csctfDigis'),
   srcCSC_CSC = cms.InputTag('emtfStage2Digis'),
 
@@ -120,10 +122,10 @@ process.digiComapre = cms.EDAnalyzer("OmtfDigiCompare",
 #  srcDTTh_BMTF = cms.InputTag('bmtfDigis'),
   srcDTPh_BMTF = cms.InputTag('twinMuxStage2Digis','PhIn'),
   srcDTTh_BMTF = cms.InputTag('twinMuxStage2Digis','ThIn'),
-#  srcDTPh_OMTF = cms.InputTag('omtfStage2Digis'),
-#  srcDTTh_OMTF = cms.InputTag('omtfStage2Digis'),
-  srcDTPh_OMTF = cms.InputTag('omtfStage2Digis2','OmtfUnpacker2'),
-  srcDTTh_OMTF = cms.InputTag('omtfStage2Digis2','OmtfUnpacker2'),
+  srcDTPh_OMTF = cms.InputTag('omtfStage2Digis'),
+  srcDTTh_OMTF = cms.InputTag('omtfStage2Digis'),
+#  srcDTPh_OMTF = cms.InputTag('omtfStage2Digis2','OmtfUnpacker2'),
+#  srcDTTh_OMTF = cms.InputTag('omtfStage2Digis2','OmtfUnpacker2'),
 )
 
 process.omtfStage2Digis2 = cms.EDProducer("OmtfUnpacker",
@@ -202,6 +204,26 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
       "HLT_Mu55_v", "HLT_IsoMu24_eta2p1_v", "HLT_IsoTkMu24_eta2p1_v"
     ),
   ),
+
+  detHitDigiGrabber = cms.PSet (),
+
+  linkSynchroGrabber = cms.PSet(
+    rawSynchroTag = cms.InputTag("muonRPCDigis"),
+    writeHistograms = cms.untracked.bool(True),
+    deltaR_MuonToDetUnit_cutoff = cms.double(0.3),
+    checkInside = cms.bool(True),
+    linkMonitorPSet = cms.PSet(
+      useFirstHitOnly = cms.untracked.bool(True),
+      dumpDelays = cms.untracked.bool(True) # set to True for LB delay plots
+    ),
+    synchroSelector = cms.PSet(
+      checkRpcDetMatching_minPropagationQuality = cms.int32(0),
+      checkRpcDetMatching_matchingScaleValue = cms.double(3),
+      checkRpcDetMatching_matchingScaleAuto  = cms.bool(True),
+      checkUniqueRecHitMatching_maxPull = cms.double(2.),
+      checkUniqueRecHitMatching_maxDist = cms.double(5.)
+    )
+  ),
   
   l1ObjMaker = cms.PSet(
     omtfEmulSrc = cms.InputTag('omtfEmulator','OMTF'),
@@ -236,7 +258,17 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
   ),
 )
 
-process.OmtfTree = cms.Path(process.omtfTree)
+#
+# refit Muon
+#
+process.load("TrackingTools.RecoGeometry.RecoGeometries_cff")
+process.load("TrackingTools.TrackRefitter.TracksToTrajectories_cff")
+#process.load("TrackingTools.TrackRefitter.globalMuonTrajectories_cff")
+import TrackingTools.TrackRefitter.globalMuonTrajectories_cff
+process.refittedMuons = TrackingTools.TrackRefitter.globalMuonTrajectories_cff.globalMuons.clone()
+
+#process.OmtfTree = cms.Path(process.refittedMuons)
+process.OmtfTree = cms.Path(process.refittedMuons*process.omtfTree)
 process.schedule.append(process.OmtfTree)
 
 #print process.dumpPython();

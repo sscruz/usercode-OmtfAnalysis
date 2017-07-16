@@ -7,6 +7,8 @@
 #include "UserCode/OmtfDataFormats/interface/L1Obj.h"
 #include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
 #include "UserCode/OmtfDataFormats/interface/TriggerMenuResultObj.h"
+#include "UserCode/OmtfDataFormats/interface/SynchroCountsObj.h"
+#include "UserCode/OmtfDataFormats/interface/SynchroCountsObjVect.h"
 
 
 namespace {
@@ -19,5 +21,7 @@ namespace {
     L1Obj aL1;
     L1ObjColl aL1Coll;
     TriggerMenuResultObj aMenuRes;
+    SynchroCountsObj aSynch;
+    SynchroCountsObjVect aSynchVec;
   };
 }

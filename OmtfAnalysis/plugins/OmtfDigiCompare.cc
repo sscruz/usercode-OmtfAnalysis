@@ -90,7 +90,7 @@ public:
 
   virtual void analyze(const edm::Event &ev, const edm::EventSetup& es) {
     theEventCnt++;
-    debug = false;
+    debug = true;
 /*
     if (    ev.id().event() != 483248 
         &&  ev.id().event() != 480262
@@ -208,11 +208,11 @@ void OmtfDigiCompare::analyzeRPC(const edm::Event &ev, const edm::EventSetup& es
     } 
   }
   std::sort(myPact.begin(),myPact.end());
-//  if (debug) std::cout <<" myPact size is: " << myPact.size() << std::endl;
+  if (debug) std::cout <<" myPact size is: " << myPact.size() << std::endl;
 
   bool hasError = false;
   for (const auto & omtf : myOmtf ) {
-     if (omtf.bx != 0) continue;
+//     if (omtf.bx != 0) continue;
      theAllRpcDigisCnt++;     
      std::vector<MyDigi>::const_iterator itRpc = find(myPact.begin(), myPact.end(), omtf);
      if (itRpc == myPact.end() ) {
@@ -222,7 +222,7 @@ void OmtfDigiCompare::analyzeRPC(const edm::Event &ev, const edm::EventSetup& es
      }
   }
   for (const auto & pact : myPact) {
-     if (pact.bx != 0) continue;
+//     if (pact.bx != 0) continue;
      theAllRpcDigisCnt++;     
      std::vector<MyDigi>::const_iterator it = find(myOmtf.begin(), myOmtf.end(), pact);
      if (it == myOmtf.end() ) {

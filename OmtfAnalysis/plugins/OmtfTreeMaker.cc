@@ -23,6 +23,8 @@
 #include "SimDataFormats/Track/interface/SimTrack.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
+#include "UserCode/OmtfAnalysis/interface/ConverterRPCRawSynchroSynchroCountsObj.h"
+
 template <class T> T sqr( T t) {return t*t;}
 
 OmtfTreeMaker::OmtfTreeMaker(const edm::ParameterSet& cfg)
@@ -30,10 +32,12 @@ OmtfTreeMaker::OmtfTreeMaker(const edm::ParameterSet& cfg)
     bitsL1(0), bitsHLT(0),
     event(0), 
     muonColl(0), l1ObjColl(0), 
+    synchroCounts(0),
     theMenuInspector(cfg.getParameter<edm::ParameterSet>("menuInspector"), consumesCollector()),
     theBestMuonFinder(cfg.getParameter<edm::ParameterSet>("bestMuonFinder"), consumesCollector()),
-    theL1ObjMaker(cfg.getParameter<edm::ParameterSet>("l1ObjMaker"), consumesCollector()) 
-{  }
+    theL1ObjMaker(cfg.getParameter<edm::ParameterSet>("l1ObjMaker"), consumesCollector()), 
+    theSynchroGrabber(cfg.getParameter<edm::ParameterSet>("linkSynchroGrabber"), consumesCollector())
+{ }
   
 
 void OmtfTreeMaker::beginRun(const edm::Run &ru, const edm::EventSetup &es)
@@ -53,9 +57,13 @@ void OmtfTreeMaker::beginJob()
 
   theTree->Branch("bitsL1" ,"TriggerMenuResultObj",&bitsL1 ,32000,99);
   theTree->Branch("bitsHLT","TriggerMenuResultObj",&bitsHLT,32000,99);
+  theTree->Branch("synchroCounts","SynchroCountsObjVect",&synchroCounts,32000,99);
+
 
   theHelper.SetOwner();
   theBestMuonFinder.initHistos(theHelper);
+  theSynchroGrabber.initHistos(theHelper);
+
 }
 
 void OmtfTreeMaker::endJob()
@@ -104,6 +112,8 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   bitsL1 = new TriggerMenuResultObj();
   bitsHLT = new TriggerMenuResultObj();
 
+  synchroCounts = new SynchroCountsObjVect;
+
 
   //
   // fill algoBits info
@@ -131,6 +141,15 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
     l1ObjColl->set( std::vector<double>(l1Objs.size(),0.));
   }
     
+  //
+  // fill LinkSynchroAnalysis data
+  //
+  if (theMuon && theMuon->isGlobalMuon()) {
+    theSynchroGrabber.setMuon(theMuon);
+    RPCRawSynchro::ProdItem rawCounts  = theSynchroGrabber.counts(ev,es);
+    synchroCounts->data = ConverterRPCRawSynchroSynchroCountsObj::toSynchroObj(rawCounts);
+  }
+
   
 /*
   if (l1ObjColl->selectByType(L1Obj::OMTF)) {
