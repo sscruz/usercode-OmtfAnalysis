@@ -98,7 +98,7 @@ bool MenuInspector::checkRun(const edm::Run& run, const edm::EventSetup & es)
   if (theHltConfig.init(run,es,"HLT",changed)) {
     if (changed) {
 //      theHltConfig.dump("Streams");
-      theHltConfig.dump("Datasets");
+//      theHltConfig.dump("Datasets");
 //      theHltConfig.dump("Triggers");
 //      theHltConfig.dump("PrescaleTable");
 //      theHltConfig.dump("ProcessPSet");

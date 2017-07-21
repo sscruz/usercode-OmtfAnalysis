@@ -10,6 +10,7 @@ import plotsMuon
 import plotsTime
 import plotsMenu
 import plotsSynch
+import plotsSecMuSel
 
 print "Hello ROOT"
 fileName = "../omtfAnalysis.root"
@@ -25,10 +26,11 @@ canvas = TObjArray()
 #plotsEvent.plotAll(canvas)
 #plotsMuon.plotAll(canvas)
 #plotsEff.plotAll(canvas)
-#plotsDataEmul.plotAll(canvas)
+#plotsSecMuSel.plotAll(canvas)
+plotsDataEmul.plotAll(canvas)
 #plotsTime.plotAll(canvas)
 #plotsMenu.plotAll(canvas)
-plotsSynch.plotAll(canvas)
+#plotsSynch.plotAll(canvas)
 
 #--------- HERE pause 
 raw_input('press enter to exit')

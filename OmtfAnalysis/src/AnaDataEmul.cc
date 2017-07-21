@@ -23,6 +23,8 @@ namespace {
   TH2D *hDataEmulPt, *hDataEmulPhi, *hDataEmulEta;
   TH2D *hDataEmulNotAgreeEta, *hDataEmulNotAgreePhi;
 
+  TH2D *hDataEmulDistributionData, *hDataEmulDistributionEmul;
+
   double ptBins[]={ 0., 0.1, 
                    1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 6., 7., 8., 
                    10., 12., 14., 16., 18., 20., 25., 30., 35., 40., 45., 
@@ -57,9 +59,6 @@ namespace {
     }
   } 
 
-
-
-   
 
 
 }
@@ -143,6 +142,8 @@ void AnaDataEmul::init(TObjArray& histos)
     hDataEmulEta->GetYaxis()->SetBinLabel( ibin, slabel.c_str());
   }
 
+  hDataEmulDistributionData = new TH2D("hDataEmulDistributionData"," hDataEmulDistributionData",13,-6.5, 6.5, 18, -0.5, 17.5); histos.Add( hDataEmulDistributionData); 
+  hDataEmulDistributionEmul = new TH2D("hDataEmulDistributionEmul"," hDataEmulDistributionEmul",13,-6.5, 6.5, 18, -0.5, 17.5); histos.Add( hDataEmulDistributionEmul); 
   hDataEmulNotAgreeEta = new TH2D("hDataEmulNotAgreeEta","hDataEmulNotAgreeEta",13,-6.5, 6.5, nEtaBins, 0.5, nEtaBins+0.5); histos.Add(hDataEmulNotAgreeEta);
   hDataEmulNotAgreePhi = new TH2D("hDataEmulNotAgreePhi","hDataEmulNotAgreePhi",13,-6.5, 6.5, 24, -15, 105.); histos.Add(hDataEmulNotAgreePhi);
   for (unsigned int iProc = 0; iProc  <=5; iProc++) {
@@ -150,6 +151,8 @@ void AnaDataEmul::init(TObjArray& histos)
       OmtfName board(iProc,endcap);  
       hDataEmulNotAgreeEta->GetXaxis()->SetBinLabel( board+7, board.name().c_str());
       hDataEmulNotAgreePhi->GetXaxis()->SetBinLabel( board+7, board.name().c_str());
+      hDataEmulDistributionData->GetXaxis()->SetBinLabel( board+7, board.name().c_str());
+      hDataEmulDistributionEmul->GetXaxis()->SetBinLabel( board+7, board.name().c_str());
     }
   }
   for (unsigned int ibin=1; ibin <= nEtaBins; ibin++) {
@@ -158,7 +161,6 @@ void AnaDataEmul::init(TObjArray& histos)
     hDataEmulNotAgreeEta->GetYaxis()->SetBinLabel( ibin, slabel.c_str());
   }
   
-  
 
 }
 
@@ -166,16 +168,32 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
 {
   if ( !*coll ) return;
 
+
+  std::vector<L1Obj> vdata = coll->selectByType(L1Obj::OMTF).selectByBx(); 
+
+  for (const auto & obj : vdata) {
+    std::bitset<18> hitLayers(obj.hits);
+    for (unsigned int hitLayer=0; hitLayer<18;hitLayer++) if(hitLayers[hitLayer]) hDataEmulDistributionData->Fill(OmtfName(obj.iProcessor, obj.position),hitLayer);  
+  }
+  std::vector<L1Obj> vemul = coll->selectByType(L1Obj::OMTF_emu).selectByBx(); 
+  for (const auto & obj : vemul) {
+    std::bitset<18> hitLayers(obj.hits);
+    for (unsigned int hitLayer=0; hitLayer<18;hitLayer++) if(hitLayers[hitLayer]) hDataEmulDistributionEmul->Fill(OmtfName(obj.iProcessor, obj.position),hitLayer);  
+  }
+
   const L1Obj * data = 0;
-  L1ObjColl dataColl =  coll->selectByType(L1Obj::OMTF).selectByBx();
-  if (dataColl.getL1Objs().size()!=0) data = &(dataColl.getL1Objs().front());
+//  L1ObjColl dataColl =  coll->selectByType(L1Obj::OMTF).selectByBx();
+//  if (dataColl.getL1Objs().size()!=0) data = &(dataColl.getL1Objs().front());
+  unsigned int idx=0;
+  do { 
+  if (vdata.size()!=0) data = &(vdata[idx]);
 
   const L1Obj * emul = 0;
   L1ObjColl emulColl =  coll->selectByType(L1Obj::OMTF_emu);
   emul = bestMatch(data, emulColl);
 
   if (!data && !emul) return;
-  if (emul && ((emul->q & 0b01) !=0) ) return;
+//  if (emul && ((emul->q & 0b01) !=0) ) return;
 
 //  if (emul && makeName(*emul).name()=="OMTFn4") return;  
 //  if (data && makeName(*data).name()=="OMTFn4") return;  
@@ -185,14 +203,14 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
 //  if (data && makeName(*data).name()=="OMTFn1") return;  
 
 
-  bool unique = data && emul && (dataColl.getL1Objs().size() == 1) && (emulColl.getL1Objs().size() == 1);
+  bool unique = data && emul && (vdata.size() == 1) && (emulColl.getL1Objs().size() == 1);
 
 //  bool lowQuality = false;
 //  if (data && (data->q == 4) ) lowQuality = true; 
 //  if (emul && (emul->q == 4) ) lowQuality = true; 
 
   DIFF diff = compare(data, emul);   
-  if (data && emul && (dataColl.getL1Objs().size() != emulColl.getL1Objs().size()) ) diff = sizeDiff;
+  if (data && emul && (vdata.size() != emulColl.getL1Objs().size()) ) diff = sizeDiff;
 
   hDataEmulCompare->Fill(diff);
   theRunMap.addEvent(event->run, (diff==agree) ); 
@@ -230,13 +248,16 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
     hDataEmulIssue->Fill(1);
     if (data->hits != emul->hits)          hDataEmulIssue->Fill(2);
     if (data->pt != emul->pt)              hDataEmulIssue->Fill(3); 
-    if ( abs(data->phi - emul->phi) > 1)   hDataEmulIssue->Fill(4); 
+    if ( abs(data->phi - emul->phi) !=0)   hDataEmulIssue->Fill(4); 
     if (data->eta != emul->eta)            hDataEmulIssue->Fill(5);
     if ( data->charge !=  emul->charge)   hDataEmulIssue->Fill(6);
     if ( (data->q >>2) != (emul->q >>2) )  hDataEmulIssue->Fill(7);
   }
   if(unique) { hDataEmulEta->Fill(code2HistoBin(abs(data->eta)), code2HistoBin(abs(emul->eta)) ); }
     
+
+//  } while ( false);
+  } while ( ++idx < vdata.size() );
 }
 
 AnaDataEmul::DIFF AnaDataEmul::compare(const L1Obj * data, const L1Obj * emul)

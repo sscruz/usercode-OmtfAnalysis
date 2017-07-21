@@ -137,7 +137,7 @@ def cEffPt(canvas):
 
 def cEffRunAver(canvas):
   c = TCanvas('cEffRunAver','cEffHistory',1200,600)
-  gStyle.SetOptStat(10)
+#  gStyle.SetOptStat(10)
   canvas.Add(c)
   c.Divide(2)
   pad1 = c.cd(1)
@@ -160,8 +160,8 @@ def cEffHistory(canvas):
   fillHistoFromGraph(h,gr)
   h.SetMaximum(1.02)
   h.SetMinimum(0.5)
-  gStyle.SetOptStat(10)
-  h.SetStats(1)
+#  gStyle.SetOptStat(10)
+  h.SetStats(0)
   h.DrawCopy()
   c.Update()
   return
@@ -182,12 +182,12 @@ def cEffDelta(canvas):
   return
 
 def plotAll(canvas) :
-#  cEffHistory(canvas)
+  cEffHistory(canvas)
   cEffEtaOMTF(canvas)
   cEffDelta(canvas)
   cEffEtaAll(canvas)
   cEffPt(canvas)
-#  cEffEta(canvas)
-#  cEffRunAver(canvas)
+  cEffEta(canvas)
+  cEffRunAver(canvas)
   return
 

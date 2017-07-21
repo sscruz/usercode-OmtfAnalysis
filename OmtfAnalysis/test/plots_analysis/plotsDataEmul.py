@@ -5,6 +5,22 @@ import math
 from ROOT import *
 from plotsUtils import *
 
+def cDataEmulDistribution(canvas):
+  c = TCanvas("cDataEmulDistribution","cDataEmulDistribution",1200,600)
+  canvas.Add(c)
+  c.Divide(2)
+  c.cd(1)
+  hE=gROOT.FindObject("hDataEmulDistributionData")
+  hE.SetStats(0)
+#  hE.Print("all")
+  hE.DrawCopy('box text' )
+  c.cd(2)
+  hP= gROOT.FindObject("hDataEmulDistributionEmul")
+  hP.SetStats(0)
+  hP.DrawCopy('box text' )
+  c.Update()
+  return
+
 def cDataEmulNotAgree(canvas):
   c = TCanvas("cDataEmulNotAgree","cDataEmulNotAgree",1200,600)
   canvas.Add(c)
@@ -15,6 +31,7 @@ def cDataEmulNotAgree(canvas):
   c.cd(2)
   hP= gROOT.FindObject("hDataEmulNotAgreePhi")
   hP.DrawCopy('box text' )
+  c.Update()
   return
 
 def cDataEmulPt(canvas):
@@ -32,6 +49,7 @@ def cDataEmulPt(canvas):
   c.SetLogx() 
   c.SetLogy() 
   h.DrawCopy('colo text')
+  c.Update()
   return
 
 def cDataEmulPhi(canvas):
@@ -117,4 +135,5 @@ def plotAll(canvas) :
   cDataEmulHistory(canvas)
   cDataEmulPt(canvas)
   cDataEmulCompare(canvas)
+  cDataEmulDistribution(canvas)
   return

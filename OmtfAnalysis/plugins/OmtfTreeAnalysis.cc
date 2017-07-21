@@ -65,6 +65,7 @@ void OmtfTreeAnalysis::beginJob()
   if (theAnaEff)              theAnaEff->init(theHistos);
   if (theAnaTime)             theAnaTime->init(theHistos);
   if (theAnaSynch)            theAnaSynch->init(theHistos);
+  if (theAnaSecMu)            theAnaSecMu->init(theHistos);
 
 
 }
@@ -168,12 +169,12 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
 // debug
 //
 /*
-    if ( muon.isValid() ) std::cout <<" muon: " << muon << std::endl; 
+    if (muonColl) std::cout << *muonColl << std::endl;
     if (l1ObjColl)  std::cout << *l1ObjColl << std::endl; 
+    if ( muon.isValid() ) std::cout <<" muon: " << muon << std::endl; 
     theAnaDataEmul->debug = true; 
     if (!muon.isValid()) continue;
     if (!muon.isValid() ||  muon.pt() < 300 || muon.pt() > 400 ) continue;
-    if (muonColl) std::cout << *muonColl << std::endl;
 //    theAnaMenu->debug=true;
 //    theAnaEff->debug=true;
 //    theAnaMenu->filter(event, &muon, bitsL1, bitsHLT);

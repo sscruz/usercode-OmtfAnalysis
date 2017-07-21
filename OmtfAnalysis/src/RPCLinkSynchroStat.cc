@@ -84,8 +84,8 @@ double  RPCLinkSynchroStat::SynchroCounts::rms() const
 std::string  RPCLinkSynchroStat::SynchroCounts::print() const
 {
   std::ostringstream str;
-  str<<" mean: "<<std::setw(8)<<mean();
-  str<<" rms: "<<std::setw(8)<<rms();
+  str<<" mean: "<<std::setw(6)<<std::setprecision(5)<<mean();
+  str<<" rms: "<<std::setw(6)<<std::fixed<<std::setprecision(4)<<rms();
   str<<" counts:"; for (int i=0; i<8; ++i) str<<" "<<std::setw(4)<<theCounts[i];
   return str.str();
 }

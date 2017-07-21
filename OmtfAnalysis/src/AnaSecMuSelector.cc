@@ -14,13 +14,27 @@
 #include <iostream>
 #include <cmath>
 
-namespace { }
+namespace { 
+  TH2D *hSecMuPtDis;
+  TH2D *hSecMuEtaDis;
+  TH1D *hSecMuDeltaPhi, *hSecMuDeltaEta, *hSecMuDeltaR;
+}
 
 AnaSecMuSelector::AnaSecMuSelector(const edm::ParameterSet& cfg)
   : debug(false), 
     theCfgTrg (   cfg.getParameter<edm::ParameterSet>("triggMuon") ),
     theCfgProbe ( cfg.getParameter<edm::ParameterSet>("probeMuon") )
 {}
+
+void AnaSecMuSelector::init(TObjArray& histos)
+{
+//  hSecMuPtDis = new TH2D("hSecMuPtDis","hSecMuPtDis",L1PtScale::nPtBins,L1PtScale::ptBins, L1PtScale::nPtBins,L1PtScale::ptBins); histos.Add(hSecMuPtDis);
+  hSecMuPtDis = new TH2D("hSecMuPtDis","hSecMuPtDis", 99, 1.,100., 99, 1., 100.); histos.Add(hSecMuPtDis);
+  hSecMuEtaDis = new TH2D("hSecMuEtaDis","hSecMuEtaDis",32, -2.4, 2.4, 32, -2.4, 2.4); histos.Add(hSecMuEtaDis);
+  hSecMuDeltaEta = new TH1D("hSecMuDeltaEta","hSecMuDeltaEta",100,-3.2,3.2);  histos.Add(hSecMuDeltaEta);
+  hSecMuDeltaPhi = new TH1D("hSecMuDeltaPhi","hSecMuDeltaPhi",100,-3.2,3.2);  histos.Add(hSecMuDeltaPhi);
+  hSecMuDeltaR = new TH1D("hSecMuDeltaR","hSecMuDeltaR",100,0,6.4);       histos.Add(hSecMuDeltaR);
+}
 
 MuonObj AnaSecMuSelector::run( 
     const EventObj* ev, const std::vector<MuonObj> & muons, const L1ObjColl * l1Objs) 
@@ -67,6 +81,7 @@ MuonObj AnaSecMuSelector::run(
   //
   // check for probe muon
   //
+  MuonObj prb;
   for (const auto & probe : muons) {
     if (   theCfgProbe.exists("requireCharge")
         && theCfgProbe.getParameter<int>("requireCharge") != probe.charge() ) continue;
@@ -80,8 +95,15 @@ MuonObj AnaSecMuSelector::run(
     if (theCfgProbe.getParameter<bool>("requireTight") && !probe.isTight) continue;
     if (theCfgProbe.getParameter<double>("maxMuEtaVal") < fabs(probe.eta())) continue;
     if (reco::deltaR(trg,probe) < theCfgProbe.getParameter<double>("minTrgMuDeltaR")) continue;
-    return probe; 
+    prb = probe; 
+  }
+  if (prb.isValid()) {
+    hSecMuPtDis->Fill(trg.pt(), prb.pt());
+    hSecMuEtaDis->Fill(trg.eta(), prb.eta());
+    hSecMuDeltaR->Fill(reco::deltaR( trg.eta(), trg.phi(), prb.eta(), prb.phi()));
+    hSecMuDeltaEta->Fill(trg.eta()-prb.eta());
+    hSecMuDeltaPhi->Fill( reco::deltaPhi(trg.phi(),prb.phi()) );
   }
 
-  return MuonObj();
+  return prb;
 }

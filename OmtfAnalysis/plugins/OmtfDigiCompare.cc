@@ -90,7 +90,7 @@ public:
 
   virtual void analyze(const edm::Event &ev, const edm::EventSetup& es) {
     theEventCnt++;
-    debug = true;
+    debug = false;
 /*
     if (    ev.id().event() != 483248 
         &&  ev.id().event() != 480262
@@ -212,7 +212,7 @@ void OmtfDigiCompare::analyzeRPC(const edm::Event &ev, const edm::EventSetup& es
 
   bool hasError = false;
   for (const auto & omtf : myOmtf ) {
-//     if (omtf.bx != 0) continue;
+     if (omtf.bx != 0) continue;
      theAllRpcDigisCnt++;     
      std::vector<MyDigi>::const_iterator itRpc = find(myPact.begin(), myPact.end(), omtf);
      if (itRpc == myPact.end() ) {
@@ -222,7 +222,7 @@ void OmtfDigiCompare::analyzeRPC(const edm::Event &ev, const edm::EventSetup& es
      }
   }
   for (const auto & pact : myPact) {
-//     if (pact.bx != 0) continue;
+     if (pact.bx != 0) continue;
      theAllRpcDigisCnt++;     
      std::vector<MyDigi>::const_iterator it = find(myOmtf.begin(), myOmtf.end(), pact);
      if (it == myOmtf.end() ) {
@@ -282,7 +282,7 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
      if (chDigi.position(ipos)==1) eta |= (1 <<ipos);
      if (chDigi.quality(ipos)==1) etaQ |= (1 <<ipos);
     }
-//    if (chDigi.bxNum() != 0) continue;
+    if (chDigi.bxNum() != 0) continue;
 //    if (abs(chDigi.bxNum()) >2) continue;
     if (eta==0 || etaQ==0) continue;
     if (abs(chDigi.whNum()) != 2) continue;
@@ -332,7 +332,7 @@ void OmtfDigiCompare::analyzeDT( const edm::Event &ev, const edm::EventSetup& es
   if (debug) std::cout <<" DTTh digis from OMTF " << dtthDigisOMTF.getContainer()->size()<< std::endl;
   std::vector<MyDigi> myOmtfTh;
   for (const auto &  chDigi : *dtthDigisOMTF.getContainer() ) {
-//    if (chDigi.bxNum() != 0) continue;
+    if (chDigi.bxNum() != 0) continue;
 //    if (abs(chDigi.bxNum()) >2) continue;
     unsigned int eta = 0;
     unsigned int etaQ = 0;

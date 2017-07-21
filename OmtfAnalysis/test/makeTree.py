@@ -43,7 +43,14 @@ fileNames = cms.untracked.vstring(
 #'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0C154D59-4645-E711-A5EB-02163E019C9F.root',
 #'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0CA922D7-4545-E711-9C67-02163E01A364.root',
 #'file:/afs/cern.ch/work/k/konec/data/runs/run295606-Express-46C6640F-4745-E711-A67B-02163E0145A9.root',
-'root://cms-xrd-global.cern.ch//store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/298/853/00000/08861D5E-C966-E711-9E99-02163E019DA2.root'
+#'root://cms-xrd-global.cern.ch//store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/298/853/00000/08861D5E-C966-E711-9E99-02163E019DA2.root'
+#'/store/express/Run2017B/ExpressCosmics/FEVT/Express-v2/000/299/188/00000/2C7573A8-586A-E711-84CA-02163E0128D1.root'
+#'/store/express/Run2017B/ExpressCosmics/FEVT/Express-v2/000/299/189/00000/02B163AB-676A-E711-B742-02163E011E55.root'
+'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/299/149/00000/00C34496-E669-E711-9E38-02163E01A3FB.root',
+'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/299/149/00000/0006732A-E169-E711-8843-02163E0123FD.root',
+'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/299/149/00000/0484DE01-CC69-E711-B649-02163E013816.root',
+#'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v1/000/297/435/00000/02CFFD58-DC58-E711-A2B4-02163E01A70A.root',
+#'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v1/000/297/435/00000/3212D13A-DC58-E711-A478-02163E019CC6.root',
                                   ),
 #skipEvents =  cms.untracked.uint32(29)
 #skipEvents =  cms.untracked.uint32(264)
@@ -185,7 +192,7 @@ process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfEmulator)
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.digiComapre+process.omtfEmulator+process.omtfStage2Raw)
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw+process.omtfStage2Digis2+process.digiComapre+process.omtfEmulator)
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw+process.omtfStage2Digis2)
-#process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw)
+#process.omtf_step = cms.Path(process.omtfStage2Digis+process.digiComapre)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, process.endjob_step)
 
@@ -197,33 +204,34 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
   treeFileName = cms.string("omtfTree.root"),
 
   menuInspector = cms.PSet( 
+#    namesCheckHltMuMatch = cms.vstring(
+#      "HLT_IsoMu22_v","HLT_IsoTkMu22_v","HLT_Mu50_v","HLT_TkMu50_v","HLT_Mu45_eta2p1_v",
+#      "HLT_IsoMu22_eta2p1_v", "HLT_IsoMu24_v", "HLT_IsoMu27_v",
+#      "HLT_IsoTkMu22_eta2p1_v", "HLT_IsoTkMu24_v", "HLT_IsoTkMu27_v",
+#      "HLT_Mu55_v", "HLT_IsoMu24_eta2p1_v", "HLT_IsoTkMu24_eta2p1_v"
+#    ),
     namesCheckHltMuMatch = cms.vstring(
-      "HLT_IsoMu22_v","HLT_IsoTkMu22_v","HLT_Mu50_v","HLT_TkMu50_v","HLT_Mu45_eta2p1_v",
-      "HLT_IsoMu22_eta2p1_v", "HLT_IsoMu24_v", "HLT_IsoMu27_v",
-      "HLT_IsoTkMu22_eta2p1_v", "HLT_IsoTkMu24_v", "HLT_IsoTkMu27_v",
-      "HLT_Mu55_v", "HLT_IsoMu24_eta2p1_v", "HLT_IsoTkMu24_eta2p1_v"
+      "HLT_IsoMu20_v","HLT_IsoMu24_v","HLT_IsoMu27_v"
     ),
   ),
 
-  detHitDigiGrabber = cms.PSet (),
-
-  linkSynchroGrabber = cms.PSet(
-    rawSynchroTag = cms.InputTag("muonRPCDigis"),
-    writeHistograms = cms.untracked.bool(True),
-    deltaR_MuonToDetUnit_cutoff = cms.double(0.3),
-    checkInside = cms.bool(True),
-    linkMonitorPSet = cms.PSet(
-      useFirstHitOnly = cms.untracked.bool(True),
-      dumpDelays = cms.untracked.bool(True) # set to True for LB delay plots
-    ),
-    synchroSelector = cms.PSet(
-      checkRpcDetMatching_minPropagationQuality = cms.int32(0),
-      checkRpcDetMatching_matchingScaleValue = cms.double(3),
-      checkRpcDetMatching_matchingScaleAuto  = cms.bool(True),
-      checkUniqueRecHitMatching_maxPull = cms.double(2.),
-      checkUniqueRecHitMatching_maxDist = cms.double(5.)
-    )
-  ),
+   linkSynchroGrabber = cms.PSet(
+     rawSynchroTag = cms.InputTag("muonRPCDigis"),
+     writeHistograms = cms.untracked.bool(True),
+     deltaR_MuonToDetUnit_cutoff = cms.double(0.3),
+     checkInside = cms.bool(True),
+     linkMonitorPSet = cms.PSet(
+       useFirstHitOnly = cms.untracked.bool(True),
+       dumpDelays = cms.untracked.bool(True) # set to True for LB delay plots
+     ),
+     synchroSelector = cms.PSet(
+       checkRpcDetMatching_minPropagationQuality = cms.int32(0),
+       checkRpcDetMatching_matchingScaleValue = cms.double(3),
+       checkRpcDetMatching_matchingScaleAuto  = cms.bool(True),
+       checkUniqueRecHitMatching_maxPull = cms.double(2.),
+       checkUniqueRecHitMatching_maxDist = cms.double(5.)
+     )
+   ),
   
   l1ObjMaker = cms.PSet(
     omtfEmulSrc = cms.InputTag('omtfEmulator','OMTF'),
@@ -267,12 +275,10 @@ process.load("TrackingTools.TrackRefitter.TracksToTrajectories_cff")
 import TrackingTools.TrackRefitter.globalMuonTrajectories_cff
 process.refittedMuons = TrackingTools.TrackRefitter.globalMuonTrajectories_cff.globalMuons.clone()
 
-#process.OmtfTree = cms.Path(process.refittedMuons)
-process.OmtfTree = cms.Path(process.refittedMuons*process.omtfTree)
+#process.OmtfTree = cms.Path(process.refittedMuons*process.omtfTree)
+process.OmtfTree = cms.Path(process.omtfTree)
 process.schedule.append(process.OmtfTree)
 
 #print process.dumpPython();
 print process.schedule
-
-
 
