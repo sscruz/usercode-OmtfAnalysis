@@ -19,6 +19,7 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
   histoFileName = cms.string("omtfAnalysis.root"),
   treeFileNames = cms.vstring(
 #    "../jobs/crab_0_170721_005451/omtfTree.root"
+#    "../jobs/crab_0_170721_094152/omtfTree.root",
     "omtfTree.root",
 #   "../jobs/crab_0_170717_131027/omtfTree.root"),
 #                              "../jobs/crab_0_170718_130731/omtfTree.root"),

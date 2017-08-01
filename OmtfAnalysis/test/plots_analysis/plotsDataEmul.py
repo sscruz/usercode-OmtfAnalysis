@@ -27,9 +27,11 @@ def cDataEmulNotAgree(canvas):
   c.Divide(2)
   c.cd(1)
   hE= gROOT.FindObject("hDataEmulNotAgreeEta")
+  hE.SetStats(0)
   hE.DrawCopy('box text' )
   c.cd(2)
   hP= gROOT.FindObject("hDataEmulNotAgreePhi")
+  hP.SetStats(0)
   hP.DrawCopy('box text' )
   c.Update()
   return
@@ -94,6 +96,7 @@ def cDataEmulIssue(canvas):
   h.GetXaxis().SetRange(2,7)
   h.SetYTitle("event fraction");
   h.DrawCopy()
+  c.Update()
   return
 
 def cDataEmulHistory(canvas):
@@ -103,7 +106,9 @@ def cDataEmulHistory(canvas):
   gr.SetName('DataEmulHistory')
   h = runHistoFromGraph(gr)
   fillHistoFromGraph(h,gr)
+  h.SetStats(0)
   h.DrawCopy()
+  c.Update()
   return
 
 def cDataEmulCompare(canvas):
@@ -116,7 +121,7 @@ def cDataEmulCompare(canvas):
   nEvnts = h.GetEntries()
   h.Scale(1/nEvnts)
   h.SetMinimum(1.e-4)
-  h.SetStats(1)
+  h.SetStats(0)
   h.Print("all") 
   h.DrawCopy()
   pad2 = c.cd(2)
@@ -124,6 +129,7 @@ def cDataEmulCompare(canvas):
   h = gROOT.FindObject('hDataEmulCompareComb')
   h.SetStats(0)
   h.DrawCopy('text')
+  c.Update()
   return
 
 
