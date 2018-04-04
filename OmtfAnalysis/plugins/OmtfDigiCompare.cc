@@ -411,7 +411,7 @@ void OmtfDigiCompare::analyzeOMTF( const edm::Event &ev, const edm::EventSetup& 
        it != digiCollectionOMTF_DATA.product()->end(bxNumber); ++it) {
     //MyDigi myDigi = { (unsigned int)it->processor(),  (int)it->hwPhi()+(int)it->hwEta()+(int)it->hwPt(), bxNumber};
     MyDigi myDigi = { (unsigned int)it->processor(),  it->hwPt(), bxNumber};
-    if (debug) std::cout <<"PT: "<<it->hwPt()<<" ETA: "<<it->hwEta()<<" PHI: "<<it->hwPhi()<< std::endl;
+    if (debug) std::cout <<"PT: "<<it->hwPt()<<" ETA: "<<it->hwEta()<<" PHI: "<<it->hwPhi()<<" link: "<<it->link() << std::endl;
     if (debug) std::cout <<" MyDigi (DATA): " << myDigi << std::endl;
     if (myData.end() == std::find(myData.begin(), myData.end(), myDigi)) myData.push_back(myDigi);
     else if (debug) std::cout <<" DUPLICATE. " << std::endl;
@@ -426,7 +426,7 @@ void OmtfDigiCompare::analyzeOMTF( const edm::Event &ev, const edm::EventSetup& 
   for (l1t::RegionalMuonCandBxCollection::const_iterator it = digiCollectionOMTF_EMUL.product()->begin(bxNumber);
        it != digiCollectionOMTF_EMUL.product()->end(bxNumber); ++it) {
     // MyDigi myDigi = { (unsigned int)it->processor(),  )it->hwPhi()+(int)it->hwEta()+(int)it->hwPt(), bxNumber};
-    if (debug) std::cout <<"PT: "<<it->hwPt()<<" ETA: "<<it->hwEta()<<" PHI: "<<it->hwPhi()<< std::endl;
+    if (debug) std::cout <<"PT: "<<it->hwPt()<<" ETA: "<<it->hwEta()<<" PHI: "<<it->hwPhi()<<" link: "<<it->link() << std::endl;
     MyDigi myDigi = { (unsigned int)it->processor(),  it->hwPt(), bxNumber};
     if (debug) std::cout <<" MyDigi (EMUL): " << myDigi << std::endl;
     if (myEmul.end() == std::find(myEmul.begin(), myEmul.end(), myDigi)) myEmul.push_back(myDigi);
