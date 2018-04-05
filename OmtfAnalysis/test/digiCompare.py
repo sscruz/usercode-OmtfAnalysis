@@ -7,7 +7,7 @@ import os
 
 process = cms.Process('OmtfTree')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 #
 # For processing single files insert lines with 'file:/PATH/FILE.root'

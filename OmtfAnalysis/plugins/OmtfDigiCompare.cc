@@ -90,7 +90,7 @@ public:
 
   virtual void analyze(const edm::Event &ev, const edm::EventSetup& es) {
     theEventCnt++;
-    debug = false;
+    debug = true;
 /*
     if (    ev.id().event() != 483248 
         &&  ev.id().event() != 480262
@@ -406,6 +406,13 @@ void OmtfDigiCompare::analyzeOMTF( const edm::Event &ev, const edm::EventSetup& 
   edm::Handle<l1t::RegionalMuonCandBxCollection> digiCollectionOMTF_DATA;
   ev.getByToken(inputOMTF_DATA,digiCollectionOMTF_DATA);
   if (debug) std::cout <<" OMTF digis from DATA" << std::endl;
+//  std::cout <<" size of OMTF digis from DATA: "; for (int i=-3; i<=4; i++) std::cout << digiCollectionOMTF_DATA.product()->size(i); std::cout << std::endl; 
+//  for (int i=-3; i<=4; i++) {
+//    for (l1t::RegionalMuonCandBxCollection::const_iterator it = digiCollectionOMTF_DATA.product()->begin(i);
+//       it != digiCollectionOMTF_DATA.product()->end(i); ++it) {
+//       std::cout <<" BX: "<<i<<", PT: "<<it->hwPt()<<" ETA: "<<it->hwEta()<<" PHI: "<<it->hwPhi()<<" link: "<<it->link() << std::endl;
+//    }
+//  }
   std::vector<MyDigi> myData;
   for (l1t::RegionalMuonCandBxCollection::const_iterator it = digiCollectionOMTF_DATA.product()->begin(bxNumber);
        it != digiCollectionOMTF_DATA.product()->end(bxNumber); ++it) {
