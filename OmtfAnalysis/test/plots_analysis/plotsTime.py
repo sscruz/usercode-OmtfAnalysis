@@ -5,10 +5,11 @@ import math
 from ROOT import *
 
 def plot1(h):
-  integral = max(10.,h.Integral())
+  h.Print('all')
+  integral = max(1.,h.Integral())
   h.Scale(1./integral)
   h.SetMaximum(1.2)
-  h.SetMinimum(1./integral)
+  h.SetMinimum(1./integral/1.2)
   h.SetStats(0);
   t=TLatex(); t.SetNDC(0); t.SetTextSize(0.04); t.SetTextColor(2)
   entries="#Ev: {0:1.3E}".format(integral)
@@ -57,8 +58,8 @@ def cTimeMtfsCorr(canvas,what=''):
 
 def plotAll(canvas) :
   cTimeMtfsCorr(canvas)
-  cTimeMtfs(canvas)
-  cTimeMtfs(canvas,'Q')
+#  cTimeMtfs(canvas)
+#  cTimeMtfs(canvas,'Q')
   cTimeMtfs(canvas,'All')
   return
 

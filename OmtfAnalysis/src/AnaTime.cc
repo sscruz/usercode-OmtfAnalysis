@@ -66,9 +66,9 @@ void AnaTime::run(const EventObj* ev, const MuonObj* muon, const L1ObjColl * l1O
         case (L1Obj::EMTF) : h=hTimeEmtf; hQ=hTimeEmtfQ; hAll=hTimeEmtfAll; break;
         default: ;
     }
-    if (h) h->Fill(l1mtf.bx); 
+    if (hAll) hAll->Fill(l1mtf.bx); 
     if (hQ && qualOK) hQ->Fill(l1mtf.bx); 
-    if (hAll && qualOK && matched) hAll->Fill(l1mtf.bx);  
+    if (h && qualOK && matched) h->Fill(l1mtf.bx);  
     }
 
   // coincidence between triggers.
@@ -78,6 +78,7 @@ void AnaTime::run(const EventObj* ev, const MuonObj* muon, const L1ObjColl * l1O
     for (const auto & l1mtf_2 : l1mtfs) {
       double deltaR = reco::deltaR( l1mtf_1.etaValue(), l1mtf_1.phiValue(),  l1mtf_2.etaValue(), l1mtf_2.phiValue());
 
+/*
       if (first && l1mtf_1.bx != l1mtf_2.bx) {
         std::cout <<"------------------------------------------"<<std::endl;
         std::cout <<" Event: "<< *ev << std::endl;
@@ -85,6 +86,7 @@ void AnaTime::run(const EventObj* ev, const MuonObj* muon, const L1ObjColl * l1O
         std::cout << *l1Objs << std::endl; 
         first = false;
       }
+*/
 
       if (deltaR > 0.5) continue;
       if (l1mtf_1.type==L1Obj::BMTF && l1mtf_2.type ==  L1Obj::OMTF) {
