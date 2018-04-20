@@ -46,11 +46,13 @@ fileNames = cms.untracked.vstring(
 #'root://cms-xrd-global.cern.ch//store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/298/853/00000/08861D5E-C966-E711-9E99-02163E019DA2.root'
 #'/store/express/Run2017B/ExpressCosmics/FEVT/Express-v2/000/299/188/00000/2C7573A8-586A-E711-84CA-02163E0128D1.root'
 #'/store/express/Run2017B/ExpressCosmics/FEVT/Express-v2/000/299/189/00000/02B163AB-676A-E711-B742-02163E011E55.root'
-'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/299/149/00000/00C34496-E669-E711-9E38-02163E01A3FB.root',
-'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/299/149/00000/0006732A-E169-E711-8843-02163E0123FD.root',
-'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/299/149/00000/0484DE01-CC69-E711-B649-02163E013816.root',
+#'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/299/149/00000/00C34496-E669-E711-9E38-02163E01A3FB.root',
+#'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/299/149/00000/0006732A-E169-E711-8843-02163E0123FD.root',
+#'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/299/149/00000/0484DE01-CC69-E711-B649-02163E013816.root',
 #'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v1/000/297/435/00000/02CFFD58-DC58-E711-A2B4-02163E01A70A.root',
 #'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v1/000/297/435/00000/3212D13A-DC58-E711-A478-02163E019CC6.root',
+#'/store/data/Run2017F/SingleMuon/RAW-RECO/ZMu-17Nov2017-v1/70002/BEB00326-8EE0-E711-BCEE-FA163E8B70D3.root'
+'/store/express/Commissioning2018/ExpressPhysics/FEVT/Express-v1/000/314/574/00000/0C7BF67A-B742-E811-A725-FA163ECF9759.root'
                                   ),
 #skipEvents =  cms.untracked.uint32(29)
 #skipEvents =  cms.untracked.uint32(264)
@@ -76,7 +78,7 @@ process.load('EventFilter.L1TRawToDigi.gmtStage2Digis_cfi')
 process.load('EventFilter.L1TXRawToDigi.twinMuxStage2Digis_cfi')
 process.load('EventFilter.L1TRawToDigi.omtfStage2Digis_cfi')
 process.load('EventFilter.L1TRawToDigi.omtfStage2Raw_cfi')
-process.load("CondTools/RPC/RPCLinkMap_sqlite_cff")
+#process.load("CondTools/RPC/RPCLinkMap_sqlite_cff")
 
 
 #
@@ -97,7 +99,9 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 #from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
-process.GlobalTag.globaltag  = '92X_dataRun2_Prompt_v4'
+#process.GlobalTag.globaltag  = '92X_dataRun2_Prompt_v4'
+#process.GlobalTag.globaltag = '100X_dataRun2_v1'
+process.GlobalTag.globaltag = '100X_dataRun2_Express_v3'
 
 #
 # message logger
@@ -108,7 +112,7 @@ process.MessageLogger.cerr.threshold = cms.untracked.string('DEBUG')
 #process.MessageLogger.debugModules.append('omtfStage2Digis')
 #process.MessageLogger.debugModules.append('omtfStage2Raw')
 #process.MessageLogger.debugModules.append('omtfStage2Digis2')
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(100)
 process.MessageLogger.suppressWarning  = cms.untracked.vstring('Geometry', 'AfterSource','L1T','L1GlobalTriggerRawToDigi')
 process.options = cms.untracked.PSet( wantSummary=cms.untracked.bool(False))
 
@@ -184,6 +188,7 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
   dropRPCPrimitives = cms.bool(False),
   dropDTPrimitives = cms.bool(False),
   dropCSCPrimitives = cms.bool(False),
+#  ghostBusterType = cms.string("GhostBusterPreferRefDt")
 )
 
 process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis)
@@ -275,8 +280,8 @@ process.load("TrackingTools.TrackRefitter.TracksToTrajectories_cff")
 import TrackingTools.TrackRefitter.globalMuonTrajectories_cff
 process.refittedMuons = TrackingTools.TrackRefitter.globalMuonTrajectories_cff.globalMuons.clone()
 
-#process.OmtfTree = cms.Path(process.refittedMuons*process.omtfTree)
-process.OmtfTree = cms.Path(process.omtfTree)
+process.OmtfTree = cms.Path(process.refittedMuons*process.omtfTree)
+#process.OmtfTree = cms.Path(process.omtfTree)
 process.schedule.append(process.OmtfTree)
 
 #print process.dumpPython();

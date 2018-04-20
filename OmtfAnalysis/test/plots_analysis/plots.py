@@ -2,6 +2,7 @@
 
 import sys
 import math
+import libPyROOT
 from ROOT import *
 import plotsDataEmul
 import plotsEff
@@ -27,8 +28,8 @@ canvas = TObjArray()
 #plotsMuon.plotAll(canvas)
 #plotsEff.plotAll(canvas)
 #plotsSecMuSel.plotAll(canvas)
-plotsDataEmul.plotAll(canvas)
-#plotsTime.plotAll(canvas)
+#plotsDataEmul.plotAll(canvas)
+plotsTime.plotAll(canvas)
 #plotsMenu.plotAll(canvas)
 #plotsSynch.plotAll(canvas)
 

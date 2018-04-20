@@ -202,11 +202,13 @@ std::vector<unsigned int>  MenuInspector::runFiredAlgosL1(const edm::Event&ev, c
 
   GlobalAlgBlk const * glbAlgBlk  = & ugt->at(0, 0);
   if (!glbAlgBlk) { std::cout << " PROBLEM, no glbAlgBlk, return " << std::endl; return result; }
+//  line below print GT record with initial, prescaled and final decision.
 //  if (glbAlgBlk) glbAlgBlk->print( std::cout);
   for (unsigned int idx = 0 ; idx < theNamesAlgoL1.size(); idx++) {
     bool isAccept = glbAlgBlk->getAlgoDecisionFinal(idx);
     if (isAccept) result.push_back(idx);
-//    if (isAccept) std::cout <<" FIRED: "<< theNamesAlgoL1[idx] << std::endl;
+//  line below prints name of fired algos
+//  if (isAccept) std::cout <<" FIRED: "<< theNamesAlgoL1[idx] << std::endl;
   } 
 
   return result;
@@ -248,7 +250,8 @@ std::vector<unsigned int> MenuInspector::runFiredAlgosHLT(const edm::Event&ev, c
   for (unsigned int triggerIndex =0; triggerIndex < theHltConfig.size()-1; ++triggerIndex) {   //skip "Final" decision indes
     bool isAccept = triggerResults->accept(triggerIndex);
     if (isAccept) result.push_back(triggerIndex);
-//    if (isAccept) std::cout <<  triggerIndex <<" ("<< theHltConfig.triggerName(triggerIndex)<<") "<< std::endl;;
+//  line below prints HLT fired triggers
+//  if (isAccept) std::cout <<  triggerIndex <<" ("<< theHltConfig.triggerName(triggerIndex)<<") "<< std::endl;;
     //    if (isAccept) ntrig++;
   }
   //std::cout <<"  --->  TOTAL NUMBER OF HLT TRIGGERS: " <<  ntrig << std::endl;

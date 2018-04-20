@@ -15,7 +15,11 @@
 #include <cmath>
 
 namespace { 
+  TH1D *hTimeOmtfAll, *hTimeBmtfAll, *hTimeEmtfAll;  
+  TH1D *hTimeOmtfQ, *hTimeBmtfQ, *hTimeEmtfQ;  
   TH1D *hTimeOmtf, *hTimeBmtf, *hTimeEmtf;  
+
+  TH2D *hTimeBmtfOmtf, *hTimeOmtfEmtf;
 }
 
 AnaTime::AnaTime(const edm::ParameterSet& cfg)
@@ -27,29 +31,92 @@ void AnaTime::init(TObjArray& histos)
   hTimeBmtf = new TH1D("hTimeBmtf","hTimeBmtf",5,-2.5,2.5); histos.Add(hTimeBmtf); 
   hTimeOmtf = new TH1D("hTimeOmtf","hTimeOmtf",5,-2.5,2.5); histos.Add(hTimeOmtf); 
   hTimeEmtf = new TH1D("hTimeEmtf","hTimeEmtf",5,-2.5,2.5); histos.Add(hTimeEmtf); 
+
+  hTimeBmtfQ = new TH1D("hTimeBmtfQ","hTimeBmtfQ",5,-2.5,2.5); histos.Add(hTimeBmtfQ); 
+  hTimeOmtfQ = new TH1D("hTimeOmtfQ","hTimeOmtfQ",5,-2.5,2.5); histos.Add(hTimeOmtfQ); 
+  hTimeEmtfQ = new TH1D("hTimeEmtfQ","hTimeEmtfQ",5,-2.5,2.5); histos.Add(hTimeEmtfQ); 
+
+  hTimeBmtfAll = new TH1D("hTimeBmtfAll","hTimeBmtfAll",5,-2.5,2.5); histos.Add(hTimeBmtfAll); 
+  hTimeOmtfAll = new TH1D("hTimeOmtfAll","hTimeOmtfAll",5,-2.5,2.5); histos.Add(hTimeOmtfAll); 
+  hTimeEmtfAll = new TH1D("hTimeEmtfAll","hTimeEmtfAll",5,-2.5,2.5); histos.Add(hTimeEmtfAll); 
+
+  hTimeBmtfOmtf = new TH2D("hTimeBmtfOmtf","hTimeBmtfOmtf",5,-2.5,2.5, 5,-2.5,2.5); histos.Add(hTimeBmtfOmtf);
+  hTimeOmtfEmtf = new TH2D("hTimeOmtfEmtf","hTimeOmtfEmtf",5,-2.5,2.5, 5,-2.5,2.5); histos.Add(hTimeOmtfEmtf);
 }
 
 void AnaTime::run(const EventObj* ev, const MuonObj* muon, const L1ObjColl * l1Objs)
 {
-  if (!muon || !muon->isValid()) return;
   std::vector<L1Obj::TYPE> mtfs= {L1Obj::BMTF, L1Obj::OMTF, L1Obj::EMTF};
-  for (const auto & mtf : mtfs) {
-    std::vector<L1Obj> l1mtfs = l1Objs->selectByType(mtf);
-    if (l1mtfs.size()==0) continue;
-    for (const auto & l1mtf : l1mtfs) {
+  //
+  // all triggers
+  //
+  std::vector<L1Obj> l1mtfs = *l1Objs;
+  for (const auto & l1mtf : l1mtfs) {
+    bool matched = false;
+    if (muon && muon->isValid()) {
       double deltaR = reco::deltaR( l1mtf.etaValue(), l1mtf.phiValue(), muon->eta(), muon->phi());
-//      std::cout <<"TIME: "<< l1mtf<< " deltaR: "<< deltaR << std::endl;
-      if (fabs(l1mtf.etaValue() - muon->eta()) > 0.2) continue;
-      if (deltaR > 0.8) continue;
-//    if (l1mtf.q <12) continue;
-//      if (l1mtf.bx !=0) std::cout <<"xxxxxx" << std::endl;
-      switch (mtf) {
-        case (L1Obj::BMTF) : hTimeBmtf->Fill(l1mtf.bx); break; 
-        case (L1Obj::OMTF) : hTimeOmtf->Fill(l1mtf.bx); break; 
-        case (L1Obj::EMTF) : hTimeEmtf->Fill(l1mtf.bx); break; 
+      if (deltaR < 0.8) matched=true;
+    }
+    bool qualOK = (l1mtf.q >= 12);
+    TH1D *h,*hQ,*hAll; 
+    h=hQ=hAll=0; 
+    switch (l1mtf.type) {
+        case (L1Obj::BMTF) : h=hTimeBmtf; hQ=hTimeBmtfQ; hAll=hTimeBmtfAll; break;
+        case (L1Obj::OMTF) : h=hTimeOmtf; hQ=hTimeOmtfQ; hAll=hTimeOmtfAll; break;
+        case (L1Obj::EMTF) : h=hTimeEmtf; hQ=hTimeEmtfQ; hAll=hTimeEmtfAll; break;
         default: ;
+    }
+    if (h) h->Fill(l1mtf.bx); 
+    if (hQ && qualOK) hQ->Fill(l1mtf.bx); 
+    if (hAll && qualOK && matched) hAll->Fill(l1mtf.bx);  
+    }
+
+  // coincidence between triggers.
+  //
+  bool first=true;
+  for (const auto & l1mtf_1 : l1mtfs) {
+    for (const auto & l1mtf_2 : l1mtfs) {
+      double deltaR = reco::deltaR( l1mtf_1.etaValue(), l1mtf_1.phiValue(),  l1mtf_2.etaValue(), l1mtf_2.phiValue());
+
+      if (first && l1mtf_1.bx != l1mtf_2.bx) {
+        std::cout <<"------------------------------------------"<<std::endl;
+        std::cout <<" Event: "<< *ev << std::endl;
+        if (muon->isValid()) std::cout <<" Muon: " << *muon << std::endl;
+        std::cout << *l1Objs << std::endl; 
+        first = false;
+      }
+
+      if (deltaR > 0.5) continue;
+      if (l1mtf_1.type==L1Obj::BMTF && l1mtf_2.type ==  L1Obj::OMTF) {
+         hTimeBmtfOmtf->Fill(l1mtf_1.bx,l1mtf_2.bx);
+      }
+      if (l1mtf_1.type==L1Obj::OMTF && l1mtf_2.type ==  L1Obj::EMTF) {
+         hTimeOmtfEmtf->Fill(l1mtf_1.bx,l1mtf_2.bx);
       }
     }
   }
+
+  //
+  // triggers matched to muons
+  //
+//  if (!muon || !muon->isValid()) return;
+//  for (const auto & mtf : mtfs) {
+//    std::vector<L1Obj> l1mtfs = l1Objs->selectByType(mtf);
+//    if (l1mtfs.size()==0) continue;
+//    for (const auto & l1mtf : l1mtfs) {
+//      double deltaR = reco::deltaR( l1mtf.etaValue(), l1mtf.phiValue(), muon->eta(), muon->phi());
+////      std::cout <<"TIME: "<< l1mtf<< " deltaR: "<< deltaR << std::endl;
+//      if (fabs(l1mtf.etaValue() - muon->eta()) > 0.2) continue;
+//      if (deltaR > 0.8) continue;
+////    if (l1mtf.q <12) continue;
+////      if (l1mtf.bx !=0) std::cout <<"xxxxxx" << std::endl;
+//      switch (mtf) {
+//        case (L1Obj::BMTF) : hTimeBmtf->Fill(l1mtf.bx); break; 
+//        case (L1Obj::OMTF) : hTimeOmtf->Fill(l1mtf.bx); break; 
+//        case (L1Obj::EMTF) : hTimeEmtf->Fill(l1mtf.bx); break; 
+//        default: ;
+//      }
+//    }
+//  }
 
 }

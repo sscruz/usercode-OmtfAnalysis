@@ -54,7 +54,6 @@ RPCRawSynchro::ProdItem SynchroCountsGrabber::counts(const edm::Event &ev, const
 {
   RPCRawSynchro::ProdItem result;
 
-/*
   if (theMapWatcher.check(es)) {
     delete theCabling;
     edm::ESTransientHandle<RPCEMap> readoutMapping;
@@ -95,7 +94,7 @@ RPCRawSynchro::ProdItem SynchroCountsGrabber::counts(const edm::Event &ev, const
       result.push_back(*it);
     }
   }
-*/
+//  std::cout <<"synchroCounts SIZE: " << synchroCounts->size() <<" Result size: "<< result.size() << std::endl;
   return result;
 }
 
