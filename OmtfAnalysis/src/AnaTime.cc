@@ -73,7 +73,7 @@ void AnaTime::run(const EventObj* ev, const MuonObj* muon, const L1ObjColl * l1O
 
   // coincidence between triggers.
   //
-  bool first=true;
+//  bool first=true;
   for (const auto & l1mtf_1 : l1mtfs) {
     for (const auto & l1mtf_2 : l1mtfs) {
       double deltaR = reco::deltaR( l1mtf_1.etaValue(), l1mtf_1.phiValue(),  l1mtf_2.etaValue(), l1mtf_2.phiValue());
