@@ -58,8 +58,8 @@ def cTimeMtfsCorr(canvas,what=''):
 
 def plotAll(canvas) :
   cTimeMtfsCorr(canvas)
-#  cTimeMtfs(canvas)
-#  cTimeMtfs(canvas,'Q')
+  cTimeMtfs(canvas)
+  cTimeMtfs(canvas,'Q')
   cTimeMtfs(canvas,'All')
   return
 

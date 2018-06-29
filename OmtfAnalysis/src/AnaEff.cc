@@ -150,14 +150,16 @@ void AnaEff::run(  const EventObj* event, const MuonObj* muon, const L1ObjColl *
   // best (closest) L1Obj to muon
   //
   BestL1Obj bestOMTF, bestBMTF, bestEMTF, bestuGMT;
-  std::vector<L1Obj> l1s = (l1Coll->selectByType(L1Obj::BMTF)+l1Coll->selectByType(L1Obj::EMTF)+l1Coll->selectByType(L1Obj::OMTF) +l1Coll->selectByType(L1Obj::uGMT) );
+  //std::vector<L1Obj> l1s = (l1Coll->selectByType(L1Obj::BMTF)+l1Coll->selectByType(L1Obj::EMTF)+l1Coll->selectByType(L1Obj::OMTF_emu) +l1Coll->selectByType(L1Obj::uGMT) );
+  std::vector<L1Obj> l1s = (l1Coll->selectByType(L1Obj::BMTF)+l1Coll->selectByType(L1Obj::EMTF)+l1Coll->selectByType(L1Obj::OMTF_emu) );
   for (auto l1 : l1s) {
     BestL1Obj cand(l1,muon);
     if (cand.q > 12) cand.q = 12;
-    if (cand.type==L1Obj::BMTF && (cand.q > bestBMTF.q || (cand.q==bestBMTF.q && cand.pt>bestBMTF.pt)) && cand.deltaR < 0.5) bestBMTF = cand;
-    if (cand.type==L1Obj::OMTF && (cand.q > bestOMTF.q || (cand.q==bestOMTF.q && cand.pt>bestOMTF.pt)) && cand.deltaR < 0.5) bestOMTF = cand;
-    if (cand.type==L1Obj::EMTF && (cand.q > bestEMTF.q || (cand.q==bestEMTF.q && cand.pt>bestEMTF.pt)) && cand.deltaR < 0.5) bestEMTF = cand;
-    if (cand.type==L1Obj::uGMT && (cand.q > bestuGMT.q || (cand.q==bestuGMT.q && cand.pt>bestuGMT.pt)) && cand.deltaR < 0.5) bestuGMT = cand;
+    if (cand.type==L1Obj::BMTF     && (cand.q > bestBMTF.q || (cand.q==bestBMTF.q && cand.pt>bestBMTF.pt)) && cand.deltaR < 0.5) bestBMTF = cand;
+    if (cand.type==L1Obj::OMTF_emu && (cand.q > bestOMTF.q || (cand.q==bestOMTF.q && cand.pt>bestOMTF.pt)) && cand.deltaR < 0.5) bestOMTF = cand;
+    if (cand.type==L1Obj::EMTF     && (cand.q > bestEMTF.q || (cand.q==bestEMTF.q && cand.pt>bestEMTF.pt)) && cand.deltaR < 0.5) bestEMTF = cand;
+    if (                              (cand.q > bestuGMT.q || (cand.q==bestuGMT.q && cand.pt>bestuGMT.pt)) && cand.deltaR < 0.5) bestuGMT = cand;
+//  if (cand.type==L1Obj::uGMT && (cand.q > bestuGMT.q || (cand.q==bestuGMT.q && cand.pt>bestuGMT.pt)) && cand.deltaR < 0.5) bestuGMT = cand;
 /*
     if (cand.type==L1Obj::BMTF && cand.q >= bestBMTF.q && cand.deltaR < bestBMTF.deltaR) bestBMTF = cand;
     if (cand.type==L1Obj::OMTF && cand.q >= bestOMTF.q && cand.deltaR < bestOMTF.deltaR) bestOMTF = cand;
@@ -209,7 +211,10 @@ void AnaEff::run(  const EventObj* event, const MuonObj* muon, const L1ObjColl *
   theHistoMap["hEff_PtCutDenom"+reg[iregion]]->Fill(ptMu);
   for (unsigned int icut=0; icut < nPtCuts; icut++) { 
     double threshold = ptCuts[icut];
-    if ( bestuGMT.fired(threshold) ) {
+    if (    (iregion==0 && bestBMTF.fired(threshold)) 
+         || (iregion==1 && bestOMTF.fired(threshold)) 
+         || (iregion==2 && bestEMTF.fired(threshold)) ) {
+//    if ( bestuGMT.fired(threshold) ) {
        std::ostringstream strPt;  strPt  << "hEff_uGmtPtCut"<<  ptCuts[icut]<<reg[iregion];
        theHistoMap[strPt.str()]->Fill(ptMu);
     }
