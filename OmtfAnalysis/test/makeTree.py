@@ -53,8 +53,8 @@ fileNames = cms.untracked.vstring(
 #'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v1/000/297/435/00000/3212D13A-DC58-E711-A478-02163E019CC6.root',
 #'/store/data/Run2017F/SingleMuon/RAW-RECO/ZMu-17Nov2017-v1/70002/BEB00326-8EE0-E711-BCEE-FA163E8B70D3.root'
 #'/store/express/Commissioning2018/ExpressPhysics/FEVT/Express-v1/000/314/574/00000/0C7BF67A-B742-E811-A725-FA163ECF9759.root'
-#'/store/data/Run2017F/SingleMuon/RAW-RECO/ZMu-PromptReco-v1/000/306/155/00000/860779D7-FFC4-E711-962F-FA163ECB69D1.root'
-'/store/express/Run2018B/ExpressPhysics/FEVT/Express-v1/000/318/653/00000/D4D8D4AD-1279-E811-9A53-FA163EA563F7.root'
+'/store/data/Run2017F/SingleMuon/RAW-RECO/ZMu-PromptReco-v1/000/306/155/00000/860779D7-FFC4-E711-962F-FA163ECB69D1.root'
+#'/store/express/Run2018B/ExpressPhysics/FEVT/Express-v1/000/318/653/00000/D4D8D4AD-1279-E811-9A53-FA163EA563F7.root'
                                   ),
 #skipEvents =  cms.untracked.uint32(29)
 #skipEvents =  cms.untracked.uint32(264)
