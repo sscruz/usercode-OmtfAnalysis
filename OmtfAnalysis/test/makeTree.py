@@ -189,10 +189,9 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
   dumpGPToXML = cms.bool(True),
   readEventsFromXML = cms.bool(False),
   eventsXMLFiles = cms.vstring("TestEvents.xml"),
-  dropRPCPrimitives = cms.bool(True),
+  dropRPCPrimitives = cms.bool(False),
   dropDTPrimitives = cms.bool(False),
-  dropCSCPrimitives = cms.bool(False),
-  ghostBusterType = cms.string("GhostBusterPreferRefDt")
+  dropCSCPrimitives = cms.bool(False)
 )
 
 process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis)
