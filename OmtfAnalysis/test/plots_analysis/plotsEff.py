@@ -96,6 +96,7 @@ def cEffPt(canvas):
     pad.SetTickx()
     pad.SetTicky()
     pad.SetLogx()
+#    pad.SetLogy()
 
     hDenom = gROOT.FindObject('hEff_PtCutDenom_'+region[0:3])
     if (hDenom==None) :  continue
@@ -104,19 +105,23 @@ def cEffPt(canvas):
     frame.SetStats(0)
     frame.SetMaximum(1.05)
     frame.SetMinimum(0.)
+#    frame.SetMinimum(1.e-5)
     frame.SetXTitle("muon p_{T}")
     frame.GetXaxis().SetTitleOffset(1.4)
     frame.SetYTitle("efficiency") 
     frame.SetTitle(region)
-    frame.GetXaxis().SetRange(5,32)
+#    frame.GetXaxis().SetRange(5,32)
+    frame.GetXaxis().SetRange(5,27)
     frame.DrawCopy()
 
     one = TLine()
     one.SetLineStyle(2)
     one.SetLineColor(1)
-    one.DrawLine(5.,1.,490.,1.)
+#   one.DrawLine(5.,1.,490.,1.)
+    one.DrawLine(5.,1.,90.,1.)
 
-    legend = TLegend(50, 0.05, 690., 0.28,"","")
+#   legend = TLegend(50, 0.05,690., 0.28,"","")
+    legend = TLegend(25, 0.05, 90., 0.28,"","")
     legend.SetName("lEffPt"+region)
     canvas.Add(legend)
 

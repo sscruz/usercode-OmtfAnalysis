@@ -158,14 +158,11 @@ void AnaEff::run(  const EventObj* event, const MuonObj* muon, const L1ObjColl *
     if (cand.type==L1Obj::BMTF     && (cand.q > bestBMTF.q || (cand.q==bestBMTF.q && cand.pt>bestBMTF.pt)) && cand.deltaR < 0.5) bestBMTF = cand;
     if (cand.type==L1Obj::OMTF_emu && (cand.q > bestOMTF.q || (cand.q==bestOMTF.q && cand.pt>bestOMTF.pt)) && cand.deltaR < 0.5) bestOMTF = cand;
     if (cand.type==L1Obj::EMTF     && (cand.q > bestEMTF.q || (cand.q==bestEMTF.q && cand.pt>bestEMTF.pt)) && cand.deltaR < 0.5) bestEMTF = cand;
-    if (                              (cand.q > bestuGMT.q || (cand.q==bestuGMT.q && cand.pt>bestuGMT.pt)) && cand.deltaR < 0.5) bestuGMT = cand;
-//  if (cand.type==L1Obj::uGMT && (cand.q > bestuGMT.q || (cand.q==bestuGMT.q && cand.pt>bestuGMT.pt)) && cand.deltaR < 0.5) bestuGMT = cand;
-/*
-    if (cand.type==L1Obj::BMTF && cand.q >= bestBMTF.q && cand.deltaR < bestBMTF.deltaR) bestBMTF = cand;
-    if (cand.type==L1Obj::OMTF && cand.q >= bestOMTF.q && cand.deltaR < bestOMTF.deltaR) bestOMTF = cand;
-    if (cand.type==L1Obj::EMTF && cand.q >= bestEMTF.q && cand.deltaR < bestEMTF.deltaR) bestEMTF = cand;
-    if (cand.type==L1Obj::uGMT && cand.q >= bestuGMT.q && cand.deltaR < bestuGMT.deltaR) bestuGMT = cand;
-*/
+//  if (                              (cand.q > bestuGMT.q || (cand.q==bestuGMT.q && cand.pt>bestuGMT.pt)) && cand.deltaR < 0.5) bestuGMT = cand;
+
+//   if (cand.type==L1Obj::uGMT && (cand.q > bestuGMT.q || (cand.q==bestuGMT.q && cand.pt>bestuGMT.pt)) && cand.deltaR < 0.5) bestuGMT = cand;
+   if (cand.type==L1Obj::OMTF_emu && (cand.q > bestuGMT.q || (cand.q==bestuGMT.q && cand.pt>bestuGMT.pt)) && cand.deltaR < 0.5) bestuGMT = cand;
+
   }
   if (debug && bestuGMT.isValid()) std::cout <<bestuGMT << std::endl;
   if (debug && bestBMTF.isValid()) std::cout <<bestBMTF << std::endl;
@@ -211,10 +208,10 @@ void AnaEff::run(  const EventObj* event, const MuonObj* muon, const L1ObjColl *
   theHistoMap["hEff_PtCutDenom"+reg[iregion]]->Fill(ptMu);
   for (unsigned int icut=0; icut < nPtCuts; icut++) { 
     double threshold = ptCuts[icut];
-    if (    (iregion==0 && bestBMTF.fired(threshold)) 
-         || (iregion==1 && bestOMTF.fired(threshold)) 
-         || (iregion==2 && bestEMTF.fired(threshold)) ) {
-//    if ( bestuGMT.fired(threshold) ) {
+//    if (    (iregion==0 && bestBMTF.fired(threshold)) 
+//         || (iregion==1 && bestOMTF.fired(threshold)) 
+//         || (iregion==2 && bestEMTF.fired(threshold)) ) {
+      if ( bestuGMT.fired(threshold) ) {
        std::ostringstream strPt;  strPt  << "hEff_uGmtPtCut"<<  ptCuts[icut]<<reg[iregion];
        theHistoMap[strPt.str()]->Fill(ptMu);
     }
