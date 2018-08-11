@@ -3,6 +3,7 @@
 #include "TObjArray.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "UserCode/OmtfDataFormats/interface/TrackObj.h"
 #include "UserCode/OmtfDataFormats/interface/MuonObj.h"
 #include "UserCode/OmtfDataFormats/interface/EventObj.h"
 #include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
@@ -20,6 +21,16 @@ namespace {
   TH1D *hTimeOmtf, *hTimeBmtf, *hTimeEmtf;  
 
   TH2D *hTimeBmtfOmtf, *hTimeOmtfEmtf;
+
+  TH2D *hTimeOmtfTrackDPhiT, *hTimeOmtfTrackDPhiM, *hTimeOmtfTrackDEtaT, *hTimeOmtfTrackDEtaM;
+  TH2D *hTimeOmtfTrackBXT, *hTimeOmtfTrackBXM;
+  TH1D *hTimeOmtfTrackBX0, *hTimeOmtfTrackBX1;
+  TH2D *hTimeOmtfDrTrackMuon;
+
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 }
 
 AnaTime::AnaTime(const edm::ParameterSet& cfg)
@@ -42,9 +53,19 @@ void AnaTime::init(TObjArray& histos)
 
   hTimeBmtfOmtf = new TH2D("hTimeBmtfOmtf","hTimeBmtfOmtf",5,-2.5,2.5, 5,-2.5,2.5); histos.Add(hTimeBmtfOmtf);
   hTimeOmtfEmtf = new TH2D("hTimeOmtfEmtf","hTimeOmtfEmtf",5,-2.5,2.5, 5,-2.5,2.5); histos.Add(hTimeOmtfEmtf);
+
+  hTimeOmtfTrackDPhiT = new TH2D("hTimeOmtfTrackDPhiT","hTimeOmtfTrackDPhiT",50,0.,25., 50, -1.,1.); histos.Add(hTimeOmtfTrackDPhiT);
+  hTimeOmtfTrackDPhiM = new TH2D("hTimeOmtfTrackDPhiM","hTimeOmtfTrackDPhiM",50,0.,25., 50, -1.,1.); histos.Add(hTimeOmtfTrackDPhiM);
+  hTimeOmtfTrackDEtaT = new TH2D("hTimeOmtfTrackDEtaT","hTimeOmtfTrackDEtaT",50,0.,25., 50, -1.,1.); histos.Add(hTimeOmtfTrackDEtaT);
+  hTimeOmtfTrackDEtaM = new TH2D("hTimeOmtfTrackDEtaM","hTimeOmtfTrackDEtaM",50,0.,25., 50, -1.,1.); histos.Add(hTimeOmtfTrackDEtaM);
+  hTimeOmtfTrackBXT = new TH2D("hTimeOmtfTrackBXT", "hTimeOmtfTrackBXT", 50,0.,25.,4, -1.,3.); histos.Add(hTimeOmtfTrackBXT);
+  hTimeOmtfTrackBXM = new TH2D("hTimeOmtfTrackBXM", "hTimeOmtfTrackBXM", 50,0.,25.,4, -1.,3.); histos.Add(hTimeOmtfTrackBXM);
+  hTimeOmtfTrackBX0 = new TH1D("hTimeOmtfTrackBX0", "hTimeOmtfTrackBX0", 50,0.,25.); histos.Add(hTimeOmtfTrackBX0);
+  hTimeOmtfTrackBX1 = new TH1D("hTimeOmtfTrackBX1", "hTimeOmtfTrackBX1", 50,0.,25.); histos.Add(hTimeOmtfTrackBX1);
+  hTimeOmtfDrTrackMuon = new TH2D("hTimeOmtfDrTrackMuon","hTimeOmtfDrTrackMuon",50,0.,25.,50, -1.,1.); histos.Add(hTimeOmtfDrTrackMuon);
 }
 
-void AnaTime::run(const EventObj* ev, const MuonObj* muon, const L1ObjColl * l1Objs)
+void AnaTime::run(const EventObj* ev, const MuonObj* muon, const TrackObj* track, const L1ObjColl * l1Objs)
 {
   std::vector<L1Obj::TYPE> mtfs= {L1Obj::BMTF, L1Obj::OMTF, L1Obj::EMTF};
   //
@@ -97,6 +118,28 @@ void AnaTime::run(const EventObj* ev, const MuonObj* muon, const L1ObjColl * l1O
       }
     }
   }
+  //
+  // track matching to l1omtf
+  //
+  L1ObjColl omtfColl = l1Objs->selectByType(L1Obj::OMTF);
+  if (track->pt() > 1. && omtfColl) {
+    L1Obj l1Omtf = omtfColl.getL1Objs().front();
+    double dphiT =  reco::deltaPhi(l1Omtf.phiValue(),track->phi())*track->charge(); 
+    double detaT =  (l1Omtf.etaValue() - track->eta())*sgn(track->eta());
+    hTimeOmtfTrackDPhiT->Fill(track->pt(), dphiT);
+    hTimeOmtfTrackDEtaT->Fill(track->pt(), detaT);
+    hTimeOmtfTrackBXT->Fill(track->pt(), l1Omtf.bx);
+    if(l1Omtf.bx==0)hTimeOmtfTrackBX0->Fill(track->pt());
+    if(l1Omtf.bx==1)hTimeOmtfTrackBX1->Fill(track->pt());
+    if(muon) {
+      double detaM =  (l1Omtf.etaValue() - muon->eta())*sgn(muon->eta());
+      double dphiM =  reco::deltaPhi(l1Omtf.phiValue(),muon->phi())*muon->charge(); 
+      hTimeOmtfTrackDPhiM->Fill(muon->pt(), dphiM);
+      hTimeOmtfTrackDEtaM->Fill(muon->pt(), detaM);
+      hTimeOmtfTrackBXM->Fill(muon->pt(), l1Omtf.bx);
+      hTimeOmtfDrTrackMuon->Fill(track->pt(), reco::deltaR(track->eta(), track->phi(), muon->eta(), muon->phi()));
+    }
+  } 
 
   //
   // triggers matched to muons

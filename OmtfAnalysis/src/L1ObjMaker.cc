@@ -21,7 +21,7 @@
 using namespace std;
 namespace {
   edm::EDGetTokenT<l1t::RegionalMuonCandBxCollection> theOmtfEmulToken, theOmtfDataToken, theEmtfDataToken, theBmtfDataToken;
-  edm::EDGetTokenT<l1t::MuonBxCollection> theGmtDataToken;
+  edm::EDGetTokenT<l1t::MuonBxCollection> theGmtDataToken, theGmtEmulToken;
 }
 
 L1ObjMaker::L1ObjMaker(const  edm::ParameterSet & cfg, edm::ConsumesCollector&& cColl)
@@ -33,6 +33,7 @@ L1ObjMaker::L1ObjMaker(const  edm::ParameterSet & cfg, edm::ConsumesCollector&& 
   if (theConfig.exists("bmtfDataSrc")) theBmtfDataToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("bmtfDataSrc") );
   if (theConfig.exists("emtfDataSrc")) theEmtfDataToken =  cColl.consumes<l1t::RegionalMuonCandBxCollection>(  theConfig.getParameter<edm::InputTag>("emtfDataSrc") );
   if (theConfig.exists("gmtDataSrc"))  theGmtDataToken  =  cColl.consumes<l1t::MuonBxCollection>( theConfig.getParameter<edm::InputTag>("gmtDataSrc") );
+  if (theConfig.exists("gmtEmulSrc"))  theGmtEmulToken  =  cColl.consumes<l1t::MuonBxCollection>( theConfig.getParameter<edm::InputTag>("gmtEmulSrc") );
  
 }
 
@@ -43,7 +44,8 @@ void L1ObjMaker::run(const edm::Event &ev)
   lastRun = ev.run();
   theL1Objs.clear();
 
-  if (!theEmtfDataToken.isUninitialized())  makeGmtCandidates(ev, L1Obj::uGMT    , theL1Objs);
+  if ( !theGmtDataToken.isUninitialized())  makeGmtCandidates(ev, L1Obj::uGMT    , theL1Objs);
+  if ( !theGmtEmulToken.isUninitialized())  makeGmtCandidates(ev, L1Obj::uGMT_emu, theL1Objs);
   if (!theOmtfDataToken.isUninitialized())  makeRegCandidates(ev, L1Obj::OMTF    , theL1Objs);
   if (!theOmtfEmulToken.isUninitialized())  makeRegCandidates(ev, L1Obj::OMTF_emu, theL1Objs);
   if (!theBmtfDataToken.isUninitialized())  makeRegCandidates(ev, L1Obj::BMTF    , theL1Objs);
@@ -65,24 +67,23 @@ bool L1ObjMaker::makeGmtCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, 
 {
   edm::Handle<l1t::MuonBxCollection> candidates;
   switch (type) {
-    case  L1Obj::uGMT    : { iEvent.getByToken(theGmtDataToken, candidates); break; }
+    case  L1Obj::uGMT     : { iEvent.getByToken(theGmtDataToken, candidates); break; }
+    case  L1Obj::uGMT_emu : { iEvent.getByToken(theGmtEmulToken, candidates); break; }
     default: { std::cout <<"Invalid type : " << type << std::endl; abort(); }
   }
-
 //  int bxNumber = 0;
   for (int bxNumber=-2; bxNumber<=2; bxNumber++) {
   for (l1t::MuonBxCollection::const_iterator it = candidates.product()->begin(bxNumber);
       it != candidates.product()->end(bxNumber);
       ++it) {
-
     L1Obj obj;
     obj.type =  type;
     obj.phi = it->hwPhi(); 
-    obj.eta = it->hwEta();  // eta = hwEta/240.*2.61
+    obj.eta = it->hwEta();        // eta = hwEta/240.*2.61
     obj.pt  = it->hwPt();         // pt = (hwPt-1.)/2.
-    obj.q   = it->hwQual();   // charge=  pow(-1,hwSign)
+    obj.q   = it->hwQual();                             
     obj.bx = bxNumber;
-    obj.charge = it->charge();
+    obj.charge = it->hwCharge();  // charge  =  pow(-1,hwSign)
     result.push_back(obj);
   }
   }

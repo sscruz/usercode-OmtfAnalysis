@@ -18,11 +18,11 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
   histoFileName = cms.string("omtfAnalysis.root"),
   treeFileNames = cms.vstring(
-#    "omtfTree.root",
+    "omtfTree.root",
 #   "../jobs/crab_0_180628_162634_w91b_shiftBX/omtfTree.root",
 #    "../jobs/crab_0_180628_191609_default_shiftBX/omtfTree.root",
 #   "../jobs/crab_0_180628_211635_default/omtfTree.root",
-    "../jobs/crab_0_180619_115314_default_noRPC/omtfTree.root",
+#    "../jobs/crab_0_180619_115314_default_noRPC/omtfTree.root",
 #    "../jobs/crab_0_180628_230301_w91b/omtfTree.root",
 #     "../jobs/crab_0_180629_074144_w91b_noRPC/omtfTree.root",
   ),

@@ -16,7 +16,7 @@ class L1Obj : public TObject {
 
 public:
   
-  enum TYPE { NONE, RPCb, RPCf, DT, CSC, GMT, RPCb_emu, RPCf_emu, GMT_emu, OMTF, OMTF_emu, BMTF, EMTF, uGMT };
+  enum TYPE { NONE, RPCb, RPCf, DT, CSC, GMT, RPCb_emu, RPCf_emu, GMT_emu, OMTF, OMTF_emu, BMTF, EMTF, uGMT, uGMT_emu };
 
   int pt, eta, phi;
   int disc;
@@ -34,14 +34,10 @@ public:
     if (type==OMTF || type==OMTF_emu || type==EMTF) 
     return modulo2PI( ( (15.+iProcessor*60.)/360. + phi/576. ) *2*M_PI) ;  
     else if (type==BMTF) return modulo2PI( ( (-15.+iProcessor*30.)/360. + phi/576. ) *2*M_PI);
-    else if (type==uGMT) return modulo2PI((phi/576.)*2*M_PI);
+    else if (type==uGMT || type==uGMT_emu) return modulo2PI((phi/576.)*2*M_PI);
     else return 9999.;
   }
-  int chargeValue() const { 
-    if (type==OMTF || type==OMTF_emu || type==EMTF || type==BMTF) return pow(-1,charge);
-    else if (type==uGMT) return charge;
-    else return 0;
-  } 
+  int chargeValue() const { return pow(-1,charge); }
 
   ClassDef(L1Obj,4)
 };

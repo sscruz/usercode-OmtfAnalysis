@@ -56,11 +56,36 @@ def cTimeMtfsCorr(canvas,what=''):
   c.Update()
   return
 
+def cTimeTrackPt(canvas) :
+  c =  TCanvas("cTimeTrackPt","cTimeTrackPt",800,800) 
+  canvas.Add(c)
+  c.Divide(2,2)
+  c.cd(1); hTimeOmtfTrackDPhiT.DrawCopy('box')
+  c.cd(2); hTimeOmtfTrackDPhiM.DrawCopy('box')
+  c.cd(3); hTimeOmtfTrackDEtaT.DrawCopy('box')
+  c.cd(4); hTimeOmtfTrackDEtaM.DrawCopy('box')
+  return
+
+def cTimeTrackBX(canvas) :
+  c =  TCanvas("cTimeTrackBX","cTimeTrackBX",800,800) 
+  canvas.Add(c)
+  c.Divide(2,2)
+
+  c.cd(1); hTimeOmtfTrackBXT.DrawCopy('box')
+  c.cd(2); hTimeOmtfTrackBXM.DrawCopy('box')
+  c.cd(3); hTimeOmtfDrTrackMuon.DrawCopy('box')
+  c.cd(4)
+  hTimeOmtfTrackBX1.Divide(hTimeOmtfTrackBX1,hTimeOmtfTrackBX0);
+  hTimeOmtfTrackBX1.DrawCopy()
+  return
+
 def plotAll(canvas) :
   cTimeMtfsCorr(canvas)
-  cTimeMtfs(canvas)
-  cTimeMtfs(canvas,'Q')
+#  cTimeMtfs(canvas)
+#  cTimeMtfs(canvas,'Q')
   cTimeMtfs(canvas,'All')
+  cTimeTrackPt(canvas)
+  cTimeTrackBX(canvas)
   return
 
 

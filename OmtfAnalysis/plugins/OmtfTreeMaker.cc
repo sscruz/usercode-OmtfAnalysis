@@ -32,11 +32,12 @@ OmtfTreeMaker::OmtfTreeMaker(const edm::ParameterSet& cfg)
     bitsL1(0), bitsHLT(0),
     event(0), 
     muonColl(0), l1ObjColl(0), 
-    synchroCounts(0),
+    synchroCounts(0), closestTrack(0),
     theMenuInspector(cfg.getParameter<edm::ParameterSet>("menuInspector"), consumesCollector()),
     theBestMuonFinder(cfg.getParameter<edm::ParameterSet>("bestMuonFinder"), consumesCollector()),
     theL1ObjMaker(cfg.getParameter<edm::ParameterSet>("l1ObjMaker"), consumesCollector()), 
-    theSynchroGrabber(cfg.getParameter<edm::ParameterSet>("linkSynchroGrabber"), consumesCollector())
+    theSynchroGrabber(cfg.getParameter<edm::ParameterSet>("linkSynchroGrabber"), consumesCollector()),
+    theClosestTrackFinder(cfg.getParameter<edm::ParameterSet>("closestTrackFinder"), consumesCollector())
 { }
   
 
@@ -58,11 +59,12 @@ void OmtfTreeMaker::beginJob()
   theTree->Branch("bitsL1" ,"TriggerMenuResultObj",&bitsL1 ,32000,99);
   theTree->Branch("bitsHLT","TriggerMenuResultObj",&bitsHLT,32000,99);
   theTree->Branch("synchroCounts","SynchroCountsObjVect",&synchroCounts,32000,99);
-
+  theTree->Branch("closestTrack","TrackObj",&closestTrack, 32000, 99);
 
   theHelper.SetOwner();
   theBestMuonFinder.initHistos(theHelper);
   theSynchroGrabber.initHistos(theHelper);
+  theClosestTrackFinder.initHistos(theHelper);
 
 }
 
@@ -114,6 +116,8 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
 
   synchroCounts = new SynchroCountsObjVect;
 
+  closestTrack = new TrackObj();
+
 
   //
   // fill algoBits info
@@ -151,13 +155,19 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   }
 
   
-/*
-  if (l1ObjColl->selectByType(L1Obj::OMTF)) {
-    std::cout <<"#"<<theCounter<<" "<< *event << std::endl;
-    std::cout << *muonColl << std::endl;
-    std::cout << *l1ObjColl << std::endl;
+//  if (l1ObjColl->selectByType(L1Obj::OMTF)) {
+//    std::cout <<"#"<<theCounter<<" "<< *event << std::endl;
+//    std::cout << *muonColl << std::endl;
+//    std::cout << *l1ObjColl << std::endl;
+//    std::cout << std::endl;
+//  }
+
+  L1ObjColl omtfColl = l1ObjColl->selectByType(L1Obj::OMTF);
+  if (omtfColl) {
+    reco::Track track = theClosestTrackFinder.result(ev,es, omtfColl.getL1Objs().front().etaValue(), 
+                                                                    omtfColl.getL1Objs().front().phiValue());
+    closestTrack->setKine(track.pt(), track.eta(), track.phi(), track.charge());
   }
-*/
 
   //
   // fill ntuple + cleanup
@@ -169,4 +179,5 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   delete bitsL1;  bitsL1= 0;
   delete bitsHLT;  bitsHLT= 0;
   delete l1ObjColl; l1ObjColl = 0;
+  delete closestTrack; closestTrack = 0;
 }

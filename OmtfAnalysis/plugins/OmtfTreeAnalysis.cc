@@ -106,6 +106,7 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
   TriggerMenuResultObj *bitsL1  = 0;
   TriggerMenuResultObj *bitsHLT = 0;
   SynchroCountsObjVect* synchroCounts = 0;
+  TrackObj * closestTrack = 0;
 
   
 
@@ -115,6 +116,7 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
   chain.SetBranchAddress("bitsL1",&bitsL1);
   chain.SetBranchAddress("bitsHLT",&bitsHLT);
   chain.SetBranchAddress("synchroCounts",&synchroCounts);
+  chain.SetBranchAddress("closestTrack",&closestTrack);
 
 
   
@@ -188,7 +190,7 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
     if (theAnaMuonDistribution) theAnaMuonDistribution->run(&muon);
     if (theAnaEff)      theAnaEff->run ( event, &muon, l1ObjColl); 
     if (theAnaDataEmul) theAnaDataEmul->run(event, l1ObjColl); 
-    if (theAnaTime)     theAnaTime->run( event, &muon, l1ObjColl);
+    if (theAnaTime)     theAnaTime->run( event, &muon, closestTrack, l1ObjColl);
     if (theAnaSynch)    theAnaSynch->run( event, &muon, ConverterRPCRawSynchroSynchroCountsObj::toRawSynchro( synchroCounts->data));
 
     if (theAnaDataEmul)    theAnaDataEmul->debug = false; 

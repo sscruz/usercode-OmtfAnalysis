@@ -7,7 +7,7 @@ import os
 
 process = cms.Process('OmtfTree')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 
 #
 # For processing single files insert lines with 'file:/PATH/FILE.root'
@@ -80,6 +80,8 @@ process.load('EventFilter.L1TRawToDigi.gmtStage2Digis_cfi')
 process.load('EventFilter.L1TXRawToDigi.twinMuxStage2Digis_cfi')
 process.load('EventFilter.L1TRawToDigi.omtfStage2Digis_cfi')
 process.load('EventFilter.L1TRawToDigi.omtfStage2Raw_cfi')
+#process.load('EventFilter.L1TRawToDigi.caloLayer1Digis_cfi')
+process.load('EventFilter.L1TRawToDigi.caloStage2Digis_cfi')
 #process.load("CondTools/RPC/RPCLinkMap_sqlite_cff")
 
 
@@ -115,7 +117,7 @@ process.MessageLogger.cerr.threshold = cms.untracked.string('DEBUG')
 #process.MessageLogger.debugModules.append('omtfStage2Digis')
 #process.MessageLogger.debugModules.append('omtfStage2Raw')
 #process.MessageLogger.debugModules.append('omtfStage2Digis2')
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(100)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1)
 process.MessageLogger.suppressWarning  = cms.untracked.vstring('Geometry', 'AfterSource','L1T','L1GlobalTriggerRawToDigi')
 process.options = cms.untracked.PSet( wantSummary=cms.untracked.bool(False))
 
@@ -194,9 +196,30 @@ process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
   dropCSCPrimitives = cms.bool(False)
 )
 
-process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis)
+#
+# reemulate GMT, with changed OMTF
+#
+process.emulGmtCaloSumDigis = cms.EDProducer('L1TMuonCaloSumProducer',
+    caloStage2Layer2Label = cms.InputTag("caloStage2Digis",'CaloTower'),
+)
+process.emulGmtStage2Digis = cms.EDProducer('L1TMuonProducer',
+    barrelTFInput  = cms.InputTag("gmtStage2Digis", "BMTF"),
+    overlapTFInput = cms.InputTag("omtfEmulator", "OMTF"),
+#    overlapTFInput = cms.InputTag("gmtStage2Digis", "OMTF"),
+    forwardTFInput = cms.InputTag("gmtStage2Digis", "EMTF"),
+    #triggerTowerInput = cms.InputTag("simGmtCaloSumDigis", "TriggerTower2x2s"),
+    triggerTowerInput = cms.InputTag("emulGmtCaloSumDigis", "TriggerTowerSums"),
+    autoBxRange = cms.bool(False), # if True the output BX range is calculated from the inputs and 'bxMin' and 'bxMax' are ignored
+    bxMin = cms.int32(-2),
+    bxMax = cms.int32(2),
+    autoCancelMode = cms.bool(True), # if True the cancel out methods are configured depending on the FW version number and 'emtfCancelMode' is ignored
+    emtfCancelMode = cms.string("coordinate") # 'tracks' or 'coordinate'
+)
+
+
+process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis+process.caloStage2Digis)
 #process.raw2digi_step = cms.Path()
-process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfEmulator)
+process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfEmulator+process.emulGmtCaloSumDigis+process.emulGmtStage2Digis)
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.digiComapre+process.omtfEmulator+process.omtfStage2Raw)
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw+process.omtfStage2Digis2+process.digiComapre+process.omtfEmulator)
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw+process.omtfStage2Digis2)
@@ -243,11 +266,16 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
   
   l1ObjMaker = cms.PSet(
     omtfEmulSrc = cms.InputTag('omtfEmulator','OMTF'),
-#    omtfDataSrc = cms.InputTag('gmtStage2Digis','OMTF'),
     omtfDataSrc = cms.InputTag('omtfStage2Digis'),
+#   omtfDataSrc = cms.InputTag('gmtStage2Digis','OMTF'),
     emtfDataSrc = cms.InputTag('gmtStage2Digis','EMTF'),
     bmtfDataSrc = cms.InputTag('gmtStage2Digis','BMTF'),
-     gmtDataSrc = cms.InputTag('gmtStage2Digis','Muon'),
+    gmtDataSrc = cms.InputTag('gmtStage2Digis','Muon'),
+    gmtEmulSrc = cms.InputTag('emulGmtStage2Digis',''),
+  ),
+
+  closestTrackFinder = cms.PSet(
+    trackColl = cms.InputTag("generalTracks")
   ),
 
   onlyBestMuEvents = cms.bool(False),

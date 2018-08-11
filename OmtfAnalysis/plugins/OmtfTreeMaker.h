@@ -8,6 +8,7 @@
 #include "DataFormats/L1TMuon/interface/RegionalMuonCandFwd.h"
 
 #include "UserCode/OmtfDataFormats/interface/EventObj.h"
+#include "UserCode/OmtfDataFormats/interface/TrackObj.h"
 #include "UserCode/OmtfDataFormats/interface/MuonObj.h"
 #include "UserCode/OmtfDataFormats/interface/MuonObjColl.h"
 #include "UserCode/OmtfDataFormats/interface/L1Obj.h"
@@ -18,6 +19,7 @@
 #include "UserCode/OmtfAnalysis/interface/MenuInspector.h"
 #include "UserCode/OmtfAnalysis/interface/BestMuonFinder.h"
 #include "UserCode/OmtfAnalysis/interface/L1ObjMaker.h"
+#include "UserCode/OmtfAnalysis/interface/ClosestTrackFinder.h"
 
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
@@ -61,6 +63,7 @@ private:
   MuonObjColl* muonColl;
   L1ObjColl * l1ObjColl;
   SynchroCountsObjVect * synchroCounts;
+  TrackObj* closestTrack;
 								    
   TObjArray      theHelper;
 
@@ -68,6 +71,7 @@ private:
   BestMuonFinder theBestMuonFinder;
   L1ObjMaker theL1ObjMaker;
   SynchroCountsGrabber theSynchroGrabber;
+  ClosestTrackFinder theClosestTrackFinder;
 
 };
 #endif
