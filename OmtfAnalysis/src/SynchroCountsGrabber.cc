@@ -47,9 +47,10 @@ SynchroCountsGrabber::SynchroCountsGrabber(const edm::ParameterSet& cfg, edm::Co
 
 SynchroCountsGrabber::~SynchroCountsGrabber()
 {
-if (theNoSynchroWarning) std::cout <<" **** SynchroCountsGrabber      **** WARNING - NoSynchroWarning was set!" << std::endl;
-
+  if (theNoSynchroWarning) std::cout <<" **** SynchroCountsGrabber      **** WARNING - NoSynchroWarning was set!" << std::endl;
+  delete theCabling;
 }
+
 RPCRawSynchro::ProdItem SynchroCountsGrabber::counts(const edm::Event &ev, const edm::EventSetup &es)
 {
   RPCRawSynchro::ProdItem result;

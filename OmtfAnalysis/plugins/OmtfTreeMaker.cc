@@ -155,12 +155,14 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   }
 
   
-//  if (l1ObjColl->selectByType(L1Obj::OMTF)) {
-//    std::cout <<"#"<<theCounter<<" "<< *event << std::endl;
-//    std::cout << *muonColl << std::endl;
-//    std::cout << *l1ObjColl << std::endl;
-//    std::cout << std::endl;
-//  }
+/*
+  if (l1ObjColl->selectByType(L1Obj::OMTF)) {
+    std::cout <<"#"<<theCounter<<" "<< *event << std::endl;
+    std::cout << *muonColl << std::endl;
+    std::cout << *l1ObjColl << std::endl;
+    std::cout << std::endl;
+  }
+*/
 
   L1ObjColl omtfColl = l1ObjColl->selectByType(L1Obj::OMTF);
   if (omtfColl) {

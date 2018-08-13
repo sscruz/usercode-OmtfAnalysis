@@ -101,8 +101,10 @@ bool L1ObjMaker::makeRegCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, 
     default: { std::cout <<"Invalid type : " << type << std::endl; abort(); }
   }
   //int bxNumber = 0;
-  for (int bxNumber=-2; bxNumber<=2; bxNumber++) {
-  if (bxNumber!=0 && type==L1Obj::OMTF_emu) continue;
+  //if (bxNumber!=0 && type==L1Obj::OMTF_emu) continue;
+  //for (int bxNumber=-2; bxNumber<=2; bxNumber++) {
+  //for (int bxNumber = max(-2,candidates->getFirstBX());  bxNumber <= min(2,candidates->getLastBX()); bxNumber++) {
+  for (int bxNumber=candidates->getFirstBX(); bxNumber<=candidates->getLastBX(); bxNumber++) {
   for (l1t::RegionalMuonCandBxCollection::const_iterator it = candidates.product()->begin(bxNumber);
        it != candidates.product()->end(bxNumber);
        ++it) {

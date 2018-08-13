@@ -51,12 +51,12 @@ fileNames = cms.untracked.vstring(
 #'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/299/149/00000/0484DE01-CC69-E711-B649-02163E013816.root',
 #'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v1/000/297/435/00000/02CFFD58-DC58-E711-A2B4-02163E01A70A.root',
 #'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v1/000/297/435/00000/3212D13A-DC58-E711-A478-02163E019CC6.root',
-#'/store/data/Run2017F/SingleMuon/RAW-RECO/ZMu-17Nov2017-v1/70002/BEB00326-8EE0-E711-BCEE-FA163E8B70D3.root'
+'/store/data/Run2017F/SingleMuon/RAW-RECO/ZMu-17Nov2017-v1/70002/BEB00326-8EE0-E711-BCEE-FA163E8B70D3.root',
 #'/store/express/Commissioning2018/ExpressPhysics/FEVT/Express-v1/000/314/574/00000/0C7BF67A-B742-E811-A725-FA163ECF9759.root'
-'/store/data/Run2017F/SingleMuon/RAW-RECO/ZMu-PromptReco-v1/000/306/155/00000/860779D7-FFC4-E711-962F-FA163ECB69D1.root'
+#'/store/data/Run2017F/SingleMuon/RAW-RECO/ZMu-PromptReco-v1/000/306/155/00000/860779D7-FFC4-E711-962F-FA163ECB69D1.root'
 #'/store/express/Run2018B/ExpressPhysics/FEVT/Express-v1/000/318/653/00000/D4D8D4AD-1279-E811-9A53-FA163EA563F7.root'
                                   ),
-#skipEvents =  cms.untracked.uint32(29)
+#skipEvents =  cms.untracked.uint32(1)
 #skipEvents =  cms.untracked.uint32(264)
 )
 
@@ -79,7 +79,7 @@ process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
 process.load('EventFilter.L1TRawToDigi.gmtStage2Digis_cfi')
 process.load('EventFilter.L1TXRawToDigi.twinMuxStage2Digis_cfi')
 process.load('EventFilter.L1TRawToDigi.omtfStage2Digis_cfi')
-process.load('EventFilter.L1TRawToDigi.omtfStage2Raw_cfi')
+#process.load('EventFilter.L1TRawToDigi.omtfStage2Raw_cfi')
 #process.load('EventFilter.L1TRawToDigi.caloLayer1Digis_cfi')
 process.load('EventFilter.L1TRawToDigi.caloStage2Digis_cfi')
 #process.load("CondTools/RPC/RPCLinkMap_sqlite_cff")
@@ -112,7 +112,7 @@ process.GlobalTag.globaltag = '101X_dataRun2_Express_v7'
 # message logger
 #
 process.load('FWCore.MessageService.MessageLogger_cfi')
-process.MessageLogger.cerr.threshold = cms.untracked.string('DEBUG')
+#process.MessageLogger.cerr.threshold = cms.untracked.string('DEBUG')
 #process.MessageLogger.debugModules.append('muonRPCDigis')
 #process.MessageLogger.debugModules.append('omtfStage2Digis')
 #process.MessageLogger.debugModules.append('omtfStage2Raw')
@@ -145,6 +145,13 @@ process.digiComapre = cms.EDAnalyzer("OmtfDigiCompare",
 #  srcDTTh_OMTF = cms.InputTag('omtfStage2Digis2','OmtfUnpacker2'),
 )
 
+process.omtfStage2Raw = cms.EDProducer("OmtfPacker",
+  rpcInputLabel = cms.InputTag('omtfStage2Digis'),
+  cscInputLabel = cms.InputTag('omtfStage2Digis'),
+  dtPhInputLabel = cms.InputTag('omtfStage2Digis'),
+  dtThInputLabel = cms.InputTag('omtfStage2Digis'),
+)
+
 process.omtfStage2Digis2 = cms.EDProducer("OmtfUnpacker",
   inputLabel = cms.InputTag('omtfStage2Raw'),
   useRpcConnectionFile = cms.bool(True),
@@ -165,35 +172,51 @@ process.omtfParams = cms.ESProducer( "L1TMuonOverlapParamsESProducer",
      patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x0003.xml")),),
      configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x0004.xml"),
 )
+
+#import L1Trigger.L1TMuonOverlap.simOmtfDigis_cfi
+#process.omtfEmulator=L1Trigger.L1TMuonOverlap.simOmtfDigis_cfi.simOmtfDigis.clone() 
+#process.omtfEmulator.srcDTPh = cms.InputTag('omtfStage2Digis')
+#process.omtfEmulator.srcDTTh = cms.InputTag('omtfStage2Digis')
+#process.omtfEmulator.srcCSC = cms.InputTag('omtfStage2Digis')
+#process.omtfEmulator.srcRPC = cms.InputTag('omtfStage2Digis')
+#process.omtfEmulator.dropRPCPrimitives = cms.bool(False),
+#process.omtfEmulator.dropDTPrimitives = cms.bool(False),
+#process.omtfEmulator.dropCSCPrimitives = cms.bool(False),
+#process.omtfEmulator.dumpResultToXML = cms.bool(True),
+#process.omtfEmulator.bxMin = cms.int32(-3),
+#process.omtfEmulator.bxMax = cms.int32(4)
+
 process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
-#  srcDTPh = cms.InputTag('simDtTriggerPrimitiveDigis'),
-#  srcDTTh = cms.InputTag('simDtTriggerPrimitiveDigis'),
-#  srcDTPh =  cms.InputTag('simTwinMuxDigis'),
-#  srcDTTh =  cms.InputTag('simTwinMuxDigis'),
-#  srcDTPh =  cms.InputTag('twinMuxStage2Digis','PhIn'),
-#  srcDTTh =  cms.InputTag('twinMuxStage2Digis','ThIn'),
-#  srcDTPh =  cms.InputTag('bmtfDigis'),
-#  srcDTTh =  cms.InputTag('bmtfDigis'),
+##  srcDTPh = cms.InputTag('simDtTriggerPrimitiveDigis'),
+##  srcDTTh = cms.InputTag('simDtTriggerPrimitiveDigis'),
+##  srcDTPh =  cms.InputTag('simTwinMuxDigis'),
+##  srcDTTh =  cms.InputTag('simTwinMuxDigis'),
+##  srcDTPh =  cms.InputTag('twinMuxStage2Digis','PhIn'),
+##  srcDTTh =  cms.InputTag('twinMuxStage2Digis','ThIn'),
+##  srcDTPh =  cms.InputTag('bmtfDigis'),
+##  srcDTTh =  cms.InputTag('bmtfDigis'),
    srcDTPh = cms.InputTag('omtfStage2Digis'),
    srcDTTh = cms.InputTag('omtfStage2Digis'),
-#  srcCSC = cms.InputTag('csctfDigis'),
+##  srcCSC = cms.InputTag('csctfDigis'),
    srcCSC = cms.InputTag('omtfStage2Digis'),
-#  srcCSC = cms.InputTag('emtfStage2Digis'),
-#  srcCSC = cms.InputTag('muonCSCDigis','MuonCSCCorrelatedLCTDigi'),
-#  srcCSC = cms.InputTag('simCscTriggerPrimitiveDigis','MPCSORTED'),
-#  srcRPC = cms.InputTag('simMuonRPCDigis'),
-#  srcRPC = cms.InputTag('muonRPCDigis'),
+##  srcCSC = cms.InputTag('emtfStage2Digis'),
+##  srcCSC = cms.InputTag('muonCSCDigis','MuonCSCCorrelatedLCTDigi'),
+##  srcCSC = cms.InputTag('simCscTriggerPrimitiveDigis','MPCSORTED'),
+##  srcRPC = cms.InputTag('simMuonRPCDigis'),
+##  srcRPC = cms.InputTag('muonRPCDigis'),
    srcRPC = cms.InputTag('omtfStage2Digis'),
-#  dumpResultToXML = cms.bool(True),
-  dumpResultToXML = cms.bool(False),
-  dumpDetailedResultToXML = cms.bool(False),
-  XMLDumpFileName = cms.string("TestEvents.xml"),
-  dumpGPToXML = cms.bool(True),
-  readEventsFromXML = cms.bool(False),
-  eventsXMLFiles = cms.vstring("TestEvents.xml"),
-  dropRPCPrimitives = cms.bool(False),
-  dropDTPrimitives = cms.bool(False),
-  dropCSCPrimitives = cms.bool(False)
+##  dumpResultToXML = cms.bool(True),
+   dumpResultToXML = cms.bool(False),
+   dumpDetailedResultToXML = cms.bool(False),
+##   XMLDumpFileName = cms.string("TestEvents.xml"),
+##  dumpGPToXML = cms.bool(True),
+##  readEventsFromXML = cms.bool(False),
+##  eventsXMLFiles = cms.vstring("TestEvents.xml"),
+   dropRPCPrimitives = cms.bool(False),
+   dropDTPrimitives = cms.bool(False),
+   dropCSCPrimitives = cms.bool(False),
+   bxMin = cms.int32(-3),
+   bxMax = cms.int32(4)
 )
 
 #
@@ -218,12 +241,10 @@ process.emulGmtStage2Digis = cms.EDProducer('L1TMuonProducer',
 
 
 process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis+process.caloStage2Digis)
-#process.raw2digi_step = cms.Path()
+#process.raw2digi_step = cms.Path(process.muonRPCDigis)
 process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfEmulator+process.emulGmtCaloSumDigis+process.emulGmtStage2Digis)
-#process.omtf_step = cms.Path(process.omtfStage2Digis+process.digiComapre+process.omtfEmulator+process.omtfStage2Raw)
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw+process.omtfStage2Digis2+process.digiComapre+process.omtfEmulator)
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw+process.omtfStage2Digis2)
-#process.omtf_step = cms.Path(process.omtfStage2Digis+process.digiComapre)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, process.endjob_step)
 
@@ -312,7 +333,6 @@ import TrackingTools.TrackRefitter.globalMuonTrajectories_cff
 process.refittedMuons = TrackingTools.TrackRefitter.globalMuonTrajectories_cff.globalMuons.clone()
 
 process.OmtfTree = cms.Path(process.refittedMuons*process.omtfTree)
-#process.OmtfTree = cms.Path(process.omtfTree)
 process.schedule.append(process.OmtfTree)
 
 #print process.dumpPython();
