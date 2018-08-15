@@ -234,10 +234,6 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
     if (dataColl.getL1Objs().size() || emulColl.getL1Objs().size()) {
       if (dataColl.getL1Objs().size() != emulColl.getL1Objs().size()) {
         hDataEmulCheckProb->Fill(bx,wrong_size);
-        std::cout <<" wrong size!!!" << std::endl;
-        std::cout << dataColl << std::endl;
-        std::cout << emulColl << std::endl<<std::endl << std::endl;
-       
       }
       else {
         for (const auto & data : dataColl.getL1Objs()) {
