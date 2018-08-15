@@ -18,43 +18,12 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource", 
 fileNames = cms.untracked.vstring(
 # 'file:/afs/cern.ch/work/k/konec/data/runs/run279931-Express-2000_82DB28E0-7171-E611-A67B-FA163EE0E3A6.root',
-# 'file:toto.root',
-#'/store/express/Run2016F/ExpressPhysics/FEVT/Express-v1/000/278/017/00000/B69D41C7-4E58-E611-AC3F-02163E01412A.root',
-#'/store/express/Run2016F/ExpressPhysics/FEVT/Express-v1/000/277/982/00000/0627D80B-EB57-E611-9FC6-02163E011B6F.root',
-#  'root://cms-xrd-global.cern.ch//store/express/Run2016F/ExpressPhysics/FEVT/Express-v1/000/277/981/00000/B6751BB0-EB57-E611-8249-FA163E180514.root',
-#  'root://cms-xrd-global.cern.ch//store/data/Run2016D/SingleMuon/RAW-RECO/ZMu-PromptReco-v2/000/276/811/00000/44797745-794C-E611-A7F9-02163E011CC9.root',
-#  'file:/afs/cern.ch/work/k/konec/data/runs/run276811-SM_ZMu_Prompt-300_44797745-794C-E611-A7F9-02163E011CC9.root',
-#  'file:/afs/cern.ch/work/k/konec/data/runs/run275963-Express-150_24AE8B98-743E-E611-ABC2-02163E0138E3.root',
-#   'file:/afs/cern.ch/work/k/konec/data/runs/run276870-Express-500_F8CB4B4B-6C4B-E611-ADEA-02163E01429D.root',
-#'/store/data/Run2016C/ZeroBias/RECO/PromptReco-v2/000/276/097/00000/54FC3E14-0141-E611-882B-02163E014116.root'
-#'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/846A13FA-733E-E611-BC5C-02163E011D84.root',
-#'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/426B9BF4-733E-E611-BD17-02163E011B2D.root',
-#'file:/afs/cern.ch/work/k/konec/data/runs/run275963-Express-150_24AE8B98-743E-E611-ABC2-02163E0138E3.root', 
-#'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/60BF23FA-733E-E611-9DB7-02163E0126B2.root',
-#'/store/express/Run2016C/ExpressPhysics/FEVT/Express-v2/000/275/963/00000/76B0FAEE-733E-E611-9E7F-02163E0119E8.root',
-# 'file:/afs/cern.ch/work/k/konec/data/runs/run285090-ExpressPA-0347_043D8230-5EA7-E611-95E7-FA163E3BAEE0.root',
-#'/store/express/PARun2016C/ExpressCosmics/FEVT/Express-v1/000/286/180/00000/5A22E4C8-D7B6-E611-AA6A-FA163EFEB709.root',
-#'file:/afs/cern.ch/work/k/konec/data/runs/run284036-SM_ZMu_Prompt-14EE7A3D-639F-E611-81EE-02163E013441.root'
-#'file:/afs/cern.ch/work/k/konec/data/runs/run286180-CosmicsPA-2481BCC7-D7B6-E611-9A30-FA163EB8B34E.root',
-#'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/085FEBB5-4645-E711-AB5E-02163E013902.root',
-#'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/08D7F942-4745-E711-86A8-02163E011825.root',
-#'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/08FA4A0C-4645-E711-B797-02163E01A295.root',
-#'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0A59B107-4745-E711-B578-02163E01A46D.root',
-#'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0C154D59-4645-E711-A5EB-02163E019C9F.root',
-#'/store/express/Run2017A/ExpressPhysics/FEVT/Express-v1/000/295/606/00000/0CA922D7-4545-E711-9C67-02163E01A364.root',
-#'file:/afs/cern.ch/work/k/konec/data/runs/run295606-Express-46C6640F-4745-E711-A67B-02163E0145A9.root',
 #'root://cms-xrd-global.cern.ch//store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/298/853/00000/08861D5E-C966-E711-9E99-02163E019DA2.root'
-#'/store/express/Run2017B/ExpressCosmics/FEVT/Express-v2/000/299/188/00000/2C7573A8-586A-E711-84CA-02163E0128D1.root'
-#'/store/express/Run2017B/ExpressCosmics/FEVT/Express-v2/000/299/189/00000/02B163AB-676A-E711-B742-02163E011E55.root'
-#'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/299/149/00000/00C34496-E669-E711-9E38-02163E01A3FB.root',
-#'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/299/149/00000/0006732A-E169-E711-8843-02163E0123FD.root',
-#'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v2/000/299/149/00000/0484DE01-CC69-E711-B649-02163E013816.root',
-#'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v1/000/297/435/00000/02CFFD58-DC58-E711-A2B4-02163E01A70A.root',
-#'/store/express/Run2017B/ExpressPhysics/FEVT/Express-v1/000/297/435/00000/3212D13A-DC58-E711-A478-02163E019CC6.root',
-'/store/data/Run2017F/SingleMuon/RAW-RECO/ZMu-17Nov2017-v1/70002/BEB00326-8EE0-E711-BCEE-FA163E8B70D3.root',
-#'/store/express/Commissioning2018/ExpressPhysics/FEVT/Express-v1/000/314/574/00000/0C7BF67A-B742-E811-A725-FA163ECF9759.root'
+#'/store/data/Run2017F/SingleMuon/RAW-RECO/ZMu-17Nov2017-v1/70002/BEB00326-8EE0-E711-BCEE-FA163E8B70D3.root',
 #'/store/data/Run2017F/SingleMuon/RAW-RECO/ZMu-PromptReco-v1/000/306/155/00000/860779D7-FFC4-E711-962F-FA163ECB69D1.root'
-#'/store/express/Run2018B/ExpressPhysics/FEVT/Express-v1/000/318/653/00000/D4D8D4AD-1279-E811-9A53-FA163EA563F7.root'
+#'/store/express/Commissioning2018/ExpressPhysics/FEVT/Express-v1/000/314/574/00000/0C7BF67A-B742-E811-A725-FA163ECF9759.root'
+ '/store/express/Run2018D/ExpressPhysics/FEVT/Express-v1/000/321/010/00000/0601C5EA-FF9A-E811-A8BA-FA163EB3A544.root',
+#'/store/express/Run2018D/ExpressPhysics/FEVT/Express-v1/000/321/010/00000/06921998-039B-E811-AE79-FA163E400AA8.root'
                                   ),
 #skipEvents =  cms.untracked.uint32(1)
 #skipEvents =  cms.untracked.uint32(264)
@@ -106,7 +75,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 #process.GlobalTag.globaltag  = '92X_dataRun2_Prompt_v4'
 #process.GlobalTag.globaltag = '100X_dataRun2_v1'
 #process.GlobalTag.globaltag = '100X_dataRun2_Express_v3'
-process.GlobalTag.globaltag = '101X_dataRun2_Express_v7'
+process.GlobalTag.globaltag = '101X_dataRun2_Express_v8'
 
 #
 # message logger
@@ -232,9 +201,9 @@ process.emulGmtStage2Digis = cms.EDProducer('L1TMuonProducer',
     forwardTFInput = cms.InputTag("gmtStage2Digis", "EMTF"),
     #triggerTowerInput = cms.InputTag("simGmtCaloSumDigis", "TriggerTower2x2s"),
     triggerTowerInput = cms.InputTag("emulGmtCaloSumDigis", "TriggerTowerSums"),
-    autoBxRange = cms.bool(False), # if True the output BX range is calculated from the inputs and 'bxMin' and 'bxMax' are ignored
-    bxMin = cms.int32(-2),
-    bxMax = cms.int32(2),
+    autoBxRange = cms.bool(True), # if True the output BX range is calculated from the inputs and 'bxMin' and 'bxMax' are ignored
+    bxMin = cms.int32(-3),
+    bxMax = cms.int32(4),
     autoCancelMode = cms.bool(True), # if True the cancel out methods are configured depending on the FW version number and 'emtfCancelMode' is ignored
     emtfCancelMode = cms.string("coordinate") # 'tracks' or 'coordinate'
 )

@@ -22,6 +22,8 @@ namespace {
   TH2D *hDataEmulCompareComb;
   TH2D *hDataEmulPt, *hDataEmulPhi, *hDataEmulEta;
   TH2D *hDataEmulNotAgreeEta, *hDataEmulNotAgreePhi;
+  TH1D *hDataEmulBxD, *hDataEmulBxE;
+  TH2D *hDataEmulCheckProb;
 
   TH2D *hDataEmulDistributionData, *hDataEmulDistributionEmul;
 
@@ -59,16 +61,14 @@ namespace {
     }
   } 
 
-
-
 }
 
 AnaDataEmul::AnaDataEmul(const edm::ParameterSet& cfg)
-  : debug(false)
+  : debug(false), bxMin(cfg.getParameter<int>("bxMin")), bxMax(cfg.getParameter<int>("bxMax"))
 {
 }
 
-std::string AnaDataEmul::diffName(const DIFF & diff) const
+std::string AnaDataEmul::matchName(const MATCH & diff) const
 {
   switch (diff) {
     case (agree) :       return "Agree"; break;
@@ -79,6 +79,18 @@ std::string AnaDataEmul::diffName(const DIFF & diff) const
     case (emulOnly) :    return "Emul Only"; break;
     case (sizeDiff) :    return "Size Diff"; break;
     default:             return "unknown";
+  }
+}
+
+std::string AnaDataEmul::problName(const PROBL & diff) const
+{
+  switch (diff) {
+    case (ok)          : return "OK"; break;
+    case (wrong_size)  : return "wrong_size"; break;
+    case (wrong_board) : return "wrong_board"; break;
+    case (wrong_hits)  : return "wrong_hits"; break;
+    case (wrong_kine)  : return "wrong_kine"; break;
+    default:       return "unknown";
   }
 }
 
@@ -117,7 +129,8 @@ void AnaDataEmul::init(TObjArray& histos)
   hDataEmulIssue->GetXaxis()->SetBinLabel(1," ");
   hDataEmulIssue->GetXaxis()->SetBinLabel(2,"hits");
   hDataEmulIssue->GetXaxis()->SetBinLabel(3,"p_{T}");
-  hDataEmulIssue->GetXaxis()->SetBinLabel(4,"phi (> #pm 1)");
+//  hDataEmulIssue->GetXaxis()->SetBinLabel(4,"phi (> #pm 1)");
+  hDataEmulIssue->GetXaxis()->SetBinLabel(4,"phi");
   hDataEmulIssue->GetXaxis()->SetBinLabel(5,"eta");
   hDataEmulIssue->GetXaxis()->SetBinLabel(6,"charge");
   hDataEmulIssue->GetXaxis()->SetBinLabel(7,"quality");
@@ -161,109 +174,172 @@ void AnaDataEmul::init(TObjArray& histos)
     hDataEmulNotAgreeEta->GetYaxis()->SetBinLabel( ibin, slabel.c_str());
   }
   
+  hDataEmulBxD = new TH1D("hDataEmulBxD","hDataEmulBx",10,-4.5,5.5); histos.Add(hDataEmulBxD);
+  hDataEmulBxE = new TH1D("hDataEmulBxE","hDataEmulBx",10,-4.5,5.5); histos.Add(hDataEmulBxE);
+
+  hDataEmulCheckProb = new TH2D("hDataEmulCheckProb","hDataEmulCheckProb",8, -3.5,4.5, 5, -0.5, 4.5); histos.Add(hDataEmulCheckProb); 
+  {
+    TAxis* y = hDataEmulCheckProb->GetYaxis();
+           y->SetBinLabel(y->FindBin(ok),         problName(ok).c_str());
+           y->SetBinLabel(y->FindBin(wrong_size), problName(wrong_size).c_str());
+           y->SetBinLabel(y->FindBin(wrong_board),problName(wrong_board).c_str());
+           y->SetBinLabel(y->FindBin(wrong_hits), problName(wrong_hits).c_str());
+           y->SetBinLabel(y->FindBin(wrong_kine), problName(wrong_kine).c_str());
+    hDataEmulCheckProb->GetXaxis()->SetNdivisions(110);
+  }
 
 }
 
 void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
 {
   if ( !*coll ) return;
+  
 
+  //
+  // BX distribution
+  //
+  {
+    L1ObjColl cD = coll->selectByType(L1Obj::OMTF); 
+    L1ObjColl cE = coll->selectByType(L1Obj::OMTF_emu); 
 
+    for (const auto & obj : cD.getL1Objs()) hDataEmulBxD->Fill(obj.bx);
+    for (const auto & obj : cE.getL1Objs()) hDataEmulBxE->Fill(obj.bx); 
+    
+  }
+
+  //
+  // position districution
+  //
+  {
   std::vector<L1Obj> vdata = coll->selectByType(L1Obj::OMTF).selectByBx(); 
-
   for (const auto & obj : vdata) {
     std::bitset<18> hitLayers(obj.hits);
     for (unsigned int hitLayer=0; hitLayer<18;hitLayer++) if(hitLayers[hitLayer]) hDataEmulDistributionData->Fill(OmtfName(obj.iProcessor, obj.position),hitLayer);  
   }
+
   std::vector<L1Obj> vemul = coll->selectByType(L1Obj::OMTF_emu).selectByBx(); 
   for (const auto & obj : vemul) {
     std::bitset<18> hitLayers(obj.hits);
     for (unsigned int hitLayer=0; hitLayer<18;hitLayer++) if(hitLayers[hitLayer]) hDataEmulDistributionEmul->Fill(OmtfName(obj.iProcessor, obj.position),hitLayer);  
   }
-
-  const L1Obj * data = 0;
-//  L1ObjColl dataColl =  coll->selectByType(L1Obj::OMTF).selectByBx();
-//  if (dataColl.getL1Objs().size()!=0) data = &(dataColl.getL1Objs().front());
-  unsigned int idx=0;
-  do { 
-  if (vdata.size()!=0) data = &(vdata[idx]);
-
-  const L1Obj * emul = 0;
-  L1ObjColl emulColl =  coll->selectByType(L1Obj::OMTF_emu);
-  emul = bestMatch(data, emulColl);
-
-  if (!data && !emul) return;
-//  if (emul && ((emul->q & 0b01) !=0) ) return;
-
-//  if (emul && makeName(*emul).name()=="OMTFn4") return;  
-//  if (data && makeName(*data).name()=="OMTFn4") return;  
-//  if (emul && makeName(*emul).name()=="OMTFp1") return;  
-//  if (data && makeName(*data).name()=="OMTFp1") return;  
-//  if (emul && makeName(*emul).name()=="OMTFn1") return;  
-//  if (data && makeName(*data).name()=="OMTFn1") return;  
-
-
-  bool unique = data && emul && (vdata.size() == 1) && (emulColl.getL1Objs().size() == 1);
-
-//  bool lowQuality = false;
-//  if (data && (data->q == 4) ) lowQuality = true; 
-//  if (emul && (emul->q == 4) ) lowQuality = true; 
-
-  DIFF diff = compare(data, emul);   
-  if (data && emul && (vdata.size() != emulColl.getL1Objs().size()) ) diff = sizeDiff;
-
-  hDataEmulCompare->Fill(diff);
-  theRunMap.addEvent(event->run, (diff==agree) ); 
-
-  unsigned int hits = 0;
-  if (emul) hits |= emul->hits;
-  if (data) hits |= data->hits;
-  unsigned int dt = hasDtHits(hits);
-  unsigned int csc = hasCscHits(hits);
-  unsigned int rpc = hasRpcHits(hits);
-
-  int layerComb = 0;
-  if ( dt &&  csc &&  rpc) layerComb = 1;
-  if ( dt &&  csc && !rpc) layerComb = 2;
-  if ( dt && !csc &&  rpc) layerComb = 3;
-  if (!dt &&  csc &&  rpc) layerComb = 4;
-  if ( dt && !csc && !rpc) layerComb = 5;
-  if (!dt &&  csc && !rpc) layerComb = 6;
-  if (!dt && !csc &&  rpc) layerComb = 7;
-  hDataEmulCompareComb->Fill(diff, layerComb); 
-//  std::cout <<" Unique: " << unique << "  diff: "<<diff << std::endl;
-//  if (diff==DIFF::agree && unique && emul->eta != data->eta) {
-//    std::cout <<"PROBLEM WITH ETA ONLY, event  "<<*event<<std::endl << *data << std::endl << *emul << std::endl;
-//  }
-  if(unique && !(diff==agree) ) {
-     hDataEmulNotAgreeEta->Fill( OmtfName(emul->iProcessor, emul->position), code2HistoBin(abs(emul->eta)) ); 
-     hDataEmulNotAgreePhi->Fill( OmtfName(emul->iProcessor, emul->position), emul->phi ); 
   }
 
-  if (debug && diff!=agree ) std::cout << "NOT agree("<<diffName(diff)<<"), dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl <<*coll << std::endl; 
+  for (int bx = bxMin; bx <= bxMax; bx++) {
 
-  if (unique) {
-    hDataEmulPt->Fill( code2pt(data->pt), code2pt(emul->pt) );
-    hDataEmulPhi->Fill(data->phi, emul->phi);
-    hDataEmulIssue->Fill(1);
-    if (data->hits != emul->hits)          hDataEmulIssue->Fill(2);
-    if (data->pt != emul->pt)              hDataEmulIssue->Fill(3); 
-    if ( abs(data->phi - emul->phi) !=0)   hDataEmulIssue->Fill(4); 
-    if (data->eta != emul->eta)            hDataEmulIssue->Fill(5);
-    if ( data->charge !=  emul->charge)   hDataEmulIssue->Fill(6);
-    if ( (data->q >>2) != (emul->q >>2) )  hDataEmulIssue->Fill(7);
-  }
-  if(unique) { hDataEmulEta->Fill(code2HistoBin(abs(data->eta)), code2HistoBin(abs(emul->eta)) ); }
+    L1ObjColl dataColl = coll->selectByType(L1Obj::OMTF).selectByBx(bx,bx);
+    L1ObjColl emulColl = coll->selectByType(L1Obj::OMTF_emu).selectByBx(bx,bx);
+    std::vector<L1Obj> vdata = dataColl;
     
+    // check problems
+    if (dataColl.getL1Objs().size() || emulColl.getL1Objs().size()) {
+      if (dataColl.getL1Objs().size() != emulColl.getL1Objs().size()) {
+        hDataEmulCheckProb->Fill(bx,wrong_size);
+        std::cout <<" wrong size!!!" << std::endl;
+        std::cout << dataColl << std::endl;
+        std::cout << emulColl << std::endl<<std::endl << std::endl;
+       
+      }
+      else {
+        for (const auto & data : dataColl.getL1Objs()) {
+          PROBL prob = ok;
+          for (const auto & emul : emulColl.getL1Objs()) {
+            PROBL diff = checkProbl(data,emul);
+            if (diff==ok) {prob=ok; break;}
+            if (diff>prob)prob=diff;
+          }
+          hDataEmulCheckProb->Fill(bx,prob);
+        }
+      }
+    }
 
-//  } while ( false);
-  } while ( ++idx < vdata.size() );
+    unsigned int idx=0;
+    do { 
+      const L1Obj * data = (vdata.size() > 0) ?  &(vdata[idx]) : 0;
+      const L1Obj * emul = bestMatch(data, emulColl);
+    
+      if (!data && !emul) break;
+
+    //  if (emul && ((emul->q & 0b01) !=0) ) return;
+    //  if (emul && makeName(*emul).name()=="OMTFn4") return;  
+    //  if (data && makeName(*data).name()=="OMTFn4") return;  
+    //  if (emul && makeName(*emul).name()=="OMTFp1") return;  
+    //  if (data && makeName(*data).name()=="OMTFp1") return;  
+    //  if (emul && makeName(*emul).name()=="OMTFn1") return;  
+    //  if (data && makeName(*data).name()=="OMTFn1") return;  
+    
+    
+    //  bool lowQuality = false;
+    //  if (data && (data->q == 4) ) lowQuality = true; 
+    //  if (emul && (emul->q == 4) ) lowQuality = true; 
+    
+      MATCH diff = checkMatch(data, emul);   
+      if (data && emul && (vdata.size() != emulColl.getL1Objs().size()) ) diff = sizeDiff;
+
+      hDataEmulCompare->Fill(diff);
+      theRunMap.addEvent(event->run, (diff==agree) ); 
+
+    
+      unsigned int hits = 0;
+      if (emul) hits |= emul->hits;
+      if (data) hits |= data->hits;
+      unsigned int dt = hasDtHits(hits);
+      unsigned int csc = hasCscHits(hits);
+      unsigned int rpc = hasRpcHits(hits);
+    
+      int layerComb = 0;
+      if ( dt &&  csc &&  rpc) layerComb = 1;
+      if ( dt &&  csc && !rpc) layerComb = 2;
+      if ( dt && !csc &&  rpc) layerComb = 3;
+      if (!dt &&  csc &&  rpc) layerComb = 4;
+      if ( dt && !csc && !rpc) layerComb = 5;
+      if (!dt &&  csc && !rpc) layerComb = 6;
+      if (!dt && !csc &&  rpc) layerComb = 7;
+      hDataEmulCompareComb->Fill(diff, layerComb); 
+
+      bool unique = data && emul && (vdata.size() == 1) && (emulColl.getL1Objs().size() == 1) && (makeName(*data)==makeName(*emul));
+      if(unique && !(diff==agree) ) {
+         hDataEmulNotAgreeEta->Fill( OmtfName(emul->iProcessor, emul->position), code2HistoBin(abs(emul->eta)) ); 
+         hDataEmulNotAgreePhi->Fill( OmtfName(emul->iProcessor, emul->position), emul->phi ); 
+      }
+    
+      if (debug && diff!=agree ) std::cout << "NOT agree("<<matchName(diff)<<"), dt: "<< dt <<", csc: "<< csc <<", rpcB: "<< hasRpcHitsB(hits)<<", rpcE: "<<hasRpcHitsE(hits) << std::endl <<*coll << std::endl; 
+    
+      if (unique) {
+        hDataEmulPt->Fill( code2pt(data->pt), code2pt(emul->pt) );
+        hDataEmulPhi->Fill(data->phi, emul->phi);
+        hDataEmulIssue->Fill(1);
+        if (data->hits != emul->hits)          hDataEmulIssue->Fill(2);
+        if (data->pt != emul->pt)              hDataEmulIssue->Fill(3); 
+        if ( abs(data->phi - emul->phi) !=0)   hDataEmulIssue->Fill(4); 
+        if (data->eta != emul->eta)            hDataEmulIssue->Fill(5);
+        if ( data->charge !=  emul->charge)    hDataEmulIssue->Fill(6);
+//      if ( (data->q >>2) != (emul->q >>2) )  hDataEmulIssue->Fill(7);
+        if ( (data->q    ) != (emul->q    ) )  hDataEmulIssue->Fill(7);
+      }
+      if(unique) { hDataEmulEta->Fill(code2HistoBin(abs(data->eta)), code2HistoBin(abs(emul->eta)) ); }
+    
+    } while ( ++idx < vdata.size() );
+  }
 }
 
-AnaDataEmul::DIFF AnaDataEmul::compare(const L1Obj * data, const L1Obj * emul)
+AnaDataEmul::PROBL AnaDataEmul::checkProbl(const L1Obj & data, const L1Obj & emul)
+{
+  OmtfName dataBoard = makeName(data);
+  OmtfName emulBoard = makeName(emul);
+  if ( dataBoard != emulBoard) return wrong_board;
+  if (data.hits != emul.hits) return wrong_hits;
+  if (data.q != emul.q) return wrong_kine;
+  if (data.charge != emul.charge) return wrong_kine;
+  if (data.pt  != emul.pt ) return wrong_kine;
+  if (data.phi != emul.phi) return wrong_kine;
+  if (data.eta != emul.eta) return wrong_kine;
+  return ok;
+}
+
+AnaDataEmul::MATCH AnaDataEmul::checkMatch(const L1Obj * data, const L1Obj * emul)
 {
 
-  DIFF diff = unknown;
+  MATCH diff = unknown;
 
   if (!data && !emul) return diff;
 
@@ -272,12 +348,14 @@ AnaDataEmul::DIFF AnaDataEmul::compare(const L1Obj * data, const L1Obj * emul)
   else {
     unsigned int hitsEmul = emul->hits;
     unsigned int hitsData = data->hits;
-    if (    (hitsEmul == hitsData) 
-            && (data->pt == emul->pt) 
-            && (data->phi == emul->phi) 
-            && (data->eta == emul->eta) 
-            && data->charge == emul->charge
-           ) diff = agree; 
+    if (    (makeName(*data)==makeName(*emul))
+         && (hitsEmul == hitsData) 
+         && (data->pt  == emul->pt) 
+         && (data->phi == emul->phi) 
+         && (data->eta == emul->eta) 
+         && (data->q   == emul->q  ) 
+         && (data->charge == emul->charge)
+       ) diff = agree; 
     else if (    abs(data->pt-emul->pt) <= 2 
               && abs(data->phi - emul->phi) <= 1 
               && data->charge == emul->charge) diff = almostAgree; 
@@ -287,6 +365,7 @@ AnaDataEmul::DIFF AnaDataEmul::compare(const L1Obj * data, const L1Obj * emul)
   }
   return diff;
 }
+
 unsigned int AnaDataEmul::hasDtHits(unsigned int hitPattern) {
   unsigned int result = 0;
   std::bitset<29> hitBits(hitPattern);
@@ -318,17 +397,16 @@ unsigned int AnaDataEmul::hasRpcHitsE(unsigned int hitPattern) {
 const L1Obj * AnaDataEmul::bestMatch( const L1Obj * data, const L1ObjColl & emuColl)
 {
   const L1Obj * emul = 0;
-  DIFF best = disagree;
+  MATCH best = disagree;
   if (!data) {
     if (emuColl.getL1Objs().size()!=0) emul = &(emuColl.getL1Objs().front());
   } else {
     OmtfName dataBoard = makeName(*data); 
-    const std::vector<L1Obj> & l1EmuObjs = emuColl; 
-    for (auto & l1Emu : l1EmuObjs) {
+    for (auto & l1Emu : emuColl.getL1Objs()) {
       const L1Obj & tmp = l1Emu;
       OmtfName emulBoard = makeName(tmp);
       if ( dataBoard != emulBoard) continue;
-      DIFF diff = compare(data, &tmp);
+      MATCH diff = checkMatch(data, &tmp);
       if (diff == agree) { emul = &tmp; best = agree; }
       else if (diff == ratherAgree && best != agree) { emul = &tmp; best = ratherAgree; }
       else if (best != agree && best != ratherAgree) { emul = &tmp;}

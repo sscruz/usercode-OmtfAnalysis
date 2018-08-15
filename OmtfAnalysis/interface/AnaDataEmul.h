@@ -20,9 +20,14 @@ public:
   bool debug;
 private:
 
-  enum DIFF { agree=1, almostAgree=2, ratherAgree = 3, disagree=4, dataOnly=5, emulOnly=6, sizeDiff=7, unknown };
-  std::string diffName(const DIFF & diff) const;
-  DIFF compare( const L1Obj * data, const L1Obj * emul);
+  int bxMin, bxMax;
+
+  enum MATCH { agree=1, almostAgree=2, ratherAgree = 3, disagree=4, dataOnly=5, emulOnly=6, sizeDiff=7, unknown };
+  enum PROBL { ok=0, wrong_size=1,  wrong_board=2, wrong_hits=3,  wrong_kine=4, wrong };
+  std::string matchName(const MATCH & ) const;
+  std::string problName(const PROBL& ) const;
+  MATCH  checkMatch( const L1Obj * data, const L1Obj * emul);
+  PROBL  checkProbl( const L1Obj & data, const L1Obj & emul);
 
   const L1Obj * bestMatch( const L1Obj * data, const L1ObjColl & emuColl);
 
