@@ -65,14 +65,24 @@ TrackAtSurface::TrackAtSurface(const reco::Muon* mu,const edm::Event &ev, const 
 
 }
 
+TrajectoryStateOnSurface TrackAtSurface::atPoint( double eta, double phi) const
+{
+  double theta = 2.*atan(exp(-eta));
+  double rho   = 500.;
+  double zet   = 790.;
+  if (fabs(eta) > 1.24) rho  = zet * tan(fabs(theta)); else zet = rho/tan(theta);
+  GlobalPoint point( GlobalPoint::Polar(theta, phi, sqrt( pow(rho,2)+pow(zet,2)) ) );
+  return atPoint(point);
+}
+
 TrajectoryStateOnSurface TrackAtSurface::atPoint( const GlobalPoint& point) const
 {
   TrajectoryStateOnSurface muTSOS  = theTrajectory.empty() ? theState : theTrajectory.closestMeasurement(point).updatedState();
 
-  bool barrel = fabs(point.z()) < 680. ? true : false;
+  bool barrel = fabs(point.z()) < 700. ? true : false;
   ReferenceCountingPointer<Surface> surface = barrel ?
-      ReferenceCountingPointer<Surface>( new  BoundCylinder( GlobalPoint(0.,0.,0.), TkRotation<float>(), SimpleCylinderBounds( point.perp(),  point.perp(), -680., 680. ) ))
-    : ReferenceCountingPointer<Surface>( new  BoundDisk( GlobalPoint(0.,0.,point.z()), TkRotation<float>(), SimpleDiskBounds( 260., 720., -0.0001, 0.0001 ) ) );
+      ReferenceCountingPointer<Surface>( new  BoundCylinder( GlobalPoint(0.,0.,0.), TkRotation<float>(), SimpleCylinderBounds( point.perp(),  point.perp(), -780., 780. ) ))
+    : ReferenceCountingPointer<Surface>( new  BoundDisk( GlobalPoint(0.,0.,point.z()), TkRotation<float>(), SimpleDiskBounds( 260., 810., -0.0001, 0.0001 ) ) );
 
   edm::ESHandle<Propagator> propagator;
   theEs.get<TrackingComponentsRecord>().get("SteppingHelixPropagatorAny", propagator);
@@ -115,15 +125,17 @@ TrajectoryStateOnSurface TrackAtSurface::atDetFromTrack( const RPCDetId& rpc) co
 
   return result;
 }
-
 TrajectoryStateOnSurface TrackAtSurface::atStation2( float eta) const
 {
   ReferenceCountingPointer<Surface> rpc;
-  if (eta < -1.04)       rpc = ReferenceCountingPointer<Surface>(new  BoundDisk( GlobalPoint(0.,0.,-790.), TkRotation<float>(), SimpleDiskBounds( 300., 710., -10., 10. ) ) );
-  else if (eta < -0.72)  rpc = ReferenceCountingPointer<Surface>(new  BoundCylinder( GlobalPoint(0.,0.,0.), TkRotation<float>(), SimpleCylinderBounds( 520, 520, -700, 700 ) ) );
-  else if (eta < 0.72)   rpc = ReferenceCountingPointer<Surface>(new  BoundCylinder( GlobalPoint(0.,0.,0.), TkRotation<float>(), SimpleCylinderBounds( 500, 500, -700, 700 ) ) );
-  else if (eta < 1.04)   rpc = ReferenceCountingPointer<Surface>(new  BoundCylinder( GlobalPoint(0.,0.,0.), TkRotation<float>(), SimpleCylinderBounds( 520, 520, -700, 700 ) ) );
-  else                      rpc = ReferenceCountingPointer<Surface>(new  BoundDisk( GlobalPoint(0.,0.,790.), TkRotation<float>(), SimpleDiskBounds( 300., 710., -10., 10. ) ) );
+  if (eta < -1.24)       rpc = ReferenceCountingPointer<Surface>(new  BoundDisk( GlobalPoint(0.,0.,-790.),  TkRotation<float>(), SimpleDiskBounds( 300., 810., -10., 10. ) ) );
+  else if (eta < 1.24)   rpc = ReferenceCountingPointer<Surface>(new  BoundCylinder( GlobalPoint(0.,0.,0.), TkRotation<float>(), SimpleCylinderBounds( 500, 500, -900, 900 ) ) );
+  else                   rpc = ReferenceCountingPointer<Surface>(new  BoundDisk( GlobalPoint(0.,0.,790.),   TkRotation<float>(), SimpleDiskBounds( 300., 810., -10., 10. ) ) );
+//  if (eta < -1.04)       rpc = ReferenceCountingPointer<Surface>(new  BoundDisk( GlobalPoint(0.,0.,-790.), TkRotation<float>(), SimpleDiskBounds( 300., 710., -10., 10. ) ) );
+//  else if (eta < -0.72)  rpc = ReferenceCountingPointer<Surface>(new  BoundCylinder( GlobalPoint(0.,0.,0.), TkRotation<float>(), SimpleCylinderBounds( 520, 520, -700, 700 ) ) );
+//  else if (eta < 0.72)   rpc = ReferenceCountingPointer<Surface>(new  BoundCylinder( GlobalPoint(0.,0.,0.), TkRotation<float>(), SimpleCylinderBounds( 500, 500, -700, 700 ) ) );
+//  else if (eta < 1.04)   rpc = ReferenceCountingPointer<Surface>(new  BoundCylinder( GlobalPoint(0.,0.,0.), TkRotation<float>(), SimpleCylinderBounds( 520, 520, -700, 700 ) ) );
+//  else                      rpc = ReferenceCountingPointer<Surface>(new  BoundDisk( GlobalPoint(0.,0.,790.), TkRotation<float>(), SimpleDiskBounds( 300., 710., -10., 10. ) ) );
   edm::ESHandle<Propagator> propagator;
   theEs.get<TrackingComponentsRecord>().get("SteppingHelixPropagatorAlong", propagator);
   TrajectoryStateOnSurface trackAtRPC =  propagator->propagate( theState, *rpc);

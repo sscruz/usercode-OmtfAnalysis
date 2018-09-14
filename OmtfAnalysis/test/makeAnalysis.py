@@ -19,8 +19,17 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
   histoFileName = cms.string("omtfAnalysis.root"),
   treeFileNames = cms.vstring(
 #    "omtfTree.root",
-#    "../jobs/crab_0_180814_162345/omtfTree.root"
-    "../jobs/crab_0_180815_115628/omtfTree.root"
+#    "../jobs/crab_0_180821_131836/omtfTree.root",
+#    "../jobs/crab_0_180821_132521/omtfTree.root"
+#    "../jobs/crab_0_180903_103036_SingleMu_EMU4/omtfTree.root"
+#    "../jobs/crab_0_180822_121531/omtfTree.root"
+#    "../jobs/crab_0_180906_151620_SingleMu_EMU5Fix/omtfTree.root"
+#    "../jobs/crab_0_180906_192155_SingleMu_5Fix_L1VtxProp/omtfTree.root"
+#    "../jobs/crab_0_180912_221119_FW5_EMU5/omtfTree.root"
+#     "../jobs/crab_0_180912_221657_FW5_EMU6/omtfTree.root"
+#    "../jobs/crab_0_180913_215833_FW5_EMU65ix/omtfTree.root"
+#    "../jobs/crab_0_180913_220815_FW5_EMU6fix/omtfTree.root"
+     "../jobs/crab_0_180914_131236/omtfTree.root"
   ),
   filterByAnaEvent = cms.bool(True),
   anaEvent = cms.PSet(
@@ -28,36 +37,36 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
 #   onlyRuns = cms.vuint32(299149),
   ),
 
-#  anaSecMuSel = cms.PSet(
-#    triggMuon = cms.PSet (
-###     requireCharge      = cms.int32(1),
-###      requireEtaSign     = cms.int32(1),
-#      requireOutsideOMTF  = cms.bool(True),
-#      requireTight        = cms.bool(True),
-#      requireUnique       = cms.bool(True),
-#      requireHLT          = cms.bool(True),
-#      requireIsoForHLTIso = cms.bool(True),
-#      minAcceptMuPtVal    = cms.double(20.),
-#      minMatchStations    = cms.uint32(2),
-#      maxMuEtaVal         = cms.double(2.4),
-#      minAcceptL1PtVal    = cms.double(18.),
-#      maxL1DeltaR         = cms.double(0.3),
-#      minAccepL1Q         = cms.int32(12), 
-#    ),
-#    probeMuon = cms.PSet (
-###      requireCharge    = cms.int32(-1),
-###      requireEtaSign   = cms.int32(-1),
-#      requireInsideOMTF = cms.bool(True),
-#      requireUnique     = cms.bool(True),
-#      requireLoose      = cms.bool(True),
-#      requireMedium     = cms.bool(True),
-#      requireTight      = cms.bool(False),
-#      requireTkIso      = cms.bool(False),
-#      requirePfIso      = cms.bool(False),
-#      minTrgMuDeltaR    = cms.double(1.0),
-#      maxMuEtaVal       = cms.double(2.4),
-#    ),
-#  ), 
+  anaSecMuSel = cms.PSet(
+    triggMuon = cms.PSet (
+##     requireCharge      = cms.int32(1),
+      requireEtaSign     = cms.int32(-1),
+##      requireOutsideOMTF  = cms.bool(True),
+      requireTight        = cms.bool(True),
+      requireUnique       = cms.bool(True),
+      requireHLT          = cms.bool(True),
+      requireIsoForHLTIso = cms.bool(True),
+      minAcceptMuPtVal    = cms.double(20.),
+      minMatchStations    = cms.uint32(2),
+      maxMuEtaVal         = cms.double(2.4),
+      minAcceptL1PtVal    = cms.double(18.),
+      maxL1DeltaR         = cms.double(0.3),
+      minAccepL1Q         = cms.int32(12), 
+    ),
+    probeMuon = cms.PSet (
+##      requireCharge    = cms.int32(-1),
+      requireEtaSign   = cms.int32( 1),
+##      requireInsideOMTF = cms.bool(True),
+      requireUnique     = cms.bool(True),
+      requireLoose      = cms.bool(True),
+      requireMedium     = cms.bool(True),
+      requireTight      = cms.bool(False),
+      requireTkIso      = cms.bool(False),
+      requirePfIso      = cms.bool(False),
+      minTrgMuDeltaR    = cms.double(1.0),
+      maxMuEtaVal       = cms.double(2.4),
+    ),
+  ), 
 
   filterByAnaMuonDistribution = cms.bool(False),
   anaMuonDistribution = cms.PSet (
@@ -100,6 +109,7 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
   anaEff =  cms.PSet(),     
   anaTime = cms.PSet(),
   anaSynch = cms.PSet(),
+  anaDiMu = cms.PSet(),
 )
 
 process.p = cms.Path(process.omtfAnalysis)

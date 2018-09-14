@@ -11,7 +11,7 @@ public:
         isUnique(true), isLoose(false), isMedium(false), isTight(false), 
         isMatchedHlt(false), isMatchedIsoHlt(false),
         isTkIsolated(false), isPFIsolated(false),
-        chi2Norm(0.),
+        chi2Norm(0.), l1Eta(9999.), l1Phi(9999.),
         nAllMuons(0), theMuonBits(0) {}
   virtual ~MuonObj(){}
   void setBits(bool isGlobal, bool isTracker, bool isOuter, bool isCalo, bool isMatched) {
@@ -34,11 +34,12 @@ public:
   bool         isMatchedHlt, isMatchedIsoHlt;
   bool         isTkIsolated, isPFIsolated;
   float        chi2Norm;
+  float l1Eta, l1Phi;
   unsigned int nAllMuons;
 private:  
   unsigned int theMuonBits; 
 public:
-ClassDef(MuonObj,4)
+ClassDef(MuonObj,5)
 };
 
 

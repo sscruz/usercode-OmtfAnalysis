@@ -1,7 +1,7 @@
 #include "UserCode/OmtfAnalysis/interface/AnaEff.h"
 #include "TProfile.h"
 #include "TObjArray.h"
-#include "TH2F.h"
+#include "TH2D.h"
 #include "TH1D.h"
 #include "TGraphErrors.h"
 #include "TF1.h"
@@ -30,11 +30,13 @@ namespace {
   TH1D  *hEffEtaOMTFn, *hEffEtaOMTFn_D, *hEffEtaOMTFp, *hEffEtaOMTFp_D;
   TH1D  *hEffEtaAll, *hEffEtaAll_D;
   TH1D  *hEffDeltaR, *hEffDeltaEta, *hEffDeltaPhi;
+  TH2D  *hEffDeltaEtaMuVtx, *hEffDeltaEtaMuL1; 
   TH1D  *hEffRunAver, *hEffRunAverWeighted;
 
   struct BestL1Obj : public L1Obj {
     BestL1Obj() : deltaR(9999.) {}
     BestL1Obj(const L1Obj & l1, const  MuonObj *muon) : L1Obj(l1) , deltaR(9999.) {
+      //if (l1.isValid() && muon) deltaR = reco::deltaR( l1.etaValue(),l1.phiValue(), muon->l1Eta, muon->l1Phi);
       if (l1.isValid() && muon) deltaR = reco::deltaR( l1.etaValue(),l1.phiValue(), muon->eta(), muon->phi());
     }
     bool fired(double ptCut=0., int qMin=12, double matchinDeltaR=0.5) const {
@@ -93,9 +95,12 @@ void AnaEff::init(TObjArray& histos)
   hEffEtaAll     =  new TH1D("hEffEtaAll",    "hEffEtaAll",   96,   -2.4, 2.4); histos.Add(hEffEtaAll); 
   hEffEtaAll_D   =  new TH1D("hEffEtaAll_D",  "hEffEtaAll_D", 96,   -2.4, 2.4); histos.Add(hEffEtaAll_D); 
 
-  hEffDeltaR     = new TH1D( "hEffDeltaR", "hEffDeltaR", 100, 0., 4.);  histos.Add(hEffDeltaR);
-  hEffDeltaEta     = new TH1D( "hEffDeltaEta", "hEffDeltaEta", 100, -4., 4.);  histos.Add(hEffDeltaEta);
-  hEffDeltaPhi     = new TH1D( "hEffDeltaPhi", "hEffDeltaPhi", 320, -3.2, 3.2);  histos.Add(hEffDeltaPhi);
+  hEffDeltaR     = new TH1D( "hEffDeltaR", "hEffDeltaR", 60, 0., 0.6);  histos.Add(hEffDeltaR);
+  hEffDeltaEta     = new TH1D( "hEffDeltaEta", "hEffDeltaEta", 60, -0.3, 0.3);  histos.Add(hEffDeltaEta);
+  hEffDeltaPhi     = new TH1D( "hEffDeltaPhi", "hEffDeltaPhi", 60, -0.3, 0.3);  histos.Add(hEffDeltaPhi);
+
+  hEffDeltaEtaMuVtx = new TH2D("hEffDeltaEtaMuVtx","hEffDeltaEtaMuVtx",80, 0.6,1.4, 80, 0.6,1.4); histos.Add(hEffDeltaEtaMuVtx);
+  hEffDeltaEtaMuL1 = new TH2D("hEffDeltaEtaMuL1","hEffDeltaEtaMuL1",   80, 0.6,1.4, 80, 0.6,1.4); histos.Add(hEffDeltaEtaMuL1);
 /*
   hEfficMuPt_D = new TH1D("hEfficMuPt_D","hEfficMuPt_D", L1PtScale::nPtBins, L1PtScale::ptBins); histos.Add(hEfficMuPt_D);
   hEfficRpcNoCut_N = new TH1D("hEfficRpcNoCut_N","hEfficRpcNoCut_N", L1PtScale::nPtBins, L1PtScale::ptBins);  histos.Add(hEfficRpcNoCut_N);
@@ -145,23 +150,28 @@ void AnaEff::run(  const EventObj* event, const MuonObj* muon, const L1ObjColl *
   double etaMu = muon->eta();
   double ptMu  = muon->pt();  
 //  std::cout <<" MUON: " << *muon << std::endl;
+//  if (muon && l1Coll) std::cout <<*event << std::endl << *muon<< std::endl<<*l1Coll<<std::endl<<std::endl;
 
   //
   // best (closest) L1Obj to muon
   //
+  L1Obj::TYPE typeBMTF = L1Obj::BMTF;
+  L1Obj::TYPE typeOMTF = L1Obj::OMTF_emu;
+  L1Obj::TYPE typeEMTF = L1Obj::EMTF;
+  L1Obj::TYPE typeuGMT = L1Obj::uGMT_emu;
   BestL1Obj bestOMTF, bestBMTF, bestEMTF, bestuGMT;
-  //std::vector<L1Obj> l1s = (l1Coll->selectByType(L1Obj::BMTF)+l1Coll->selectByType(L1Obj::EMTF)+l1Coll->selectByType(L1Obj::OMTF_emu) +l1Coll->selectByType(L1Obj::uGMT) );
-  std::vector<L1Obj> l1s = (l1Coll->selectByType(L1Obj::BMTF)+l1Coll->selectByType(L1Obj::EMTF)+l1Coll->selectByType(L1Obj::OMTF_emu) );
+  std::vector<L1Obj> l1s = (l1Coll->selectByType(typeBMTF)+l1Coll->selectByType(typeOMTF)+l1Coll->selectByType(typeEMTF)+l1Coll->selectByType(typeuGMT) ).selectByBx(0,0);
   for (auto l1 : l1s) {
     BestL1Obj cand(l1,muon);
+    double dRMax = 0.5;
     if (cand.q > 12) cand.q = 12;
-    if (cand.type==L1Obj::BMTF     && (cand.q > bestBMTF.q || (cand.q==bestBMTF.q && cand.pt>bestBMTF.pt)) && cand.deltaR < 0.5) bestBMTF = cand;
-    if (cand.type==L1Obj::OMTF_emu && (cand.q > bestOMTF.q || (cand.q==bestOMTF.q && cand.pt>bestOMTF.pt)) && cand.deltaR < 0.5) bestOMTF = cand;
-    if (cand.type==L1Obj::EMTF     && (cand.q > bestEMTF.q || (cand.q==bestEMTF.q && cand.pt>bestEMTF.pt)) && cand.deltaR < 0.5) bestEMTF = cand;
-//  if (                              (cand.q > bestuGMT.q || (cand.q==bestuGMT.q && cand.pt>bestuGMT.pt)) && cand.deltaR < 0.5) bestuGMT = cand;
+    if (cand.type==typeBMTF && (cand.q > bestBMTF.q || (cand.q==bestBMTF.q && cand.pt>bestBMTF.pt)) && cand.deltaR < dRMax) bestBMTF = cand;
+    if (cand.type==typeOMTF && (cand.q > bestOMTF.q || (cand.q==bestOMTF.q && cand.pt>bestOMTF.pt)) && cand.deltaR < dRMax) bestOMTF = cand;
+    if (cand.type==typeEMTF && (cand.q > bestEMTF.q || (cand.q==bestEMTF.q && cand.pt>bestEMTF.pt)) && cand.deltaR < dRMax) bestEMTF = cand;
+    if (cand.type==typeuGMT && (cand.q > bestuGMT.q || (cand.q==bestuGMT.q && cand.pt>bestuGMT.pt)) && cand.deltaR < dRMax) bestuGMT = cand;
 
 //   if (cand.type==L1Obj::uGMT && (cand.q > bestuGMT.q || (cand.q==bestuGMT.q && cand.pt>bestuGMT.pt)) && cand.deltaR < 0.5) bestuGMT = cand;
-   if (cand.type==L1Obj::OMTF_emu && (cand.q > bestuGMT.q || (cand.q==bestuGMT.q && cand.pt>bestuGMT.pt)) && cand.deltaR < 0.5) bestuGMT = cand;
+//   if (cand.type==L1Obj::OMTF_emu && (cand.q > bestuGMT.q || (cand.q==bestuGMT.q && cand.pt>bestuGMT.pt)) && cand.deltaR < 0.5) bestuGMT = cand;
 
   }
   if (debug && bestuGMT.isValid()) std::cout <<bestuGMT << std::endl;
@@ -172,10 +182,13 @@ void AnaEff::run(  const EventObj* event, const MuonObj* muon, const L1ObjColl *
   //
   // control histos for bestOMTF
   //
-  if (bestOMTF.isValid() && ptMu > 7. && fabs(etaMu) > 0.9 && fabs(etaMu) < 1.1) {
-    hEffDeltaR->Fill(bestOMTF.deltaR); 
-    hEffDeltaPhi->Fill(reco::deltaPhi(bestOMTF.phiValue(),muon->phi())); 
-    hEffDeltaEta->Fill(bestOMTF.etaValue()-muon->eta()); 
+  BestL1Obj best = bestuGMT; 
+  if (best.isValid() && fabs(etaMu) > 0.83 && fabs(etaMu) < 1.24) {
+    hEffDeltaR->Fill(best.deltaR); 
+    hEffDeltaPhi->Fill(reco::deltaPhi(best.phiValue(),muon->l1Phi)); 
+    hEffDeltaEta->Fill(best.etaValue()-muon->l1Eta); 
+    hEffDeltaEtaMuVtx->Fill(muon->eta(), best.etaValue());
+    hEffDeltaEtaMuL1->Fill(muon->l1Eta, best.etaValue());
   } 
 
   //

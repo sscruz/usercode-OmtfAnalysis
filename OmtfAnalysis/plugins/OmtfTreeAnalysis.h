@@ -10,6 +10,7 @@ class AnaEvent;
 class AnaEff;
 class AnaMuonDistribution;
 class AnaDataEmul;
+class AnaDiMu;
 class AnaMenu;
 class AnaSecMuSelector;
 class AnaTime;
@@ -38,6 +39,7 @@ private:
   AnaSecMuSelector    *theAnaSecMu;
   AnaTime             *theAnaTime;
   AnaSynch            *theAnaSynch;
+  AnaDiMu             *theAnaDiMu;
 
 
 }; 

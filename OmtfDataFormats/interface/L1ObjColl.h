@@ -39,7 +39,7 @@ public:
   L1ObjColl selectByPtMin( double ptMin = 0.) const;
   L1ObjColl selectByEta( double etaMin = -1.61, double etaMax = 1.61) const;
   L1ObjColl selectByBx(  int bxMin = 0, int bxMax = 0) const;
-  L1ObjColl selectByQuality( int qMin = 0, int qMax = 7) const;
+  L1ObjColl selectByQuality( int qMin = 0, int qMax = 16) const;
   L1ObjColl selectByMatched() const;
   L1ObjColl selectByDeltaR( double deltaRMax) const;
   L1ObjColl operator+(const L1ObjColl &o) const;

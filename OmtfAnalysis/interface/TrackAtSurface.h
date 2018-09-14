@@ -18,6 +18,7 @@ public:
 
   TrajectoryStateOnSurface atDetFromTrack( const RPCDetId& rpcDet) const;
   TrajectoryStateOnSurface atDetFromClose( const RPCDetId& rpcDet,  const GlobalPoint& point) const;
+  TrajectoryStateOnSurface atPoint(double eta, double phi) const;
   TrajectoryStateOnSurface atPoint( const GlobalPoint& point) const;
 
   //note: propagation "Along from tsos"

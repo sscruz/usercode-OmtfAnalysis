@@ -79,6 +79,8 @@ bool L1ObjMaker::makeGmtCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, 
       ++it) {
     L1Obj obj;
     obj.type =  type;
+//    obj.phi = it->hwPhiAtVtx(); 
+//    obj.eta = it->hwEtaAtVtx();        // eta = hwEta/240.*2.61
     obj.phi = it->hwPhi(); 
     obj.eta = it->hwEta();        // eta = hwEta/240.*2.61
     obj.pt  = it->hwPt();         // pt = (hwPt-1.)/2.

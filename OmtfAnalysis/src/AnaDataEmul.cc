@@ -194,7 +194,6 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
 {
   if ( !*coll ) return;
   
-
   //
   // BX distribution
   //
@@ -224,6 +223,10 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
   }
   }
 
+
+  //
+  // main check 
+  //
   for (int bx = bxMin; bx <= bxMax; bx++) {
 
     L1ObjColl dataColl = coll->selectByType(L1Obj::OMTF).selectByBx(bx,bx);

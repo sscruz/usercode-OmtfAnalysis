@@ -32,6 +32,7 @@
 #include "UserCode/OmtfAnalysis/interface/AnaTime.h"
 #include "UserCode/OmtfAnalysis/interface/AnaSynch.h"
 #include "UserCode/OmtfAnalysis/interface/ConverterRPCRawSynchroSynchroCountsObj.h"
+#include "UserCode/OmtfAnalysis/interface/AnaDiMu.h"
 
 OmtfTreeAnalysis::OmtfTreeAnalysis(const edm::ParameterSet & cfg)
   : theConfig(cfg),
@@ -42,7 +43,8 @@ OmtfTreeAnalysis::OmtfTreeAnalysis(const edm::ParameterSet & cfg)
     theAnaEff(0),
     theAnaSecMu(0), 
     theAnaTime(0),
-    theAnaSynch(0)
+    theAnaSynch(0),
+    theAnaDiMu(0)
 { 
   if (theConfig.exists("anaEvent")) theAnaEvent = new   AnaEvent(cfg.getParameter<edm::ParameterSet>("anaEvent") );
   if (theConfig.exists("anaMuonDistribution")) theAnaMuonDistribution = new AnaMuonDistribution( cfg.getParameter<edm::ParameterSet>("anaMuonDistribution"));
@@ -52,6 +54,7 @@ OmtfTreeAnalysis::OmtfTreeAnalysis(const edm::ParameterSet & cfg)
   if (theConfig.exists("anaSecMuSel")) theAnaSecMu = new AnaSecMuSelector(cfg.getParameter<edm::ParameterSet>("anaSecMuSel"));
   if (theConfig.exists("anaTime")) theAnaTime = new AnaTime(cfg.getParameter<edm::ParameterSet>("anaTime"));
   if (theConfig.exists("anaSynch")) theAnaSynch = new AnaSynch();
+  if (theConfig.exists("anaDiMu")) theAnaDiMu= new AnaDiMu(cfg.getParameter<edm::ParameterSet>("anaDiMu"));
 }
 
 void OmtfTreeAnalysis::beginJob()
@@ -61,12 +64,12 @@ void OmtfTreeAnalysis::beginJob()
   if (theAnaEvent)            theAnaEvent->init(theHistos);
   if (theAnaMuonDistribution) theAnaMuonDistribution->init(theHistos);
   if (theAnaMenu)             theAnaMenu->init(theHistos);
+  if (theAnaDiMu)             theAnaDiMu->init(theHistos);
   if (theAnaDataEmul)         theAnaDataEmul->init(theHistos);
   if (theAnaEff)              theAnaEff->init(theHistos);
   if (theAnaTime)             theAnaTime->init(theHistos);
   if (theAnaSynch)            theAnaSynch->init(theHistos);
   if (theAnaSecMu)            theAnaSecMu->init(theHistos);
-
 
 }
 
@@ -190,10 +193,11 @@ void OmtfTreeAnalysis::analyze(const edm::Event&, const edm::EventSetup& es)
     if (theAnaMuonDistribution) theAnaMuonDistribution->run(&muon);
     if (theAnaEff)      theAnaEff->run ( event, &muon, l1ObjColl); 
     if (theAnaDataEmul) theAnaDataEmul->run(event, l1ObjColl); 
-    if (theAnaTime)     theAnaTime->run( event, &muon, closestTrack, l1ObjColl);
+    if (theAnaTime)     theAnaTime->run( event, muonColl, closestTrack, l1ObjColl);
     if (theAnaSynch)    theAnaSynch->run( event, &muon, ConverterRPCRawSynchroSynchroCountsObj::toRawSynchro( synchroCounts->data));
 
     if (theAnaDataEmul)    theAnaDataEmul->debug = false; 
+    if (theAnaDiMu)   theAnaDiMu->run( event, muonColl, l1ObjColl);
   }
 }
 
@@ -218,6 +222,6 @@ void OmtfTreeAnalysis::endJob()
   delete theAnaMenu;
   delete theAnaTime;
   delete theAnaSynch;
-
+  delete theAnaDiMu;
 
 }

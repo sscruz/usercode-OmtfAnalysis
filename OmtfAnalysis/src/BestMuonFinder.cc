@@ -12,8 +12,10 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
+#include "UserCode/OmtfAnalysis/interface/TrackAtSurface.h"
 
 #include "UserCode/OmtfAnalysis/interface/Utilities.h"
+#include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "TObjArray.h"
@@ -205,6 +207,21 @@ bool BestMuonFinder::run(const edm::Event &ev, const edm::EventSetup &es)
       if ( fabs(muonEta-imm->bestTrack()->eta()) > theConfig.getParameter<double>("deltaEtaUnique")) continue;
       isUnique = false;
     }
+
+    //
+    // check muont at L1
+    //
+    TrackAtSurface muAtSurface( &(*im), ev, es);
+    TrajectoryStateOnSurface atStation2 = muAtSurface.atPoint(im->eta(), im->phi());
+   
+//
+//  std::cout <<"----------"<<std::endl;
+//  std::cout <<" ETA: "<< im->eta() <<" PHI : "<< im->phi() <<" rho: "<< rho << " z: "<< zet <<" Theta: "<< theta << std::endl;
+//  std::cout <<" eta: "<<point.eta() <<" phi : "<< point.phi() <<" rho: "<< point.perp()<<" z: " << point.z() << "theta : " << point.theta()<<" mag : " << point.mag()<< std::endl;
+//  if (atStation2.isValid()) {
+//    std::cout <<" eta: "<<atStation2.globalPosition().eta() <<" phi : "<< atStation2.globalPosition().phi() <<" r: "<< atStation2.globalPosition().perp() <<" z: " << atStation2.globalPosition().z() << std::endl << std::endl;;
+//  }
+   
    
     MuonObj muonObj;
     muonObj.isUnique = isUnique;
@@ -222,6 +239,10 @@ bool BestMuonFinder::run(const edm::Event &ev, const edm::EventSetup &es)
     muonObj.isPFIsolated = isPFIsolated;
     muonObj.setKine(im->bestTrack()->pt(), im->bestTrack()->eta(), im->bestTrack()->phi(), im->bestTrack()->charge());
     muonObj.setBits(im->isGlobalMuon(), im->isTrackerMuon(), im->isStandAloneMuon(), im->isCaloMuon(), im->isMatchesValid());
+    if (atStation2.isValid()) {
+      muonObj.l1Eta = atStation2.globalPosition().eta();
+      muonObj.l1Phi = atStation2.globalPosition().phi();
+    }
     theMuonObjs.push_back(muonObj);
  
     if (!theMuon || (im->bestTrack()->pt() > theMuon->bestTrack()->pt()) ) {

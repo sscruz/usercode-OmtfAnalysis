@@ -168,6 +168,10 @@ def cEffHistory(canvas):
 #  gStyle.SetOptStat(10)
   h.SetStats(0)
   h.DrawCopy()
+  one = TLine()
+  one.SetLineStyle(2)
+  one.SetLineColor(2)
+  one.DrawLine(319.85e3, .97,320.85e3, .97)
   c.Update()
   return
 
@@ -186,10 +190,23 @@ def cEffDelta(canvas):
   h.DrawCopy()
   return
 
+def cEffDeltaEta(canvas):
+  c = TCanvas('cEffDeltaEta','cEffDeltaEta',1000,500)
+  canvas.Add(c)
+  c.Divide(2)
+  pad1 = c.cd(1)
+  h = gROOT.FindObject('hEffDeltaEtaMuVtx')
+  h.DrawCopy('box')
+  pad1 = c.cd(2)
+  h = gROOT.FindObject('hEffDeltaEtaMuL1')
+  h.DrawCopy('box')
+  return
+
 def plotAll(canvas) :
-  cEffHistory(canvas)
+# cEffHistory(canvas)
   cEffEtaOMTF(canvas)
   cEffDelta(canvas)
+  cEffDeltaEta(canvas)
   cEffEtaAll(canvas)
   cEffPt(canvas)
   cEffEta(canvas)

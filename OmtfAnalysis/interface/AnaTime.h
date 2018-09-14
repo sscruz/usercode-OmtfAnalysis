@@ -4,6 +4,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 class TObjArray;
 class MuonObj;
+class MuonObjColl;
 class TrackObj;
 class L1ObjColl;
 class EventObj;
@@ -13,7 +14,7 @@ class AnaTime {
 public:
   AnaTime(const edm::ParameterSet& cfg);
   void init(TObjArray& histos);
-  void run( const EventObj* ev, const MuonObj* muon, const TrackObj *track, const L1ObjColl * l1Objs);
+  void run( const EventObj* ev, const MuonObjColl * muons, const TrackObj *track, const L1ObjColl * l1Objs);
   bool debug;
 private:
   edm::ParameterSet theCfg;

@@ -11,6 +11,8 @@ std::ostream & operator<< (std::ostream &out, const MuonObj &o)
   if (o.isTracker()) out << "_TRK";
   if (o.isOuter())   out << "_OUT";
   if (o.isGlobal())  out << "_GLB";
+  out <<std::setw(6)<<std::setprecision(2)<<std::fixed;
+  out <<" L1EtaPhi:("<<o.l1Eta<<","<<o.l1Phi<<")";
   out <<std::setprecision(2)<<" chi2:"<<o.chi2Norm;
   out <<" #AllMuons: "<<o.nAllMuons;
   if (o.isUnique) out<<"_UNIQUE";
