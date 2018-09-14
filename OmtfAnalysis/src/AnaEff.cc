@@ -36,8 +36,8 @@ namespace {
   struct BestL1Obj : public L1Obj {
     BestL1Obj() : deltaR(9999.) {}
     BestL1Obj(const L1Obj & l1, const  MuonObj *muon) : L1Obj(l1) , deltaR(9999.) {
-      //if (l1.isValid() && muon) deltaR = reco::deltaR( l1.etaValue(),l1.phiValue(), muon->l1Eta, muon->l1Phi);
-      if (l1.isValid() && muon) deltaR = reco::deltaR( l1.etaValue(),l1.phiValue(), muon->eta(), muon->phi());
+      if (l1.isValid() && muon) deltaR = reco::deltaR( l1.etaValue(),l1.phiValue(), muon->l1Eta, muon->l1Phi);
+      //if (l1.isValid() && muon) deltaR = reco::deltaR( l1.etaValue(),l1.phiValue(), muon->eta(), muon->phi());
     }
     bool fired(double ptCut=0., int qMin=12, double matchinDeltaR=0.5) const {
       double epsilon = 1.e-5;
