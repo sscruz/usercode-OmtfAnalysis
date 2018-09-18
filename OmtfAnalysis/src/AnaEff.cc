@@ -30,14 +30,14 @@ namespace {
   TH1D  *hEffEtaOMTFn, *hEffEtaOMTFn_D, *hEffEtaOMTFp, *hEffEtaOMTFp_D;
   TH1D  *hEffEtaAll, *hEffEtaAll_D;
   TH1D  *hEffDeltaR, *hEffDeltaEta, *hEffDeltaPhi;
-  TH2D  *hEffDeltaEtaMuVtx, *hEffDeltaEtaMuL1; 
+  TH2D  *hEffEtaMuVsEtauGMT,*hEffEtaMuVsEtaOMTF; 
   TH1D  *hEffRunAver, *hEffRunAverWeighted;
 
   struct BestL1Obj : public L1Obj {
     BestL1Obj() : deltaR(9999.) {}
     BestL1Obj(const L1Obj & l1, const  MuonObj *muon) : L1Obj(l1) , deltaR(9999.) {
       if (l1.isValid() && muon) deltaR = reco::deltaR( l1.etaValue(),l1.phiValue(), muon->l1Eta, muon->l1Phi);
-      //if (l1.isValid() && muon) deltaR = reco::deltaR( l1.etaValue(),l1.phiValue(), muon->eta(), muon->phi());
+//      if (l1.isValid() && muon) deltaR = reco::deltaR( l1.etaValue(),l1.phiValue(), muon->eta(), muon->phi());
     }
     bool fired(double ptCut=0., int qMin=12, double matchinDeltaR=0.5) const {
       double epsilon = 1.e-5;
@@ -99,8 +99,8 @@ void AnaEff::init(TObjArray& histos)
   hEffDeltaEta     = new TH1D( "hEffDeltaEta", "hEffDeltaEta", 60, -0.3, 0.3);  histos.Add(hEffDeltaEta);
   hEffDeltaPhi     = new TH1D( "hEffDeltaPhi", "hEffDeltaPhi", 60, -0.3, 0.3);  histos.Add(hEffDeltaPhi);
 
-  hEffDeltaEtaMuVtx = new TH2D("hEffDeltaEtaMuVtx","hEffDeltaEtaMuVtx",80, 0.6,1.4, 80, 0.6,1.4); histos.Add(hEffDeltaEtaMuVtx);
-  hEffDeltaEtaMuL1 = new TH2D("hEffDeltaEtaMuL1","hEffDeltaEtaMuL1",   80, 0.6,1.4, 80, 0.6,1.4); histos.Add(hEffDeltaEtaMuL1);
+  hEffEtaMuVsEtauGMT = new TH2D("hEffEtaMuVsEtauGMT","hEffEtaMuVsEtauGMT",   80, 0.3,1.8, 80, 0.3,1.8); histos.Add(hEffEtaMuVsEtauGMT);
+  hEffEtaMuVsEtaOMTF = new TH2D("hEffEtaMuVsEtaOMTF","hEffEtaMuVsEtaOMTF",   80, 0.3,1.8, 80, 0.3,1.8); histos.Add(hEffEtaMuVsEtaOMTF);
 /*
   hEfficMuPt_D = new TH1D("hEfficMuPt_D","hEfficMuPt_D", L1PtScale::nPtBins, L1PtScale::ptBins); histos.Add(hEfficMuPt_D);
   hEfficRpcNoCut_N = new TH1D("hEfficRpcNoCut_N","hEfficRpcNoCut_N", L1PtScale::nPtBins, L1PtScale::ptBins);  histos.Add(hEfficRpcNoCut_N);
@@ -182,14 +182,16 @@ void AnaEff::run(  const EventObj* event, const MuonObj* muon, const L1ObjColl *
   //
   // control histos for bestOMTF
   //
-  BestL1Obj best = bestuGMT; 
+  BestL1Obj best = bestuGMT;
   if (best.isValid() && fabs(etaMu) > 0.83 && fabs(etaMu) < 1.24) {
     hEffDeltaR->Fill(best.deltaR); 
     hEffDeltaPhi->Fill(reco::deltaPhi(best.phiValue(),muon->l1Phi)); 
     hEffDeltaEta->Fill(best.etaValue()-muon->l1Eta); 
-    hEffDeltaEtaMuVtx->Fill(muon->eta(), best.etaValue());
-    hEffDeltaEtaMuL1->Fill(muon->l1Eta, best.etaValue());
   } 
+  if ( fabs(etaMu) > 0.3 && fabs(etaMu) < 1.74) {
+    if (bestuGMT.fired()) hEffEtaMuVsEtauGMT->Fill(muon->l1Eta, bestuGMT.etaValue());
+    if (bestOMTF.pt>0)    hEffEtaMuVsEtaOMTF->Fill(muon->l1Eta, bestOMTF.etaValue());
+  }
 
   //
   // efficiency vs Eta

@@ -29,7 +29,11 @@ process.omtfAnalysis = cms.EDAnalyzer("OmtfTreeAnalysis",
 #     "../jobs/crab_0_180912_221657_FW5_EMU6/omtfTree.root"
 #    "../jobs/crab_0_180913_215833_FW5_EMU65ix/omtfTree.root"
 #    "../jobs/crab_0_180913_220815_FW5_EMU6fix/omtfTree.root"
-     "../jobs/crab_0_180914_131236/omtfTree.root"
+#   "../jobs/crab_0_180914_192445_version5/omtfTree.root"
+#    "../jobs/crab_0_180914_211610_version6/omtfTree.root"
+#    "../jobs/crab_0_180917_174559_version4/omtfTree.root"
+ "../jobs/crab_0_180917_204344/omtfTree.root"
+# "/afs/cern.ch/work/k/konec/CMSSW_10_2_1.ana/src/UserCode/OmtfAnalysis/jobs/crab_0_180903_103036_SingleMu_EMU4/omtfTree.root"
   ),
   filterByAnaEvent = cms.bool(True),
   anaEvent = cms.PSet(

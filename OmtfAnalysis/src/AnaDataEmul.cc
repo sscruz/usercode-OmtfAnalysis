@@ -314,6 +314,7 @@ void AnaDataEmul::run(EventObj* event, L1ObjColl * coll)
         if ( data->charge !=  emul->charge)    hDataEmulIssue->Fill(6);
 //      if ( (data->q >>2) != (emul->q >>2) )  hDataEmulIssue->Fill(7);
         if ( (data->q    ) != (emul->q    ) )  hDataEmulIssue->Fill(7);
+//        if ( (data->q    ) != (emul->q    ) ) std::cout << *event << "   QQ: "<< data->q<<emul->q << std::endl;
       }
       if(unique) { hDataEmulEta->Fill(code2HistoBin(abs(data->eta)), code2HistoBin(abs(emul->eta)) ); }
     
