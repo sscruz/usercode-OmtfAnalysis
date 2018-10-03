@@ -37,6 +37,7 @@ OmtfTreeMaker::OmtfTreeMaker(const edm::ParameterSet& cfg)
     theBestMuonFinder(cfg.getParameter<edm::ParameterSet>("bestMuonFinder"), consumesCollector()),
     theL1ObjMaker(cfg.getParameter<edm::ParameterSet>("l1ObjMaker"), consumesCollector()), 
     theSynchroGrabber(cfg.getParameter<edm::ParameterSet>("linkSynchroGrabber"), consumesCollector()),
+    theGenParticleFinder(cfg.getParameter<edm::ParameterSet>("genObjectFinder"), consumesCollector()),
     theClosestTrackFinder(cfg.getParameter<edm::ParameterSet>("closestTrackFinder"), consumesCollector())
 { }
   
@@ -54,6 +55,7 @@ void OmtfTreeMaker::beginJob()
 
   theTree->Branch("event","EventObj",&event,32000,99);
   theTree->Branch("muonColl", "MuonObjColl", &muonColl, 32000,99);
+  theTree->Branch("genColl", "GenObjColl", &muonColl, 32000,99);
   theTree->Branch("l1ObjColl","L1ObjColl",&l1ObjColl,32000,99);
 
   theTree->Branch("bitsL1" ,"TriggerMenuResultObj",&bitsL1 ,32000,99);
@@ -109,6 +111,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   // create other objects structure
   //
   muonColl = new MuonObjColl (theBestMuonFinder.muons(ev,es));
+  genColl = new GenObjColl;
   l1ObjColl = new L1ObjColl;
 
   bitsL1 = new TriggerMenuResultObj();
@@ -117,7 +120,11 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   synchroCounts = new SynchroCountsObjVect;
 
   closestTrack = new TrackObj();
-
+  
+  // 
+  // Get Gen information
+  //
+  
 
   //
   // fill algoBits info
@@ -177,6 +184,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   theTree->Fill();
   delete event; event = 0;
   delete muonColl; muonColl = 0;
+  delete genColl; genColl =0;
   delete bitsL1;  bitsL1= 0;
   delete bitsHLT;  bitsHLT= 0;
   delete l1ObjColl; l1ObjColl = 0;

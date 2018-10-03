@@ -7,7 +7,7 @@ import os
 
 process = cms.Process('OmtfTree')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 #
 # For processing single files insert lines with 'file:/PATH/FILE.root'
@@ -164,7 +164,7 @@ process.omtfParamsSource = cms.ESSource( "EmptyESSource",
 )
 process.omtfParams = cms.ESProducer( "L1TMuonOverlapParamsESProducer",
      patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x0003.xml")),),
-     configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x0006.xml"),
+     configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x0005.xml"),
 )
 
 import L1Trigger.L1TMuonOverlap.simOmtfDigis_cfi
@@ -288,7 +288,9 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
     gmtDataSrc = cms.InputTag('gmtStage2Digis','Muon'),
     gmtEmulSrc = cms.InputTag('emulGmtStage2Digis',''),
   ),
-
+  genObjectFinder = cms.PSet(
+    genColl = cms.InputTag("genParticles")
+  ),                                 
   closestTrackFinder = cms.PSet(
     trackColl = cms.InputTag("generalTracks")
   ),

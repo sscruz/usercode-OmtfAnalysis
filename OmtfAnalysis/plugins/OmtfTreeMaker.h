@@ -11,6 +11,8 @@
 #include "UserCode/OmtfDataFormats/interface/TrackObj.h"
 #include "UserCode/OmtfDataFormats/interface/MuonObj.h"
 #include "UserCode/OmtfDataFormats/interface/MuonObjColl.h"
+#include "UserCode/OmtfDataFormats/interface/GenObj.h"
+#include "UserCode/OmtfDataFormats/interface/GenObjColl.h"
 #include "UserCode/OmtfDataFormats/interface/L1Obj.h"
 #include "UserCode/OmtfDataFormats/interface/L1ObjColl.h"
 #include "UserCode/OmtfDataFormats/interface/TriggerMenuResultObj.h"
@@ -20,6 +22,7 @@
 #include "UserCode/OmtfAnalysis/interface/BestMuonFinder.h"
 #include "UserCode/OmtfAnalysis/interface/L1ObjMaker.h"
 #include "UserCode/OmtfAnalysis/interface/ClosestTrackFinder.h"
+#include "UserCode/OmtfAnalysis/interface/GenParticleFinder.h"
 
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
@@ -34,7 +37,7 @@
 
 namespace edm { class Event; class EventSetup; }
 namespace reco { class Muon; }
-class TTree;
+ class TTree;
 class TFile;
 
 class OmtfTreeMaker : public edm::EDAnalyzer {
@@ -62,6 +65,7 @@ private:
   EventObj* event;
   MuonObjColl* muonColl;
   L1ObjColl * l1ObjColl;
+  GenObjColl * genColl;
   SynchroCountsObjVect * synchroCounts;
   TrackObj* closestTrack;
 								    
@@ -71,6 +75,7 @@ private:
   BestMuonFinder theBestMuonFinder;
   L1ObjMaker theL1ObjMaker;
   SynchroCountsGrabber theSynchroGrabber;
+  GenParticlefinder theGenParticleFinder;
   ClosestTrackFinder theClosestTrackFinder;
 
 };

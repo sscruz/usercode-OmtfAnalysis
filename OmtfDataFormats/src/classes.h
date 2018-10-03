@@ -9,6 +9,8 @@
 #include "UserCode/OmtfDataFormats/interface/TriggerMenuResultObj.h"
 #include "UserCode/OmtfDataFormats/interface/SynchroCountsObj.h"
 #include "UserCode/OmtfDataFormats/interface/SynchroCountsObjVect.h"
+#include "UserCode/OmtfDataFormats/interface/GenObj.h"
+#include "UserCode/OmtfDataFormats/interface/GenObjColl.h"
 
 
 namespace {
@@ -23,5 +25,7 @@ namespace {
     TriggerMenuResultObj aMenuRes;
     SynchroCountsObj aSynch;
     SynchroCountsObjVect aSynchVec;
+    GenObj aGen;
+    GenObjColl aGenColl;
   };
 }
