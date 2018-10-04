@@ -8,7 +8,7 @@ public:
  GenObj(float pt=0., float eta=0., float phi=0.,float mass=0., 
 	int charge=0, int pdgid=0, int st=0, int mother=0):
   _pt(pt),_eta(eta),_phi(phi),_mass(mass),_charge(charge),_id(pdgid),_status(st),_mid(mother) {}
-  
+  virtual ~GenObj() {}
 public:
   float pt() const { return _pt;}
   float eta() const { return _eta;}
@@ -24,9 +24,8 @@ private:
   int _charge,_id,_status,_mid; 
 
 public:
-  ClassDef(GenObj,1)
+  ClassDef(GenObj,1);
 };
-
 
 std::ostream & operator<< (std::ostream &out, const GenObj &o);
 

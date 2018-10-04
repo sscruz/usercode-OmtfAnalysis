@@ -13,6 +13,10 @@
     <version ClassVersion="1" checksum="1223179708"/>
    </class>
 
+   <class name="GenObj" ClassVersion="1">
+     <version ClassVersion="1" checksum="1951246927"/>
+   </class>
+
    <class name="MuonObj" ClassVersion="5">
     <version ClassVersion="5" checksum="1345704519"/>
    </class>
@@ -21,6 +25,10 @@
     <version ClassVersion="1" checksum="3020723748"/>
    </class>
 
+   <class name="GenObjColl" ClassVersion="1">
+    <version ClassVersion="1" checksum="1627147154"/>
+   </class>
+   
    <class name="L1Obj" ClassVersion="4">
     <version ClassVersion="4" checksum="1845249499"/>
     <version ClassVersion="3" checksum="3211239651"/>
