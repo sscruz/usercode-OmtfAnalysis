@@ -48,7 +48,7 @@ bool GenParticlefinder::run(const edm::Event &ev, const edm::EventSetup &es)
     
     
     GenObj genObj(im->pt(),im->eta(),im->phi(),im->mass(),im->charge(),
-		  im->pdgId(),im->status(),im->mother()->pdgId());
+		  im->pdgId(),im->status(),0);
     
     theGenObjs.push_back(genObj);
   }
