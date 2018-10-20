@@ -23,7 +23,7 @@ private:
     }
     return out;
   }
-  ClassDef(GenObjColl,1)
+  ClassDef(GenObjColl,1);
 };
 
 

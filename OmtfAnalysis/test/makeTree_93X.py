@@ -7,7 +7,7 @@ import os
 
 process = cms.Process('OmtfTree')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 
 #
 # For processing single files insert lines with 'file:/PATH/FILE.root'
@@ -17,7 +17,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 #
 process.source = cms.Source("PoolSource", 
 fileNames = cms.untracked.vstring(
-'/store/mc/PhaseIIFall17D/SingleMu_FlatPt-2to100/GEN-SIM-DIGI-RAW/L1TnoPU_93X_upgrade2023_realistic_v5-v1/00000/F2CD690A-FA37-E811-B00C-0CC47A4D99B6.root'
+'/store/mc/PhaseIIFall17D/SingleMu_FlatPt-2to100/GEN-SIM-DIGI-RAW/L1TPU140_93X_upgrade2023_realistic_v5-v1/00000/54C9CCAA-AA3A-E811-BEB7-06480E0002BB.root'
 ),
 inputCommands=cms.untracked.vstring(
         'keep *',

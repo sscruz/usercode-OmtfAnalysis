@@ -31,7 +31,7 @@ OmtfTreeMaker::OmtfTreeMaker(const edm::ParameterSet& cfg)
   : theConfig(cfg), theCounter(0), theFile(0), theTree(0), 
     bitsL1(0), bitsHLT(0),
     event(0), 
-    muonColl(0), l1ObjColl(0), 
+    muonColl(0), l1ObjColl(0), genColl(0),
     synchroCounts(0), closestTrack(0),
     theMenuInspector(cfg.getParameter<edm::ParameterSet>("menuInspector"), consumesCollector()),
     theBestMuonFinder(cfg.getParameter<edm::ParameterSet>("bestMuonFinder"), consumesCollector()),

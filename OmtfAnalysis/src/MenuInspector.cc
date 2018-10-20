@@ -62,7 +62,7 @@ MenuInspector::MenuInspector(const edm::ParameterSet& cfg, edm::ConsumesCollecto
     theWarnNoColl(cfg.getUntrackedParameter<bool>("warnNoColl",true))
 { 
   theTrigResultToken = cColl.consumes<edm::TriggerResults>(edm::InputTag("TriggerResults","","HLT"));
-  theGlobalAlgToken  = cColl.consumes<GlobalAlgBlkBxCollection>(edm::InputTag("gtStage2Digis"));
+  theGlobalAlgToken  = cColl.consumes<GlobalAlgBlkBxCollection>(edm::InputTag("hltGtStage2Digis"));
 
   cColl.consumes<trigger::TriggerEvent>(edm::InputTag("hltTriggerSummaryAOD","","HLT"));
 
