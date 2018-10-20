@@ -4,6 +4,8 @@
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "UserCode/OmtfAnalysis/interface/AnaGenEff.h"
+
 #include "TObjArray.h"
 
 class AnaEvent;
@@ -35,6 +37,7 @@ private:
   AnaMuonDistribution *theAnaMuonDistribution;
   AnaMenu             *theAnaMenu;
   AnaDataEmul         *theAnaDataEmul;
+  AnaGenEff           *theAnaGenEff;
   AnaEff              *theAnaEff;
   AnaSecMuSelector    *theAnaSecMu;
   AnaTime             *theAnaTime;
