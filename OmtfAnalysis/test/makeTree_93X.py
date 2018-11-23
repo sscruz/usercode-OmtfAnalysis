@@ -7,7 +7,7 @@ import os
 
 process = cms.Process('OmtfTree')
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 #
 # For processing single files insert lines with 'file:/PATH/FILE.root'
@@ -86,7 +86,7 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 #process.MessageLogger.debugModules.append('omtfStage2Digis')
 #process.MessageLogger.debugModules.append('omtfStage2Raw')
 #process.MessageLogger.debugModules.append('omtfStage2Digis2')
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1000)
 process.MessageLogger.suppressWarning  = cms.untracked.vstring('Geometry', 'AfterSource','L1T','L1GlobalTriggerRawToDigi')
 process.options = cms.untracked.PSet( wantSummary=cms.untracked.bool(False))
 
@@ -139,7 +139,7 @@ process.omtfParamsSource = cms.ESSource( "EmptyESSource",
 )
 process.omtfParams = cms.ESProducer( "L1TMuonOverlapParamsESProducer",
      patternsXMLFiles = cms.VPSet( cms.PSet(patternsXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/Patterns_0x0003.xml")),),
-     configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x0005.xml"),
+     configXMLFile = cms.FileInPath("L1Trigger/L1TMuon/data/omtf_config/hwToLogicLayer_0x0006.xml"),
 )
 
 import L1Trigger.L1TMuonOverlap.simOmtfDigis_cfi
@@ -151,42 +151,27 @@ process.omtfEmulator.srcRPC = cms.InputTag('omtfStage2Digis')
 #process.omtfEmulator.dropRPCPrimitives = cms.bool(False)
 #process.omtfEmulator.dropDTPrimitives = cms.bool(False)
 #process.omtfEmulator.dropCSCPrimitives = cms.bool(False)
-process.omtfEmulator.dumpResultToXML = cms.bool(True)
-process.omtfEmulator.bxMin = cms.int32(-3)
-process.omtfEmulator.bxMax = cms.int32(4)
+process.omtfEmulator.dumpResultToXML = cms.bool(False)
+process.omtfEmulator.bxMin = cms.int32(0)
+process.omtfEmulator.bxMax = cms.int32(0)
 
-#process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
-###  srcDTPh = cms.InputTag('simDtTriggerPrimitiveDigis'),
-###  srcDTTh = cms.InputTag('simDtTriggerPrimitiveDigis'),
-###  srcDTPh =  cms.InputTag('simTwinMuxDigis'),
-###  srcDTTh =  cms.InputTag('simTwinMuxDigis'),
-###  srcDTPh =  cms.InputTag('twinMuxStage2Digis','PhIn'),
-###  srcDTTh =  cms.InputTag('twinMuxStage2Digis','ThIn'),
-###  srcDTPh =  cms.InputTag('bmtfDigis'),
-###  srcDTTh =  cms.InputTag('bmtfDigis'),
-#   srcDTPh = cms.InputTag('omtfStage2Digis'),
-#   srcDTTh = cms.InputTag('omtfStage2Digis'),
-###  srcCSC = cms.InputTag('csctfDigis'),
-#   srcCSC = cms.InputTag('omtfStage2Digis'),
-###  srcCSC = cms.InputTag('emtfStage2Digis'),
-###  srcCSC = cms.InputTag('muonCSCDigis','MuonCSCCorrelatedLCTDigi'),
-###  srcCSC = cms.InputTag('simCscTriggerPrimitiveDigis','MPCSORTED'),
-###  srcRPC = cms.InputTag('simMuonRPCDigis'),
-###  srcRPC = cms.InputTag('muonRPCDigis'),
-#   srcRPC = cms.InputTag('omtfStage2Digis'),
-##  dumpResultToXML = cms.bool(True),
-#   dumpResultToXML = cms.bool(False),
-#   dumpDetailedResultToXML = cms.bool(False),
-#   XMLDumpFileName = cms.string("TestEvents.xml"),
-###  dumpGPToXML = cms.bool(True),
-###  readEventsFromXML = cms.bool(False),
-###  eventsXMLFiles = cms.vstring("TestEvents.xml"),
-#   dropRPCPrimitives = cms.bool(False),
-#   dropDTPrimitives = cms.bool(False),
-#   dropCSCPrimitives = cms.bool(False),
-#   bxMin = cms.int32(-3),
-#   bxMax = cms.int32(4)
-#)
+process.omtfEmulator = cms.EDProducer("L1TMuonOverlapTrackProducer",
+                                      srcDTPh = cms.InputTag('simDtTriggerPrimitiveDigis'),
+                                      srcDTTh = cms.InputTag('simDtTriggerPrimitiveDigis'),
+                                      srcCSC = cms.InputTag('simCscTriggerPrimitiveDigis','MPCSORTED'),
+                                      srcRPC = cms.InputTag('simMuonRPCDigis'), 
+                                      dumpResultToXML = cms.bool(False),
+                                      dumpDetailedResultToXML = cms.bool(False),
+                                      XMLDumpFileName = cms.string("TestEvents.xml"),
+                                      dumpGPToXML = cms.bool(False),
+                                      readEventsFromXML = cms.bool(False),
+                                      eventsXMLFiles = cms.vstring("TestEvents.xml"),
+                                      dropRPCPrimitives = cms.bool(False),
+                                      dropDTPrimitives = cms.bool(False),
+                                      dropCSCPrimitives = cms.bool(False),
+                                      bxMin = cms.int32(0),
+                                      bxMax = cms.int32(0)
+)
 
 #
 # reemulate GMT, with changed OMTF
@@ -212,7 +197,7 @@ process.emulGmtStage2Digis = cms.EDProducer('L1TMuonProducer',
 process.raw2digi_step = cms.Path(process.muonRPCDigis+process.csctfDigis+process.bmtfDigis+process.emtfStage2Digis+process.twinMuxStage2Digis+process.gmtStage2Digis+process.caloStage2Digis)
 #process.raw2digi_step = cms.Path(process.muonRPCDigis)
 process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfEmulator+process.emulGmtCaloSumDigis+process.emulGmtStage2Digis)
-#process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw+process.omtfStage2Digis2+process.digiComapre+process.omtfEmulator)
+#process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw+process.omtfStage2Digis2+process.digiComapre+process.omtfEmulator+process.emulGmtCaloSumDigis+process.emulGmtStage2Digis)
 #process.omtf_step = cms.Path(process.omtfStage2Digis+process.omtfStage2Raw+process.omtfStage2Digis2)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.schedule = cms.Schedule(process.raw2digi_step, process.omtf_step, process.endjob_step)
@@ -255,7 +240,7 @@ process.omtfTree = cms.EDAnalyzer("OmtfTreeMaker",
    ),
   
   l1ObjMaker = cms.PSet(
-    omtfEmulSrc = cms.InputTag('omtfEmulator','OMTF'),
+    omtfEmulSrc = cms.InputTag('omtfEmulator','OMTF',"OmtfTree"),
     omtfDataSrc = cms.InputTag('omtfStage2Digis'),
 #   omtfDataSrc = cms.InputTag('gmtStage2Digis','OMTF'),
     emtfDataSrc = cms.InputTag('gmtStage2Digis','EMTF'),
