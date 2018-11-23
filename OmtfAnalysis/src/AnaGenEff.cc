@@ -45,21 +45,26 @@ void AnaGenEff::run(  const EventObj* event, const GenObjColl* muons, const L1Ob
   
   for (auto & gen : ((const std::vector<GenObj>) *muons)){
     bool hasMatch = false;
-    if ( TMath::Abs(gen.eta()) < omin || TMath::Abs( gen.eta()) > omax) continue;
+    
     for (auto & mu  : ((const std::vector<L1Obj> )*l1Coll)){
       if ( TMath::Abs(mu.etaValue()) > omax || TMath::Abs(mu.etaValue()) < omin) continue;
+      if (mu.q < 12) continue;
+      if (mu.type != L1Obj::OMTF_emu) continue;
       if (deltaR(mu, gen) < 0.1) { hasMatch = true; break;}
     }
     
     if (gen.pt() > 24)
       hEffEta->Fill(hasMatch, gen.eta());
-    hEffPt->Fill(hasMatch, gen.pt());
-
+    if ( TMath::Abs(gen.eta()) > omin && TMath::Abs( gen.eta()) < omax) 
+      hEffPt->Fill(hasMatch, gen.pt());
+    
   }
 
   for (auto & mu  : ((const std::vector<L1Obj> )*l1Coll)){
-    if ( TMath::Abs(mu.etaValue()) > omax || TMath::Abs(mu.etaValue()) < omin) continue;
+    if (mu.q < 12) continue;
+    if (mu.type != L1Obj::OMTF_emu) continue;
     hRatePt->Fill(mu.pt);
+    break;
   }
 
 

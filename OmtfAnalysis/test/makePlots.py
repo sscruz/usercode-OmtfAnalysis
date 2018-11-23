@@ -4,7 +4,7 @@ import copy
 evts = {
     'nu0':   492000,
     'nu140': 496400,
-    'nu200': 424000,
+    'nu200': 500000,
 }
 
 r.gStyle.SetOptStat(0)
@@ -50,7 +50,7 @@ def makeRatePlots():
     c = r.TCanvas()
 
     plot200.Draw()
-    plot200.GetYaxis().SetRangeUser(1e1,5e3)
+    plot200.GetYaxis().SetRangeUser(1e-1,5e3)
     plot140.Draw('same')
     #plot0  .Draw('same')
 
@@ -62,14 +62,17 @@ def makeRatePlots():
 
     c.SetLogy()
 
-
-    
     c.SaveAs('rate.png' )
     c.SaveAs('rate.pdf' )
     c.SaveAs('rate.root')
     
+    kk = r.TRatioPlot(plot200, plot140)
+    kk.Draw()
+    c.SaveAs('rate_withratio.png')
+    
 
 def makeEffPlots():
+
 
     for var in 'hEffPt,hEffEta'.split(','):
         mu140 = r.TFile.Open('omtfAnalysis_SingleMu140.root')
@@ -83,6 +86,13 @@ def makeEffPlots():
         mu200.Close()
 
 
+        mu0 = r.TFile.Open('omtfAnalysis_SingleMuNoPU.root')
+        var0 = mu0.Get(var).Clone(var+'mu140')
+        var0 = copy.deepcopy( var0 )
+        mu0.Close()
+
+
+        var0.SetLineColor(r.kBlack) ; var0.SetLineWidth(2)
         var140.SetLineColor(r.kRed) ; var140.SetLineWidth(2)
         var200.SetLineColor(r.kBlue); var200.SetLineWidth(2)
 
@@ -91,10 +101,12 @@ def makeEffPlots():
         var140.SetTitle(';{xaxis};{yaxis}'.format(xaxis='p_{T} [GeV]' if 'Pt' in var else '#eta',yaxis='Efficiency'))
         var140.Draw()
         var200.Draw('same')
+        var0.Draw('same')
 
         leg = r.TLegend(0.6,0.3,0.75,0.4)
         leg.AddEntry(var140,'PU140','l');
         leg.AddEntry(var200,'PU200','l'); 
+        leg.AddEntry(var0, 'No pile up', 'l');
         leg.Draw('same')
         
         c.SaveAs('eff_%s.png'%var)
@@ -104,5 +116,5 @@ def makeEffPlots():
         
 
 
-makeEffPlots()
-#makeRatePlots()
+#makeEffPlots()
+makeRatePlots()

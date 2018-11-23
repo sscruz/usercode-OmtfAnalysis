@@ -18,11 +18,12 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 sampleDict = {
-    'SingleNu140' : '/eos/cms/store/group/phys_muon/sesanche/oct20/SingleNu140.root'   ,
-    'SingleNu200' : '/eos/cms/store/group/phys_muon/sesanche/oct20/SingleNu200.root'   , 
-    'SingleNuNoPU' : '/eos/cms/store/group/phys_muon/sesanche/oct20/SingleNuNoPU.root' , 
-    'SingleMu140' : '/eos/cms/store/group/phys_muon/sesanche/oct20/PU140_omtfTree.root', 
-    'SingleMu200' : '/eos/cms/store/group/phys_muon/sesanche/oct20/PU200_omtfTree.root',
+    'SingleNu140' : '/eos/cms/store/group/phys_muon/sesanche/nov22/SingleNu140.root'   ,
+    'SingleNu200' : '/eos/cms/store/group/phys_muon/sesanche/nov22/SingleNu200.root'   , 
+    'SingleNuNoPU' : '/eos/cms/store/group/phys_muon/sesanche/nov22/SingleNuNoPU.root' , 
+    'SingleMuNoPU' : '/eos/cms/store/group/phys_muon/sesanche/nov22/SingleMu_FlatPt-2to100_NoPile.root' , 
+    'SingleMu140' : '/eos/cms/store/group/phys_muon/sesanche/nov22/SingleMu_FlatPt-2to100_PU140.root',
+    'SingleMu200' : '/eos/cms/store/group/phys_muon/sesanche/nov22/SingleMu_FlatPt-2to100_PU200.root',
 }
 
 
