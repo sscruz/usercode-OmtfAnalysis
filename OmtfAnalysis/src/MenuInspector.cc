@@ -196,7 +196,7 @@ std::vector<unsigned int>  MenuInspector::runFiredAlgosL1(const edm::Event&ev, c
   edm::Handle<GlobalAlgBlkBxCollection> ugt;
   ev.getByToken(theGlobalAlgToken, ugt);
   if (!ugt.isValid()) {
-    std::cout << " PROBLEM, record uGT not OK " << std::endl;
+     if (theWarnNoColl) std::cout << " PROBLEM, record uGT not OK " << std::endl;
     return result;
   }
 
