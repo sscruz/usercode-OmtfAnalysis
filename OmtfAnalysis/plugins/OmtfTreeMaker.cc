@@ -114,8 +114,6 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
   genColl = new GenObjColl( theGenParticleFinder.genparticles(ev,es) ) ;
   l1ObjColl = new L1ObjColl;
 
-  
-
   bitsL1 = new TriggerMenuResultObj();
   bitsHLT = new TriggerMenuResultObj();
 
@@ -153,7 +151,7 @@ void OmtfTreeMaker::analyze(const edm::Event &ev, const edm::EventSetup &es)
     l1ObjColl->set( std::vector<bool>(l1Objs.size(),false));
     l1ObjColl->set( std::vector<double>(l1Objs.size(),0.));
   }
-    
+
   //
   // fill LinkSynchroAnalysis data
   //

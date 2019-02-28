@@ -20,10 +20,6 @@ TH1D* hRatePt;
 void AnaGenEff::init(TObjArray& histos)
 {
 
-  int nBins = 60;
-  double omin = 0.8;
-  double omax = 1.24;
-
   Double_t PtBins[27] = {10,13,16,19,22,25,28,31,34,37,40,43,46,49,  52,55,58,61,64, 67,70,73,76,79,82,100,200};
 
   hEffPt         =  new TEfficiency("hEffPt", "", 26, PtBins); histos.Add(hEffPt);
@@ -36,17 +32,18 @@ void AnaGenEff::init(TObjArray& histos)
 
 void AnaGenEff::run(  const EventObj* event, const GenObjColl* muons, const L1ObjColl *l1Coll)
 {
+
+  double omin = 0.8;
+  double omax = 1.24;
+  
   // cout << "Event has " << endl;
   // cout << ((const std::vector<GenObj>) *muons).size()  << " generated muons" << endl;
   // cout << ((const std::vector<L1Obj> )*l1Coll).size() << " L1 muons" << endl;
-  double omin = 0.8;
-  double omax = 1.24;
-
   
-  for (auto & gen : ((const std::vector<GenObj>) *muons)){
+  for (auto & gen : muons->data()){
     bool hasMatch = false;
     
-    for (auto & mu  : ((const std::vector<L1Obj> )*l1Coll)){
+    for (auto & mu : l1Coll->getL1Objs() ){
       if ( TMath::Abs(mu.etaValue()) > omax || TMath::Abs(mu.etaValue()) < omin) continue;
       if (mu.q < 12) continue;
       if (mu.type != L1Obj::OMTF_emu) continue;
@@ -60,13 +57,13 @@ void AnaGenEff::run(  const EventObj* event, const GenObjColl* muons, const L1Ob
     
   }
 
-  for (auto & mu  : ((const std::vector<L1Obj> )*l1Coll)){
+  for (auto & mu  : l1Coll->getL1Objs()){
     if (mu.q < 12) continue;
     if (mu.type != L1Obj::OMTF_emu) continue;
     hRatePt->Fill(mu.pt);
     break;
   }
-
+  
 
   return;
 

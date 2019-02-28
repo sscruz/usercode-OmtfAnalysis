@@ -12,7 +12,7 @@ public:
   GenObjColl(const std::vector<GenObj> & coll = std::vector<GenObj>()) : theColl(coll) {}
   operator const std::vector<GenObj> & () const { return theColl;}
   operator bool() const {return !theColl.empty(); }
-  std::vector<GenObj> & data() { return theColl;}
+  const std::vector<GenObj> & data() const { return theColl;}
 private:
   std::vector<GenObj> theColl;
   friend std::ostream & operator<< (std::ostream &out, const GenObjColl & coll) {
