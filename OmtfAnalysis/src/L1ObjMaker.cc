@@ -107,8 +107,8 @@ bool L1ObjMaker::makeRegCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, 
   //if (bxNumber!=0 && type==L1Obj::OMTF_emu) continue;
   //for (int bxNumber=-2; bxNumber<=0; bxNumber++) {
   //for (int bxNumber = max(-2,candidates->getFirstBX());  bxNumber <= min(2,candidates->getLastBX()); bxNumber++) {
-  for (int bxNumber=candidates->getFirstBX(); bxNumber<=candidates->getLastBX(); bxNumber++) {
-  for (l1t::RegionalMuonCandBxCollection::const_iterator it = candidates.product()->begin(bxNumber);
+  for (int bxNumber=candidates->getFirstBX(); bxNumber<=candidates->getLastBX(); bxNumber++) {    
+    for (l1t::RegionalMuonCandBxCollection::const_iterator it = candidates.product()->begin(bxNumber);
        it != candidates.product()->end(bxNumber);
        ++it) {
 
@@ -128,7 +128,7 @@ bool L1ObjMaker::makeRegCandidates(const edm::Event &iEvent,  L1Obj::TYPE type, 
     obj.q   = it->hwQual();
     obj.hits   = hwAddrMap[0];
     obj.bx = bxNumber;
-    obj.disc = hwAddrMap[2];
+    obj.disc = hwAddrMap[2];    
     result.push_back(obj);
   }
   }
